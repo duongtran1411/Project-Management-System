@@ -1,22 +1,22 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
-
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb://localhost:27017/project-management-system";
-
-const mongoClient = new MongoClient(MONGODB_URI, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+import mongoose from "mongoose";
 
 export const connectDB = async () => {
-  await mongoClient.connect();
+  try {
+    const conn = await mongoose.connect(
+      process.env.MONGODB_URI || "mongodb://localhost:27017/"
+    );
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    throw error;
+  }
 };
 
-export const getDB = () => {
-  if (!mongoClient) throw new Error("Must connect to database ");
-  return mongoClient.db();
-};
+// Handle MongoDB connection events
+mongoose.connection.on("disconnected", () => {
+  console.log("MongoDB disconnected");
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err);
+});
