@@ -5,7 +5,7 @@ export interface IMilestone extends Document {
   startDate?: Date;
   endDate?: Date;
   goal?: string;
-  projectId?: mongoose.Types.ObjectId;
+  projectId?: mongoose.Types.ObjectId; 
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;

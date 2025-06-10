@@ -1,9 +1,8 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 export interface IProjectRole extends Document {
   name: string;
-  projectId?: mongoose.Types.ObjectId;
-  userId?: mongoose.Types.ObjectId;
+  projectpermissionIds?: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -14,14 +13,10 @@ const projectRoleSchema = new Schema<IProjectRole>(
       type: String,
       required: [true, "name is required"],
     },
-    projectId: {
+    projectpermissionIds:[{
       type: Schema.Types.ObjectId,
-      ref: "Project",
-    },
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
+      ref:"ProjectPermission"
+    }]
   },
   { timestamps: true }
 );

@@ -49,11 +49,6 @@ const userSchema = new Schema<IUser>(
       minLength: [8, "Password must have at least 8 characters"],
       select: false,
     },
-    name: {
-      type: String,
-      required: [true, "Name is required"],
-      trim: true,
-    },
     avatar: String,
     phone: {
       type: String,
@@ -78,18 +73,11 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    roles: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Role",
-      },
-    ],
-    workspaces: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Workspace",
-      },
-    ],
+    roles:
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Role",
+    },
     lastLogin: {
       type: Date,
       default: null,

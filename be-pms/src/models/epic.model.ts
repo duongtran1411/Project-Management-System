@@ -5,7 +5,6 @@ export interface IEpic extends Document {
   description: string;
   assignee?: mongoose.Types.ObjectId;
   projectId?: mongoose.Types.ObjectId;
-  milestoneId?: mongoose.Types.ObjectId;
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -29,10 +28,6 @@ const epicSchema = new Schema<IEpic>(
     projectId: {
       type: Schema.Types.ObjectId,
       ref: "Project",
-    },
-    milestoneId: {
-      type: Schema.Types.ObjectId,
-      ref: "Milestone",
     },
     createdBy: {
       type: Schema.Types.ObjectId,

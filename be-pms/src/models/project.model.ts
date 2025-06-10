@@ -13,7 +13,7 @@ export interface IProject extends Document {
   updatedAt: Date;
   description: string;
   contributors?: mongoose.Types.ObjectId[];
-  status: "ACTIVE" | "ARCHIVED" | "DELETED";
+  status: "TODO" | "INPROGRESS" | "COMPLETE";
 }
 
 const projectSchema = new Schema<IProject>(
@@ -62,8 +62,8 @@ const projectSchema = new Schema<IProject>(
     ],
     status: {
       type: String,
-      enum: ["ACTIVE", "ARCHIVED", "DELETED"],
-      default: "ACTIVE",
+      enum: ["TODO", "INPROGRESS", "COMPLETE"],
+      default: "TODO",
     },
   },
   { timestamps: true }

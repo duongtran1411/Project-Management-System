@@ -1,8 +1,8 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IPermission extends Document {
-  description?: string;
   code: string;
+  description?: string;
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -14,6 +14,10 @@ const permissionSchema = new Schema<IPermission>(
     code: {
       type: String,
       required: [true, "code is required"],
+    },
+    description:{
+      type:String,
+      required:[true, "description is required"]
     },
     createdBy: {
       type: Schema.Types.ObjectId,

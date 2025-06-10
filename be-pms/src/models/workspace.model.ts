@@ -6,7 +6,6 @@ export interface IWorkspace extends Document {
   projectIds?: mongoose.Types.ObjectId[];
   ownerId?: mongoose.Types.ObjectId;
   contributors?: mongoose.Types.ObjectId[];
-  status: "ACTIVE" | "ARCHIVED" | "DELETED";
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -33,18 +32,6 @@ const workspaceSchema = new Schema<IWorkspace>(
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      index: true,
-    },
-    contributors: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    status: {
-      type: String,
-      enum: ["ACTIVE", "ARCHIVED", "DELETED"],
-      default: "ACTIVE",
       index: true,
     },
     createdBy: {

@@ -4,6 +4,7 @@ export interface ITask extends Document {
   name: string;
   description: string;
   epic?: mongoose.Types.ObjectId;
+  milestones?:mongoose.Types.ObjectId;
   assignee?: mongoose.Types.ObjectId;
   startDate?: Date;
   dueDate?: Date;
@@ -31,6 +32,12 @@ const taskSchema = new Schema<ITask>(
     epic: {
       type: Schema.Types.ObjectId,
       ref: "Epic",
+      required: [false, "task can no have epic"]
+    },
+    milestones:{
+      type:Schema.Types.ObjectId,
+      ref: "Milestone",
+      required:[false,"milestone is required"]
     },
     assignee: {
       type: Schema.Types.ObjectId,
