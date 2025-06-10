@@ -29,7 +29,7 @@ cd be-pms
 2. Cài đặt dependencies:
 
 ```bash
-npm install
+yarn install
 ```
 
 3. Tạo file `.env` từ template:
@@ -39,7 +39,7 @@ npm install
 PORT=5000
 
 # MongoDB Configuration
-MONGODB_URI=mongodb://localhost:27017/pms_db
+MONGODB_URI_LOCAL=mongodb://localhost:27017/PMS
 
 # JWT Configuration
 JWT_SECRET=your_jwt_secret_key_here
@@ -52,11 +52,8 @@ NODE_ENV=development
 4. Chạy server:
 
 ```bash
-# Development mode
-npm run dev
-
 # Production mode
-npm start
+yarn start
 ```
 
 ## 🏗️ Cấu trúc Project
@@ -161,7 +158,7 @@ Body: {
 
 ```bash
 # Run tests (coming soon)
-npm test
+yarn test
 ```
 
 ## 📝 License

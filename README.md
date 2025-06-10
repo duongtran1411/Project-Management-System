@@ -1,5 +1,5 @@
 # Project-Management-System
 
-# BE project start: npm run dev
+# BE project start: yarn start
 
 # FE project start: npm run dev
