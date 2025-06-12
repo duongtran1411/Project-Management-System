@@ -16,7 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 // Routes
-app.use("/api/v1", routes);
+app.use("/api", routes);
 
 // Health check
 app.get("/", (_req, res) => {
@@ -62,7 +62,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📝 API Documentation: http://localhost:${PORT}/api/v1`);
+      console.log(`📝 API Documentation: http://localhost:${PORT}/api`);
     });
   } catch (error) {
     console.error("❌ Failed to connect to MongoDB:", error);
