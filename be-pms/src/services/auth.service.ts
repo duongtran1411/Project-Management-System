@@ -1,5 +1,8 @@
 import User, { IUser } from "../models/user.model";
 import jwt from "jsonwebtoken";
+import { verifyGoogleIdToken } from "../utils/google-auth.util";
+import { sendPasswordEmail } from "../utils/email.util";
+import crypto from "crypto";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
@@ -10,74 +13,54 @@ interface LoginResponse {
 }
 
 export class AuthService {
-  async register(userData: {
-    name: string;
-    email: string;
-    password: string;
-    roles?: string;
-  }): Promise<LoginResponse> {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: userData.email });
-    if (existingUser) {
-      throw new Error("User already exists with this email");
-    }
-
-    // Create new user
-    const user = await User.create({
-      name: userData.name,
-      fullName: userData.name, // Map name to fullName as well
-      email: userData.email,
-      password: userData.password,
-      roles: userData.roles,
-    });
-
-    // Generate tokens
-    const token = this.generateToken(user);
-    const refreshToken = this.generateRefreshToken(user);
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
-
-    // Return user without password
-    const { password: _, ...userResponse } = user.toObject();
-
-    return {
-      user: userResponse,
-      token,
-      refreshToken,
-    };
-  }
-
-  async login(email: string, password: string): Promise<LoginResponse> {
-    // Find user with password field
-    const user = await User.findOne({ email }).select("+password");
-
+  /**
+   * Đăng nhập bằng Google ID token. Nếu user chưa tồn tại sẽ tạo user mới với mật khẩu random và gửi email cho user.
+   * @param idToken Google ID token từ FE
+   * @returns LoginResponse gồm user, token, refreshToken
+   */
+  async loginWithGoogle(idToken: string): Promise<LoginResponse> {
+    // 1. Xác thực token với Google
+    const googleUser = await verifyGoogleIdToken(idToken);
+    // 2. Tìm user theo email
+    let user = await User.findOne({ email: googleUser.email });
+    let isNewUser = false;
+    let tempPassword = "";
     if (!user) {
-      throw new Error("Invalid credentials");
+      // 3. Nếu chưa có user, tạo user mới với mật khẩu random
+      tempPassword = crypto
+        .randomBytes(6)
+        .toString("base64")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .slice(0, 8);
+      user = await User.create({
+        name: googleUser.name,
+        fullName: googleUser.name,
+        email: googleUser.email,
+        password: tempPassword,
+        avatar: googleUser.picture,
+        status: "ACTIVE",
+        verified: true,
+      });
+      isNewUser = true;
     }
-
     if (!user.isActive) {
       throw new Error("Account is deactivated");
     }
-
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      throw new Error("Invalid credentials");
+    // 4. Nếu là user mới, gửi email mật khẩu
+    if (isNewUser) {
+      await sendPasswordEmail(
+        user.email,
+        user.fullName || user.name,
+        tempPassword
+      );
     }
-
-    // Generate tokens
-    const token = this.generateToken(user);
-    const refreshToken = this.generateRefreshToken(user);
-
-    // Update last login
+    // 5. Cập nhật lastLogin
     user.lastLogin = new Date();
     await user.save();
-
-    // Return user without password
-    const { password: _p, ...userResponse } = user.toObject();
-
+    // 6. Trả về JWT
+    const token = this.generateToken(user);
+    const refreshToken = this.generateRefreshToken(user);
+    const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
       token,
@@ -99,6 +82,33 @@ export class AuthService {
     } catch (error) {
       throw new Error("Invalid refresh token");
     }
+  }
+
+  async loginWithEmail(
+    email: string,
+    password: string
+  ): Promise<LoginResponse> {
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      throw new Error("Email hoặc mật khẩu không đúng");
+    }
+    if (!user.isActive) {
+      throw new Error("Tài khoản đã bị vô hiệu hoá");
+    }
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      throw new Error("Email hoặc mật khẩu không đúng");
+    }
+    user.lastLogin = new Date();
+    await user.save();
+    const token = this.generateToken(user);
+    const refreshToken = this.generateRefreshToken(user);
+    const { password: _, ...userResponse } = user.toObject();
+    return {
+      user: userResponse,
+      token,
+      refreshToken,
+    };
   }
 
   private generateToken(user: IUser): string {
