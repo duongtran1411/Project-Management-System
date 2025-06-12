@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import '../styles/globals.css';
 import 'antd/dist/reset.css';
-import "bootstrap/dist/css/bootstrap.min.css";
-import "antd/dist/reset.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,7 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body 
+        className=''
+        data-new-gr-c-s-check-loaded="14.1239.0"
+        data-gr-ext-installed=""
+      >
         {children}
       </body>
     </html>

@@ -1,9 +1,4 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
 
-/* Bạn có thể override hoặc bổ sung style ở đây */
-body {
-  font-family: Arial, sans-serif;
-}
 :root {
   --background: #ffffff;
   --foreground: #171717;
