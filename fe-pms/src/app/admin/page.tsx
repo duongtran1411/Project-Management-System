@@ -1,3 +1,4 @@
+
 import Dashboard from "@/components/adminScreen/Dashboard";
 
 const Admin = () => {
@@ -9,3 +10,6 @@ const Admin = () => {
 };
 
 export default Admin;
+
+
+
