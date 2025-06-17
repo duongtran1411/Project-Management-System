@@ -9,7 +9,7 @@ const UserAdmin = () => {
     const usersPerPage = 6;
 
     // Mock data - replace with actual data from your API
-    const users = [
+    const [users, setUsers] = useState([
         { id: 1, name: "John Doe", email: "john@example.com", role: "Admin", status: "Active" },
         { id: 2, name: "Jane Smith", email: "jane@example.com", role: "User", status: "Active" },
         { id: 3, name: "Bob Johnson", email: "bob@example.com", role: "User", status: "Inactive" },
@@ -18,7 +18,7 @@ const UserAdmin = () => {
         { id: 6, name: "Diana Miller", email: "diana@example.com", role: "User", status: "Active" },
         { id: 7, name: "Edward Davis", email: "edward@example.com", role: "User", status: "Active" },
         { id: 8, name: "Fiona Clark", email: "fiona@example.com", role: "User", status: "Inactive" },
-    ];
+    ]);
 
     const filteredUsers = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -33,6 +33,13 @@ const UserAdmin = () => {
 
     const handlePageChange = (pageNumber: number) => {
         setCurrentPage(pageNumber);
+    };
+
+    const handleDelete = (id: number) => {
+        const confirmed = window.confirm("Are you sure you want to delete this user?");
+        if (confirmed) {
+            setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
+        }
     };
 
     return (
@@ -97,7 +104,7 @@ const UserAdmin = () => {
                                                 <button className="text-blue-600 hover:text-blue-900">
                                                     <FiEdit2 size={20} />
                                                 </button>
-                                                <button className="text-red-600 hover:text-red-900">
+                                                <button className="text-red-600 hover:text-red-900" onClick={() => handleDelete(user.id)}>
                                                     <FiTrash2 size={20} />
                                                 </button>
                                             </div>
