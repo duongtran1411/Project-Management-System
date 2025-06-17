@@ -1,3 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -20,7 +23,8 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Atlassian Sans", "Inter", "Segoe UI", "Open Sans", sans-serif;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,4 +44,13 @@ a {
   html {
     color-scheme: dark;
   }
+}
+
+/* styles/globals.css */
+@font-face {
+  font-family: "Charlie Text";
+  src: url("/fonts/CharlieText-Regular.woff2") format("woff2"),
+    url("/fonts/CharlieText-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
 }

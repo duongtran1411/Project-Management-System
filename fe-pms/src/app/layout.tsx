@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import '../styles/globals.css';
-import 'antd/dist/reset.css';
+import "../styles/globals.css";
+import "antd/dist/reset.css";
+import Header from "@/components/common/layout/dashboard/Header/Header";
+import Footer from "@/components/homepage/Footer";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,12 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body 
-        className=''
-        data-new-gr-c-s-check-loaded="14.1239.0"
-        data-gr-ext-installed=""
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );
