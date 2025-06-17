@@ -1,8 +1,15 @@
 
+import Dashboard from "@/components/adminScreen/Dashboard";
 
-export default async function Page() {
-  
-  return (
-    <div>đây là dashboard</div>
-  )
-}
+const Admin = () => {
+    return (
+        <div>
+            <Dashboard />
+        </div>
+    );
+};
+
+export default Admin;
+
+
+
