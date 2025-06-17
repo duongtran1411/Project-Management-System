@@ -99,8 +99,18 @@ export class AuthService {
     }
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      await user.save();
+      if (user.failedLoginAttempts >= 2) {
+        const err: any = new Error(
+          "Mật khẩu của bạn không đúng, vui lòng đổi mật khẩu"
+        );
+        err.suggestForgotPassword = true;
+        throw err;
+      }
       throw new Error("Mật khẩu của bạn không đúng");
     }
+    user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
     const access_token = this.generateToken(user);
