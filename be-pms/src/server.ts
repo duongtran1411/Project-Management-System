@@ -69,7 +69,9 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📝 API Documentation: http://localhost:${PORT}/api`);
+      console.log(
+        `📝 API Documentation (SwaggerUI): http://localhost:${PORT}/api-docs`
+      );
     });
   } catch (error) {
     console.error("❌ Failed to connect to MongoDB:", error);

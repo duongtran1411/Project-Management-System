@@ -8,7 +8,6 @@ interface TokenPayload {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
-const JWT_EXPIRE = process.env.JWT_EXPIRE || "30d";
 
 export const generateToken = (user: IUser): string => {
   const payload: TokenPayload = {
@@ -21,7 +20,7 @@ export const generateToken = (user: IUser): string => {
   };
 
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRE,
+    expiresIn: "30d",
   } as any);
 };
 
