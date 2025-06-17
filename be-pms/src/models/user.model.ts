@@ -10,7 +10,7 @@ export interface IUser extends Document {
   status: "ACTIVE" | "INACTIVE" | "DELETED";
   failedLoginAttempts: number;
   verified: boolean;
-  roles?: mongoose.Types.ObjectId[];
+  role?: mongoose.Types.ObjectId;
   workspaces?: mongoose.Types.ObjectId[];
   lastLogin?: Date;
   createdBy?: mongoose.Types.ObjectId;
@@ -73,8 +73,7 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    roles:
-    {
+    role: {
       type: Schema.Types.ObjectId,
       ref: "Role",
     },

@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import { connectDB } from "./config/mongodb";
 import routes from "./routes";
+import { seedAdminRole } from "./config/seed";
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ const startServer = async () => {
     if (process.env.SKIP_DB !== "true") {
       await connectDB();
       console.log("✅ Connected to MongoDB");
+      await seedAdminRole();
     } else {
       console.log("⚠️  Skipping MongoDB connection (SKIP_DB=true)");
     }

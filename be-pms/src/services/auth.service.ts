@@ -8,8 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 interface LoginResponse {
   user: Partial<IUser>;
-  token: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 }
 
 export class AuthService {
@@ -58,13 +58,13 @@ export class AuthService {
     user.lastLogin = new Date();
     await user.save();
     // 6. Trả về JWT
-    const token = this.generateToken(user);
-    const refreshToken = this.generateRefreshToken(user);
+    const access_token = this.generateToken(user);
+    const refresh_token = this.generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
-      token,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 
@@ -88,7 +88,9 @@ export class AuthService {
     email: string,
     password: string
   ): Promise<LoginResponse> {
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email })
+      .select("+password")
+      .populate("role");
     if (!user) {
       throw new Error("Email hoặc mật khẩu không đúng");
     }
@@ -101,13 +103,13 @@ export class AuthService {
     }
     user.lastLogin = new Date();
     await user.save();
-    const token = this.generateToken(user);
-    const refreshToken = this.generateRefreshToken(user);
+    const access_token = this.generateToken(user);
+    const refresh_token = this.generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
-      token,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 
@@ -116,7 +118,7 @@ export class AuthService {
       {
         userId: (user._id as any).toString(),
         email: user.email,
-        roles: user.roles,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "30d" }
@@ -128,7 +130,7 @@ export class AuthService {
       {
         userId: (user._id as any).toString(),
         email: user.email,
-        roles: user.roles,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "90d" }

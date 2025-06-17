@@ -14,7 +14,10 @@ export const generateToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
     email: user.email,
-    role: user.role,
+    role:
+      typeof user.role === "string"
+        ? user.role
+        : (user.role as any)?.name || (user.role as any)?.toString() || "",
   };
 
   return jwt.sign(payload, JWT_SECRET, {
@@ -30,7 +33,10 @@ export const generateRefreshToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
     email: user.email,
-    role: user.role,
+    role:
+      typeof user.role === "string"
+        ? user.role
+        : (user.role as any)?.name || (user.role as any)?.toString() || "",
   };
 
   return jwt.sign(payload, JWT_SECRET, {
