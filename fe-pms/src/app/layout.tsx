@@ -5,8 +5,6 @@ import "antd/dist/reset.css";
 
 import "./globals.css";
 
-
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
