@@ -98,6 +98,44 @@ export class UserController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async updateUserStatus(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      if (!["ACTIVE", "INACTIVE", "DELETED"].includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status. Must be 'ACTIVE', 'INACTIVE', or 'DELETED'",
+        });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { status },
+        { new: true, runValidators: true }
+      ).select("-password");
+
+      if (!updatedUser) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: `User status updated to ${status}`,
+        data: updatedUser,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default new UserController();
