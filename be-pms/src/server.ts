@@ -5,6 +5,8 @@ import morgan from "morgan";
 import { connectDB } from "./config/mongodb";
 import routes from "./routes";
 import { seedAdminRole } from "./config/seed";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger";
 
 dotenv.config();
 
@@ -18,6 +20,9 @@ app.use(morgan("dev"));
 
 // Routes
 app.use("/api", routes);
+
+// Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Health check
 app.get("/", (_req, res) => {

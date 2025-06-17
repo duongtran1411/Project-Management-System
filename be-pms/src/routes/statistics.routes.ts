@@ -4,7 +4,16 @@ import { authenticate, authorize } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-// GET /admin/statistics/projects
+/**
+ * @openapi
+ * /statistics/projects:
+ *   get:
+ *     summary: Lấy thống kê dự án
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ */
 router.get(
   "/projects",
   authenticate,

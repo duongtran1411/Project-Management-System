@@ -23,6 +23,6 @@ export async function sendPasswordEmail(
     subject: "Tài khoản PMS của bạn đã được tạo",
     html: `<p>Xin chào <b>${name}</b>,</p>
       <p>Bạn vừa đăng nhập bằng Google. Đây là mật khẩu tạm thời của bạn: <b>${password}</b></p>
-      <p>Hãy đăng nhập và đổi lại mật khẩu ngay.</p>`,
+      <p>Hãy đăng nhập và đổi lại mật khẩu.</p>`,
   });
 }

@@ -99,7 +99,7 @@ export class AuthService {
     }
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      throw new Error("Email hoặc mật khẩu không đúng");
+      throw new Error("Mật khẩu của bạn không đúng");
     }
     user.lastLogin = new Date();
     await user.save();

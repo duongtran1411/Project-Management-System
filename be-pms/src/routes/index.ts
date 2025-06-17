@@ -9,6 +9,17 @@ router.use("/auth", authRoutes);
 router.use("/statistics", statisticsRoutes);
 
 // Health check
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ */
 router.get("/health", (_req, res) => {
   res.json({
     success: true,
