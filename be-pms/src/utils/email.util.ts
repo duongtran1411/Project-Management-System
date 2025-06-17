@@ -22,7 +22,22 @@ export async function sendPasswordEmail(
     to,
     subject: "Tài khoản PMS của bạn đã được tạo",
     html: `<p>Xin chào <b>${name}</b>,</p>
-      <p>Bạn vừa đăng nhập bằng Google. Đây là mật khẩu tạm thời của bạn: <b>${password}</b></p>
-      <p>Hãy đăng nhập và đổi lại mật khẩu.</p>`,
+      <p>Đây là mật khẩu tạm thời của bạn: <b>${password}</b></p>
+      <p>Hãy đổi mật khẩu sau khi đăng nhập.</p>`,
+  });
+}
+
+export async function sendForgotPasswordEmail(
+  to: string,
+  name: string,
+  password: string
+) {
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || "noreply@example.com",
+    to,
+    subject: "Mật khẩu tạm thời của bạn",
+    html: `<p>Xin chào <b>${name}</b>,</p>
+      <p>Đây là mật khẩu tạm thời của bạn: <b>${password}</b></p>
+      <p>Hãy đổi mật khẩu sau khi đăng nhập.</p>`,
   });
 }
