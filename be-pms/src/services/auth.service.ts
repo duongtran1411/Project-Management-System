@@ -1,23 +1,21 @@
 import User, { IUser } from "../models/user.model";
 import jwt from "jsonwebtoken";
 import { verifyGoogleIdToken } from "../utils/google-auth.util";
-import { sendPasswordEmail } from "../utils/email.util";
-import crypto from "crypto";
+import {
+  sendForgotPasswordEmail,
+  sendPasswordEmail,
+} from "../utils/email.util";
+import { generateRandomPassword } from "../utils/password.util";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 interface LoginResponse {
   user: Partial<IUser>;
-  token: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 }
 
 export class AuthService {
-  /**
-   * Đăng nhập bằng Google ID token. Nếu user chưa tồn tại sẽ tạo user mới với mật khẩu random và gửi email cho user.
-   * @param idToken Google ID token từ FE
-   * @returns LoginResponse gồm user, token, refreshToken
-   */
   async loginWithGoogle(idToken: string): Promise<LoginResponse> {
     // 1. Xác thực token với Google
     const googleUser = await verifyGoogleIdToken(idToken);
@@ -27,11 +25,7 @@ export class AuthService {
     let tempPassword = "";
     if (!user) {
       // 3. Nếu chưa có user, tạo user mới với mật khẩu random
-      tempPassword = crypto
-        .randomBytes(6)
-        .toString("base64")
-        .replace(/[^a-zA-Z0-9]/g, "")
-        .slice(0, 8);
+      tempPassword = generateRandomPassword();
       user = await User.create({
         name: googleUser.name,
         fullName: googleUser.name,
@@ -58,13 +52,13 @@ export class AuthService {
     user.lastLogin = new Date();
     await user.save();
     // 6. Trả về JWT
-    const token = this.generateToken(user);
-    const refreshToken = this.generateRefreshToken(user);
+    const access_token = this.generateToken(user);
+    const refresh_token = this.generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
-      token,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 
@@ -88,26 +82,38 @@ export class AuthService {
     email: string,
     password: string
   ): Promise<LoginResponse> {
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email })
+      .select("+password")
+      .populate("role");
     if (!user) {
-      throw new Error("Email hoặc mật khẩu không đúng");
+      throw new Error("Email không tồn tại");
     }
     if (!user.isActive) {
       throw new Error("Tài khoản đã bị vô hiệu hoá");
     }
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      throw new Error("Email hoặc mật khẩu không đúng");
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      await user.save();
+      if (user.failedLoginAttempts >= 2) {
+        const err: any = new Error(
+          "Mật khẩu của bạn không đúng, vui lòng đổi mật khẩu"
+        );
+        err.suggestForgotPassword = true;
+        throw err;
+      }
+      throw new Error("Mật khẩu của bạn không đúng");
     }
+    user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
-    const token = this.generateToken(user);
-    const refreshToken = this.generateRefreshToken(user);
+    const access_token = this.generateToken(user);
+    const refresh_token = this.generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
-      token,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 
@@ -116,7 +122,7 @@ export class AuthService {
       {
         userId: (user._id as any).toString(),
         email: user.email,
-        roles: user.roles,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "30d" }
@@ -128,11 +134,38 @@ export class AuthService {
       {
         userId: (user._id as any).toString(),
         email: user.email,
-        roles: user.roles,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "90d" }
     );
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await User.findOne({ email });
+    if (!user) throw new Error("Không tìm thấy người dùng với email này");
+    const tempPassword = generateRandomPassword();
+    user.password = tempPassword;
+    user.failedLoginAttempts = 0;
+    await user.save();
+    await sendForgotPasswordEmail(
+      user.email,
+      user.fullName || user.name,
+      tempPassword
+    );
+  }
+
+  async changePassword(
+    email: string,
+    oldPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) throw new Error("Email không tồn tại");
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) throw new Error("Mật khẩu cũ không đúng");
+    user.password = newPassword;
+    await user.save();
   }
 }
 

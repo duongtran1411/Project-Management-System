@@ -23,7 +23,9 @@ export const authenticate = async (
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId)
+      .select("-password")
+      .populate("role");
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -41,13 +43,13 @@ export const authenticate = async (
   }
 };
 
-export const authorize = (...roles: string[]) => {
+export const authorize = (role: string) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ message: "Authorization required" });
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (req.user.role.name !== role) {
       return res.status(403).json({
         message: "You don't have permission to perform this action",
       });

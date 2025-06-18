@@ -8,17 +8,19 @@ interface TokenPayload {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
-const JWT_EXPIRE = process.env.JWT_EXPIRE || "30d";
 
 export const generateToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
     email: user.email,
-    role: user.role,
+    role:
+      typeof user.role === "string"
+        ? user.role
+        : (user.role as any)?.name || (user.role as any)?.toString() || "",
   };
 
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRE,
+    expiresIn: "30d",
   } as any);
 };
 
@@ -30,7 +32,10 @@ export const generateRefreshToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
     email: user.email,
-    role: user.role,
+    role:
+      typeof user.role === "string"
+        ? user.role
+        : (user.role as any)?.name || (user.role as any)?.toString() || "",
   };
 
   return jwt.sign(payload, JWT_SECRET, {
