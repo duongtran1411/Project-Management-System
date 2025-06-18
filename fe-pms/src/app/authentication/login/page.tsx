@@ -1,40 +1,67 @@
-'use client';
+"use client";
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/login";
-import { showErrorToast } from "@/components/common/toast/toast";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "@/components/common/toast/toast";
 import { Constants } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 export default function Page() {
-  const [email, setEmail] = useState<string | null>(null);
-  const [password, setPassword] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const router = useRouter();
-  const onFinish = () => {};
-  const handleLoginGoogle = async (credentialReponse: any) => {
+
+  //login
+  const onFinish = async () => {
+    debugger;
     try {
-      debugger
-      const credential = credentialReponse.credential
-      if(!credential){
-        showErrorToast('Tài khoản email không tồn tại')
+      const response = await login(email, password);
+      if (response.success) {
+        const token = response.data.access_token;
+        const refresh_token = response.data.refresh_token;
+        localStorage.setItem(Constants.API_TOKEN_KEY, token);
+        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
+        showSuccessToast("đăng nhập thành công");
+        router.replace("/home");
       }
-
-      const response = await loginGoogle(credential)
-      if(response){
-        const token = response.access_token
-        localStorage.setItem(Constants.API_TOKEN_KEY,token);
-        router.replace('/home');
-      }
-
-
-    } catch (error:any) {
-      const errorMessage = error.response.data.message || error.message || 'Đã xảy ra lỗi';
-      if(errorMessage){
-        showErrorToast(errorMessage)
+    } catch (error: any) {
+      const errorMessage =
+        error.response.data.message || error.message || "Đã xảy ra lỗi";
+      if (errorMessage) {
+        showErrorToast(errorMessage);
       }
     }
-  }
+  };
+
+  //login with google
+  const handleLoginGoogle = async (credentialReponse: any) => {
+    try {
+      debugger;
+      const credential = credentialReponse.credential;
+      if (!credential) {
+        showErrorToast("Tài khoản email không tồn tại");
+      }
+
+      const response = await loginGoogle(credential);
+      if (response) {
+        const token = response.data.access_token;
+        const refresh_token = response.data.refresh_token;
+        localStorage.setItem(Constants.API_TOKEN_KEY, token);
+        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
+        router.replace("/home");
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.response.data.message || error.message || "Đã xảy ra lỗi";
+      if (errorMessage) {
+        showErrorToast(errorMessage);
+      }
+    }
+  };
   return (
     <Form
       name="login"
@@ -42,9 +69,13 @@ export default function Page() {
       style={{ maxWidth: 360 }}
       onFinish={onFinish}>
       <Form.Item
-        name="username"
-        rules={[{ required: true, message: "Please input your Username!" }]}>
-        <Input prefix={<UserOutlined />} placeholder="Username" onChange={(e)=>setEmail(e.target.value)}/>
+        name="email"
+        rules={[{ required: true, message: "Please input your email!" }]}>
+        <Input
+          prefix={<UserOutlined />}
+          placeholder="Email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
       </Form.Item>
       <Form.Item
         name="password"
@@ -53,7 +84,7 @@ export default function Page() {
           prefix={<LockOutlined />}
           type="password"
           placeholder="Password"
-          onChange={(e)=>setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
         />
       </Form.Item>
       <Form.Item>
@@ -66,11 +97,10 @@ export default function Page() {
       </Form.Item>
 
       <Form.Item>
-        <Button block type="primary" htmlType="submit">
+        <Button block type="primary" htmlType="submit" className="mb-2">
           Log in
         </Button>
-        <GoogleLogin onSuccess={handleLoginGoogle}/>
-        or <a href="">Register now!</a>
+        <GoogleLogin onSuccess={handleLoginGoogle} />
       </Form.Item>
     </Form>
   );
