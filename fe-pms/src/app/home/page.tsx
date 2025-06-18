@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-import WelcomeSection from "@/components/homepage/WelcomeSection";
-import React from "react";
-import BoardsFeature from "@/components/homepage/BoardsFeature";
-import WorkDetail from "@/components/homepage/WorkDetails";
-=======
 "use client";
 import React, { useState } from "react";
 import { Typography, Input, Button, Space } from "antd";
@@ -14,16 +8,8 @@ const { Text } = Typography;
 
 const WelcomeSection: React.FC = () => {
   const [site, setSite] = useState("fpt-team-mdoh239h");
->>>>>>> Stashed changes
 
   return (
-<<<<<<< Updated upstream
-    <main>
-      <WelcomeSection />
-      <BoardsFeature />
-      <WorkDetail />
-    </main>
-=======
     <div className="flex items-center justify-center min-h-screen h-full bg-[#deebfe] p-1 gap-10">
       <div className="flex flex-col justify-center min-h-screen h-full bg-[#deebfe]  ">
         <p className="font-semibold mb-5 max-w-[700px] leading-[1.15] font-charlie text-[44px]">
@@ -81,7 +67,6 @@ const WelcomeSection: React.FC = () => {
       /> */}
       <ImageAnimation />
     </div>
->>>>>>> Stashed changes
   );
 };
 
