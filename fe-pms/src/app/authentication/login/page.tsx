@@ -1,16 +1,39 @@
-"use client";
+'use client';
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import axiosService from "@/lib/services/axios.service";
-import { Endpoints } from "@/lib/endpoints";
+import { login, loginGoogle } from "@/lib/services/authentication/login";
+import { showErrorToast } from "@/components/common/toast/toast";
+import { Constants } from "@/lib/constants";
+import { useRouter } from "next/navigation";
 export default function Page() {
   const [email, setEmail] = useState<string | null>(null);
   const [password, setPassword] = useState<string | null>(null);
+  const router = useRouter();
   const onFinish = () => {};
-  const handleLoginGoogle = async () => {
-    const response = await axiosService.getAxiosInstance().get(`${Endpoints.Auth.LOGIN_WITH_GOOGLE}`)
+  const handleLoginGoogle = async (credentialReponse: any) => {
+    try {
+      debugger
+      const credential = credentialReponse.credential
+      if(!credential){
+        showErrorToast('Tài khoản email không tồn tại')
+      }
+
+      const response = await loginGoogle(credential)
+      if(response){
+        const token = response.access_token
+        localStorage.setItem(Constants.API_TOKEN_KEY,token);
+        router.replace('/home');
+      }
+
+
+    } catch (error:any) {
+      const errorMessage = error.response.data.message || error.message || 'Đã xảy ra lỗi';
+      if(errorMessage){
+        showErrorToast(errorMessage)
+      }
+    }
   }
   return (
     <Form
