@@ -4,7 +4,7 @@ import { UserOutlined } from "@ant-design/icons";
 
 const Header: React.FC = () => {
   // TODO: Replace with actual auth state
-  const isLoggedIn = true;
+  const isLoggedIn = false;
   const userName = "John Doe"; // TODO: Replace with actual user name
 
   return (

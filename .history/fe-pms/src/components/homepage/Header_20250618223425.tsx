@@ -1,10 +1,12 @@
 import React from "react";
 import { Button, Avatar, Space } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
+  const navigate = useNavigate();
   // TODO: Replace with actual auth state
-  const isLoggedIn = true;
+  const isLoggedIn = false;
   const userName = "John Doe"; // TODO: Replace with actual user name
 
   return (
@@ -16,12 +18,19 @@ const Header: React.FC = () => {
 
       <div>
         {isLoggedIn ? (
-          <Space className="cursor-pointer">
+          <Space
+            className="cursor-pointer"
+            onClick={() => navigate("/profile")}
+          >
             <Avatar icon={<UserOutlined />} />
             <span className="text-gray-700">{userName}</span>
           </Space>
         ) : (
-          <Button type="primary" className="bg-blue-500 hover:bg-blue-600">
+          <Button
+            type="primary"
+            onClick={() => navigate("/login")}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
             Login
           </Button>
         )}

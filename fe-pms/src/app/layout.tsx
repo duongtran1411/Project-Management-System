@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import "antd/dist/reset.css";
+<<<<<<< Updated upstream
 import Header from "@/components/common/layout/dashboard/Header/Header";
 import Footer from "@/components/homepage/Footer";
+=======
+
+>>>>>>> Stashed changes
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
