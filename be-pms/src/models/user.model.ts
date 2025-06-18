@@ -10,7 +10,7 @@ export interface IUser extends Document {
   status: "ACTIVE" | "INACTIVE" | "DELETED";
   failedLoginAttempts: number;
   verified: boolean;
-  roles?: mongoose.Types.ObjectId[];
+  role?: mongoose.Types.ObjectId;
   workspaces?: mongoose.Types.ObjectId[];
   lastLogin?: Date;
   createdBy?: mongoose.Types.ObjectId;
@@ -46,7 +46,6 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
-      minLength: [8, "Password must have at least 8 characters"],
       select: false,
     },
     avatar: String,
@@ -73,8 +72,7 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    roles:
-    {
+    role: {
       type: Schema.Types.ObjectId,
       ref: "Role",
     },
