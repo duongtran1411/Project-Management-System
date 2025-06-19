@@ -7,14 +7,14 @@ export interface IEmailTemplate extends Document {
     body: string; // nội dung HTML
     footer: string;
     variables?: string[]; // danh sách biến cần thay thế
+    status: string;
     createdBy: mongoose.Types.ObjectId;
     updatedBy: mongoose.Types.ObjectId;
-    status: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
-const EmailTemplateSchema = new Schema({
+const EmailTemplateSchema = new Schema<IEmailTemplate>({
     name: { type: String, required: true, unique: true },
     subject: { type: String, required: true },
     header: { type: String },  // optional
