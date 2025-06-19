@@ -1,6 +1,7 @@
 'use client';
 import { useContext, createContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Constants } from "../constants";
 interface AuthContextType {
   isLoggedIn: boolean;
 }
@@ -12,14 +13,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter(); 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("access_token");
+      const token = localStorage.getItem(Constants.API_TOKEN_KEY);
       
-      // if (token) {
-      //   setIsLoggedIn(true);
-      //   router.replace("/home");
-      // } else {
-      //   router.replace("/authentication/login");
-      // }
+      if (token) {
+        setIsLoggedIn(true);
+        router.replace("/");
+      } else {
+        router.replace("/");
+      }
     };
 
     checkAuth();

@@ -73,7 +73,7 @@ const userSchema = new Schema<IUser>(
       default: false,
     },
     role: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Types.ObjectId,
       ref: "Role",
     },
     lastLogin: {

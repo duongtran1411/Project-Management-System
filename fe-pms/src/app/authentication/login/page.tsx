@@ -8,8 +8,10 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
+import { jwtDecode } from "jwt-decode";
 import { Constants } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import { TokenPayload } from "@/models/user/TokenPayload";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -25,12 +27,16 @@ export default function Page() {
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
+        if(token){
+          const decoded = jwtDecode<TokenPayload>(token);
+          console.log(decoded);
+        }
         showSuccessToast("đăng nhập thành công");
-        router.replace("/home");
+        router.replace("/");
       }
     } catch (error: any) {
       const errorMessage =
-        error.response.data.message || error.message || "Đã xảy ra lỗi";
+        error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
@@ -48,15 +54,20 @@ export default function Page() {
 
       const response = await loginGoogle(credential);
       if (response) {
-        const token = response.data.access_token;
-        const refresh_token = response.data.refresh_token;
+        const token = response.access_token;
+        const refresh_token = response.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-        router.replace("/home");
+        if(token){
+          const decoded = jwtDecode<TokenPayload>(token);
+          console.log(decoded);
+        }
+        showSuccessToast("đăng nhập thành công");
+        router.replace("/");
       }
     } catch (error: any) {
       const errorMessage =
-        error.response.data.message || error.message || "Đã xảy ra lỗi";
+        error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
