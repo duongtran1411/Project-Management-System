@@ -1,5 +1,5 @@
+import Dashboard from "./dashboard/page";
 
-import Dashboard from "@/components/adminScreen/Dashboard";
 
 const Admin = () => {
     return (
