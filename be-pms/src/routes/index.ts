@@ -1,12 +1,16 @@
 import { Router } from "express";
 import authRoutes from "./auth.routes";
+import userRoutes from "./user.route";
 import statisticsRoutes from "./statistics.routes";
+import emailTemplateRoutes from "./email.template.routes";
 
 const router = Router();
 
 // Mount routes
 router.use("/auth", authRoutes);
+router.use("/user", userRoutes);
 router.use("/statistics", statisticsRoutes);
+router.use("/emailTemplate", emailTemplateRoutes);
 
 // Health check
 /**
