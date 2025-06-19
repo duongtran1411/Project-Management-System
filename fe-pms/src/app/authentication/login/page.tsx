@@ -30,7 +30,7 @@ export default function Page() {
       }
     } catch (error: any) {
       const errorMessage =
-        error.response.data.message || error.message || "Đã xảy ra lỗi";
+        error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
@@ -56,7 +56,7 @@ export default function Page() {
       }
     } catch (error: any) {
       const errorMessage =
-        error.response.data.message || error.message || "Đã xảy ra lỗi";
+        error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
