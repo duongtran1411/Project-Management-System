@@ -23,7 +23,7 @@ const EmailTemplateSchema = new Schema<IEmailTemplate>({
     variables: [{ type: String }],
     status: {
         type: String,
-        enum: ["ACTIVE", "INACTIVE"],
+        enum: ["ACTIVE", "INACTIVE","DELETED"],
         default: "INACTIVE",
     },
     createdBy: {
