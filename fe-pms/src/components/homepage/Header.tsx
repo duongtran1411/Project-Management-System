@@ -1,10 +1,12 @@
 import React from "react";
 import { Button, Avatar, Space } from "antd";
 import { UserOutlined } from "@ant-design/icons";
+import { Constants } from "@/lib/constants";
 
 const Header: React.FC = () => {
   // TODO: Replace with actual auth state
-  const isLoggedIn = true;
+  const isLoggedIn =
+    localStorage.getItem(Constants.API_TOKEN_KEY) !== null ? true : false;
   const userName = "John Doe"; // TODO: Replace with actual user name
 
   return (
