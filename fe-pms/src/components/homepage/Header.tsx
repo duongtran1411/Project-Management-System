@@ -1,14 +1,20 @@
+'use client'
 import React from "react";
 import { Button, Avatar, Space } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { Constants } from "@/lib/constants";
-
+import { useEffect, useState } from "react";
+import Link from "next/link";
 const Header: React.FC = () => {
-  // TODO: Replace with actual auth state
-  const isLoggedIn =
-    localStorage.getItem(Constants.API_TOKEN_KEY) !== null ? true : false;
-  const userName = "John Doe"; // TODO: Replace with actual user name
-
+  const [token, setToken ] = useState('');
+  
+  const userName = "John Doe"; 
+  useEffect(() => {
+    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
+    if(access_token){
+      setToken(access_token);
+    }
+  }, []);
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
       <div className="flex items-center">
@@ -17,14 +23,14 @@ const Header: React.FC = () => {
       </div>
 
       <div>
-        {isLoggedIn ? (
+        {token ? (
           <Space className="cursor-pointer">
             <Avatar icon={<UserOutlined />} />
             <span className="text-gray-700">{userName}</span>
           </Space>
         ) : (
           <Button type="primary" className="bg-blue-500 hover:bg-blue-600">
-            Login
+            <Link href={'/authentication/login'}>Login</Link>
           </Button>
         )}
       </div>
