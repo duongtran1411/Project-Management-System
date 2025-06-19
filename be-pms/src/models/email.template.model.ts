@@ -39,4 +39,3 @@ const EmailTemplateSchema = new Schema<IEmailTemplate>({
 }, { timestamps: true });
 
 export default mongoose.model<IEmailTemplate>("EmailTemplate", EmailTemplateSchema)
-
