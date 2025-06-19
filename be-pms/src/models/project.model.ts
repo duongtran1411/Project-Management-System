@@ -45,14 +45,6 @@ const projectSchema = new Schema<IProject>(
       type: Schema.Types.ObjectId,
       ref: "Workspace",
     },
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     description: { type: String },
     contributors: [
       {
@@ -65,6 +57,14 @@ const projectSchema = new Schema<IProject>(
       enum: ["TODO", "INPROGRESS", "COMPLETE"],
       default: "TODO",
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }
   },
   { timestamps: true }
 );
