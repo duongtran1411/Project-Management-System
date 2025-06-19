@@ -93,9 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
       </div>
-      <div className="flex-1 overflow-auto bg-white">
-        {children}
-      </div>
+      <div className="flex-1 overflow-auto bg-white">{children}</div>
     </div>
   );
 }
