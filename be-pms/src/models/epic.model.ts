@@ -3,8 +3,10 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IEpic extends Document {
   name: string;
   description: string;
-  assignee?: mongoose.Types.ObjectId;
   projectId?: mongoose.Types.ObjectId;
+  milestonesId: mongoose.Types.ObjectId;
+  assignee: mongoose.Types.ObjectId;
+  status: string;
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -21,13 +23,22 @@ const epicSchema = new Schema<IEpic>(
       type: String,
       required: [true, "description is required"],
     },
+    projectId: {
+      type: Schema.Types.ObjectId,
+      ref: "Project",
+    },
+    milestonesId: {
+      type: Schema.Types.ObjectId,
+      ref: "Milestone",
+    },
     assignee: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    projectId: {
-      type: Schema.Types.ObjectId,
-      ref: "Project",
+    status: {
+      type: String,
+      enum: ["TO_DO", "IN_PROGRESS", "DONE", "BLOCKED"],
+      default: "TO_DO",
     },
     createdBy: {
       type: Schema.Types.ObjectId,

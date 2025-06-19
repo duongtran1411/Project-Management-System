@@ -3,13 +3,16 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IFeedback extends Document {
     userId: mongoose.Types.ObjectId;
     projectContributorId: mongoose.Types.ObjectId;
+    email: string;
     message: string;
     type?: 'BUG' | 'FEATURE_REQUEST' | 'COMMENT';
+    createdBy?: mongoose.Types.ObjectId;
+    updatedBy?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
 
-const FeedbackSchema = new Schema({
+const FeedbackSchema = new Schema<IFeedback>({
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',

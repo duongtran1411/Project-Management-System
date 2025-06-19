@@ -29,6 +29,7 @@ const taskSchema = new Schema<ITask>(
       type: String,
       required: [true, "description is required"],
     },
+    labels: [String],
     epic: {
       type: Schema.Types.ObjectId,
       ref: "Epic",
@@ -57,14 +58,6 @@ const taskSchema = new Schema<ITask>(
       type: Schema.Types.ObjectId,
       ref: "Project",
     },
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
     status: {
       type: String,
       enum: ["TO_DO", "IN_PROGRESS", "DONE", "BLOCKED"],
@@ -75,7 +68,14 @@ const taskSchema = new Schema<ITask>(
       enum: ["LOW", "MEDIUM", "HIGH", "URGENT"],
       default: "MEDIUM",
     },
-    labels: [String],
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }
   },
   { timestamps: true }
 );
