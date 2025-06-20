@@ -40,7 +40,7 @@ export default function Page() {
           }
 
           if (decoded.role === "USER") {
-            router.replace('/');
+            router.replace("/");
           }
         }
       }

@@ -8,13 +8,19 @@ import { MenuProps } from "antd";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { logout } from "@/lib/utils";
+import { jwtDecode } from "jwt-decode";
+import { TokenPayload } from "@/models/user/TokenPayload";
 const Header: React.FC = () => {
   const [token, setToken] = useState("");
   const router = useRouter()
-  const userName = "John Doe";
+  const [userName, setUserName] = useState<string>('')
+  const [avatar, setAvatar] = useState<string>('')
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
+      const decoded = jwtDecode<TokenPayload>(access_token);
+      setUserName(decoded.email)
+      setAvatar(decoded.avatar);
       setToken(access_token);
     }
   }, []);
@@ -65,7 +71,7 @@ const Header: React.FC = () => {
         {token ? (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Space className="cursor-pointer">
-              <Avatar icon={<UserOutlined />} />
+              <Avatar src={avatar}/>
               <span className="text-gray-700">{userName}</span>
             </Space>
           </Dropdown>

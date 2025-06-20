@@ -6,7 +6,7 @@ import {
   sendPasswordEmail,
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
-
+import { Role } from "../models";
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 interface LoginResponse {
