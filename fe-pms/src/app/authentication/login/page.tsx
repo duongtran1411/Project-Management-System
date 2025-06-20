@@ -13,14 +13,11 @@ import { useRouter } from "next/navigation";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
-import { User } from "@/models/user/User";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [userProfile, setUserProfile] = useState<User>();
   const router = useRouter();
-  
 
   //login
   const onFinish = async () => {
