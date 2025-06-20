@@ -100,7 +100,9 @@ export default function Page() {
       
       <Form.Item
         name="email"
-        rules={[{ required: true, message: "Please input your email!" }]}>
+        rules={[{ required: true, message: "Please input your email!" },
+           { type: "email", message: "Email must be include @example.com!" }
+        ]}>
         <Input
           prefix={<UserOutlined />}
           placeholder="Email"
