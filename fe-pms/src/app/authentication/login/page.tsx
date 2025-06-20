@@ -57,9 +57,9 @@ export default function Page() {
       }
 
       const response = await loginGoogle(credential);
-      if (response) {
-        const token = response.access_token;
-        const refresh_token = response.refresh_token;
+      if (response.success) {
+        const token = response.data.access_token;
+        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (token) {
