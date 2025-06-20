@@ -6,8 +6,7 @@ import {
   sendPasswordEmail,
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
-import { Role } from "../models";
-import roleService from "./role.service";
+
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 interface LoginResponse {
@@ -53,7 +52,7 @@ export class AuthService {
     user.lastLogin = new Date();
     await user.save();
     // 6. Trả về JWT
-    const access_token = await this.generateToken(user);
+    const access_token = this.generateToken(user);
     const refresh_token = this.generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
@@ -72,7 +71,7 @@ export class AuthService {
         throw new Error("Invalid refresh token");
       }
 
-      const token = await this.generateToken(user);
+      const token = this.generateToken(user);
       return { token };
     } catch (error) {
       throw new Error("Invalid refresh token");
@@ -108,7 +107,7 @@ export class AuthService {
     user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
-    const access_token = await this.generateToken(user);
+    const access_token = this.generateToken(user);
     const refresh_token = this.generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
@@ -118,17 +117,12 @@ export class AuthService {
     };
   }
 
-  private async generateToken(user: IUser): Promise<string> {
-    let roleName: string = '';
-    if(!user.role){
-      throw new Error("not found role of user")
-    }
-    roleName = await roleService.getRoleById(user.role)
+  private generateToken(user: IUser): string {
     return jwt.sign(
       {
         userId: (user._id as any).toString(),
         email: user.email,
-        role: roleName,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "30d" }

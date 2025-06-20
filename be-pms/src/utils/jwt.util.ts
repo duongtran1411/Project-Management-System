@@ -5,6 +5,7 @@ interface TokenPayload {
   userId: string;
   email: string;
   role: string;
+  avatar?: string;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
@@ -17,6 +18,7 @@ export const generateToken = (user: IUser): string => {
       typeof user.role === "string"
         ? user.role
         : (user.role as any)?.name || (user.role as any)?.toString() || "",
+    avatar: user.avatar,
   };
 
   return jwt.sign(payload, JWT_SECRET, {
@@ -36,6 +38,7 @@ export const generateRefreshToken = (user: IUser): string => {
       typeof user.role === "string"
         ? user.role
         : (user.role as any)?.name || (user.role as any)?.toString() || "",
+    avatar: user.avatar,
   };
 
   return jwt.sign(payload, JWT_SECRET, {
