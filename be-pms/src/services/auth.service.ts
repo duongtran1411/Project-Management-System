@@ -36,17 +36,15 @@ export class AuthService {
         verified: true,
       });
       isNewUser = true;
-    }
-    if (!user.isActive) {
-      throw new Error("Account is deactivated");
-    }
-    // 4. Nếu là user mới, gửi email mật khẩu
-    if (isNewUser) {
+      // 4. Chỉ gửi email mật khẩu khi tạo user mới lần đầu
       await sendPasswordEmail(
         user.email,
         user.fullName || user.name,
         tempPassword
       );
+    }
+    if (!user.isActive) {
+      throw new Error("Account is deactivated");
     }
     // 5. Cập nhật lastLogin
     user.lastLogin = new Date();
