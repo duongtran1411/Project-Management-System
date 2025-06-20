@@ -6,7 +6,6 @@ import { GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
 import {
   showErrorToast,
-  showSuccessToast,
 } from "@/components/common/toast/toast";
 import { jwtDecode } from "jwt-decode";
 import { Constants } from "@/lib/constants";
