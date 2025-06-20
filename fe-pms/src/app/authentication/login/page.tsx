@@ -3,21 +3,29 @@ import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { login, loginGoogle } from "@/lib/services/authentication/login";
+import { login, loginGoogle } from "@/lib/services/authentication/auth";
 import {
   showErrorToast,
-  showSuccessToast,
 } from "@/components/common/toast/toast";
+import { jwtDecode } from "jwt-decode";
 import { Constants } from "@/lib/constants";
 import { useRouter } from "next/navigation";
+import { TokenPayload } from "@/models/user/TokenPayload";
+import { Image } from "antd";
+import Spinner from "@/components/common/spinner/spin";
+import { User } from "@/models/user/User";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<User>();
   const router = useRouter();
+  
 
   //login
   const onFinish = async () => {
     debugger;
+    setLoading(true)
     try {
       const response = await login(email, password);
       if (response.success) {
@@ -25,8 +33,16 @@ export default function Page() {
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-        showSuccessToast("đăng nhập thành công");
-        router.replace("/home");
+        if (token) {
+          const decoded = jwtDecode<TokenPayload>(token);
+          if (decoded.role === "ADMIN") {
+            router.replace("/admin");
+          }
+
+          if (decoded.role === "USER") {
+            router.replace("/");
+          }
+        }
       }
     } catch (error: any) {
       const errorMessage =
@@ -34,11 +50,14 @@ export default function Page() {
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
+    }finally{
+      setLoading(false)
     }
   };
 
   //login with google
   const handleLoginGoogle = async (credentialReponse: any) => {
+    setLoading(true);
     try {
       debugger;
       const credential = credentialReponse.credential;
@@ -47,12 +66,21 @@ export default function Page() {
       }
 
       const response = await loginGoogle(credential);
-      if (response) {
+      if (response.success) {
         const token = response.data.access_token;
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-        router.replace("/home");
+        if (token) {
+          const decoded = jwtDecode<TokenPayload>(token);
+          if (decoded.role === "ADMIN") {
+            router.replace("/admin");
+          }
+
+          if (decoded.role === "USER") {
+            router.replace("/");
+          }
+        }
       }
     } catch (error: any) {
       const errorMessage =
@@ -60,17 +88,35 @@ export default function Page() {
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
+    }finally{
+      setLoading(false)
     }
   };
+
+  if(loading){
+    return <Spinner />
+  }
   return (
     <Form
       name="login"
       initialValues={{ remember: true }}
       style={{ maxWidth: 360 }}
       onFinish={onFinish}>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <Image
+          width={300}
+          src="/Project Hub logo.png"
+          alt="Logo"
+          preview={false} 
+          className="mb-4"
+        />
+      </div>
+      
       <Form.Item
         name="email"
-        rules={[{ required: true, message: "Please input your email!" }]}>
+        rules={[{ required: true, message: "Please input your email!" },
+           { type: "email", message: "Email must be include @example.com!" }
+        ]}>
         <Input
           prefix={<UserOutlined />}
           placeholder="Email"
