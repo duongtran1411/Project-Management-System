@@ -6,6 +6,7 @@ import {
   sendPasswordEmail,
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
+import { generateToken, generateRefreshToken } from "../utils/jwt.util";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
@@ -50,8 +51,8 @@ export class AuthService {
     user.lastLogin = new Date();
     await user.save();
     // 6. Trả về JWT
-    const access_token = this.generateToken(user);
-    const refresh_token = this.generateRefreshToken(user);
+    const access_token = generateToken(user);
+    const refresh_token = generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
@@ -69,7 +70,7 @@ export class AuthService {
         throw new Error("Invalid refresh token");
       }
 
-      const token = this.generateToken(user);
+      const token = generateToken(user);
       return { token };
     } catch (error) {
       throw new Error("Invalid refresh token");
@@ -105,38 +106,14 @@ export class AuthService {
     user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
-    const access_token = this.generateToken(user);
-    const refresh_token = this.generateRefreshToken(user);
+    const access_token = generateToken(user);
+    const refresh_token = generateRefreshToken(user);
     const { password: _, ...userResponse } = user.toObject();
     return {
       user: userResponse,
       access_token,
       refresh_token,
     };
-  }
-
-  private generateToken(user: IUser): string {
-    return jwt.sign(
-      {
-        userId: (user._id as any).toString(),
-        email: user.email,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-  }
-
-  private generateRefreshToken(user: IUser): string {
-    return jwt.sign(
-      {
-        userId: (user._id as any).toString(),
-        email: user.email,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: "90d" }
-    );
   }
 
   async forgotPassword(email: string): Promise<void> {
