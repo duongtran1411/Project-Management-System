@@ -12,14 +12,20 @@ import { Constants } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
+import Spinner from "@/components/common/spinner/spin";
+import { User } from "@/models/user/User";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<User>();
   const router = useRouter();
+  
 
   //login
   const onFinish = async () => {
     debugger;
+    setLoading(true)
     try {
       const response = await login(email, password);
       if (response.success) {
@@ -34,7 +40,7 @@ export default function Page() {
           }
 
           if (decoded.role === "USER") {
-            router.replace("/");
+            router.replace('/');
           }
         }
       }
@@ -44,11 +50,14 @@ export default function Page() {
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
+    }finally{
+      setLoading(false)
     }
   };
 
   //login with google
   const handleLoginGoogle = async (credentialReponse: any) => {
+    setLoading(true);
     try {
       debugger;
       const credential = credentialReponse.credential;
@@ -79,8 +88,14 @@ export default function Page() {
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
+    }finally{
+      setLoading(false)
     }
   };
+
+  if(loading){
+    return <Spinner />
+  }
   return (
     <Form
       name="login"
