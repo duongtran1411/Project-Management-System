@@ -3,7 +3,12 @@ export class Endpoints {
     REFRESH: 'auth/refresh',
     LOGIN: 'auth/login',
     LOGIN_WITH_GOOGLE: 'auth/google-login',
-    GET_USER_BY_ID: (id: string) => `/User/${id}`
+    
   }
+
+  static readonly User = {
+    GET_ALL: 'user'
+  }
+
 
 }
