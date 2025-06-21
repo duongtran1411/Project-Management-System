@@ -6,6 +6,7 @@ import {
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
 import { generateRefreshToken, generateToken } from "../utils/jwt.util";
+import { Role } from "../models";
 
 interface LoginResponse {
   user: Partial<IUser>;
@@ -19,6 +20,7 @@ export class AuthService {
     const googleUser = await verifyGoogleIdToken(idToken);
     // 2. Tìm user theo email
     let user = await User.findOne({ email: googleUser.email });
+    let roleDefault = await Role.findOne({name:{$eq : 'USER'}})
     let isNewUser = false;
     let tempPassword = "";
     if (!user) {
@@ -31,6 +33,7 @@ export class AuthService {
         avatar: googleUser.picture,
         status: "ACTIVE",
         verified: true,
+        role:roleDefault?._id
       });
       isNewUser = true;
       // 4. Chỉ gửi email mật khẩu khi tạo user mới lần đầu
