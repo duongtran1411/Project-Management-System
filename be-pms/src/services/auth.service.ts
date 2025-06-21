@@ -6,6 +6,7 @@ import {
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
 import { generateRefreshToken, generateToken } from "../utils/jwt.util";
+import { Role } from "../models";
 
 interface LoginResponse {
   user: Partial<IUser>;
@@ -18,9 +19,10 @@ export class AuthService {
     // 1. Xác thực token với Google
     const googleUser = await verifyGoogleIdToken(idToken);
     // 2. Tìm user theo email
-    let user = await User.findOne({ email: googleUser.email });
+    let user = await User.findOne({ email: googleUser.email }).populate("role");
     let isNewUser = false;
     let tempPassword = "";
+    let defaultRole = await Role.findOne({ name: "USER" });
     if (!user) {
       // 3. Nếu chưa có user, tạo user mới với mật khẩu random
       tempPassword = generateRandomPassword();
@@ -31,6 +33,7 @@ export class AuthService {
         avatar: googleUser.picture,
         status: "ACTIVE",
         verified: true,
+        role: defaultRole?._id, // Chỉ lưu ObjectId của role
       });
       isNewUser = true;
       // 4. Chỉ gửi email mật khẩu khi tạo user mới lần đầu
@@ -42,10 +45,12 @@ export class AuthService {
     // 5. Cập nhật lastLogin
     user.lastLogin = new Date();
     await user.save();
-    // 6. Trả về JWT
-    const access_token = generateToken(user);
-    const refresh_token = generateRefreshToken(user);
-    const { password: _, ...userResponse } = user.toObject();
+    // 6. Populate role để đảm bảo có đầy đủ thông tin role
+    user = await User.findById(user._id).populate("role");
+    // 7. Trả về JWT
+    const access_token = generateToken(user as IUser);
+    const refresh_token = generateRefreshToken(user as IUser);
+    const { password: _, ...userResponse } = user?.toObject() || {};
     return {
       user: userResponse,
       access_token,
@@ -81,9 +86,11 @@ export class AuthService {
     user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
-    const access_token = generateToken(user);
-    const refresh_token = generateRefreshToken(user);
-    const { password: _, ...userResponse } = user.toObject();
+    // Populate role để đảm bảo có đầy đủ thông tin role
+    const populatedUser = await User.findById(user._id).populate("role");
+    const access_token = generateToken(populatedUser as IUser);
+    const refresh_token = generateRefreshToken(populatedUser as IUser);
+    const { password: _, ...userResponse } = populatedUser?.toObject() || {};
     return {
       user: userResponse,
       access_token,
