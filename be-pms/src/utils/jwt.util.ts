@@ -3,6 +3,7 @@ import { IUser } from "../models/user.model";
 
 interface TokenPayload {
   userId: string;
+  fullname: string;
   email: string;
   role: string;
   avatar?: string;
@@ -13,6 +14,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 export const generateToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
+    fullname: user.fullName,
     email: user.email,
     role:
       typeof user.role === "string"
@@ -33,6 +35,7 @@ export const verifyToken = (token: string): TokenPayload => {
 export const generateRefreshToken = (user: IUser): string => {
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
+    fullname: user.fullName,
     email: user.email,
     role:
       typeof user.role === "string"
