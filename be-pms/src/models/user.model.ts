@@ -4,7 +4,6 @@ export interface IUser extends Document {
   fullName: string;
   email: string;
   password: string;
-  name: string;
   avatar?: string;
   phone?: string;
   status: "ACTIVE" | "INACTIVE" | "DELETED";
