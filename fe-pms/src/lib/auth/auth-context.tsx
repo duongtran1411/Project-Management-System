@@ -26,9 +26,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (decoded.role === "USER") {
           router.replace("/");
         }
-      } else {
-        router.replace("/");
       }
+      // else {
+      //   router.replace("/");
+      // }
     };
 
     checkAuth();
