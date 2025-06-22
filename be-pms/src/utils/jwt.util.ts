@@ -3,6 +3,7 @@ import { IUser } from "../models/user.model";
 
 interface TokenPayload {
   userId: string;
+  fullname: string;
   email: string;
   role: string;
   avatar?: string;
@@ -11,13 +12,24 @@ interface TokenPayload {
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 export const generateToken = (user: IUser): string => {
+  let roleName = "";
+  if (user.role) {
+    if (typeof user.role === "object" && user.role !== null) {
+      if ("name" in user.role) {
+        roleName = (user.role as any).name;
+      } else {
+        roleName = (user.role as any).toString();
+      }
+    } else {
+      roleName = (user.role as any).toString();
+    }
+  }
+
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
+    fullname: user.fullName,
     email: user.email,
-    role:
-      typeof user.role === "string"
-        ? user.role
-        : (user.role as any)?.name || (user.role as any)?.toString() || "",
+    role: roleName,
     avatar: user.avatar,
   };
 
@@ -31,13 +43,24 @@ export const verifyToken = (token: string): TokenPayload => {
 };
 
 export const generateRefreshToken = (user: IUser): string => {
+  let roleName = "";
+  if (user.role) {
+    if (typeof user.role === "object" && user.role !== null) {
+      if ("name" in user.role) {
+        roleName = (user.role as any).name;
+      } else {
+        roleName = (user.role as any).toString();
+      }
+    } else {
+      roleName = (user.role as any).toString();
+    }
+  }
+
   const payload: TokenPayload = {
     userId: (user._id as any).toString(),
+    fullname: user.fullName,
     email: user.email,
-    role:
-      typeof user.role === "string"
-        ? user.role
-        : (user.role as any)?.name || (user.role as any)?.toString() || "",
+    role: roleName,
     avatar: user.avatar,
   };
 

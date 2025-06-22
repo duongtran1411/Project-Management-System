@@ -2,34 +2,6 @@ import { Request, Response } from "express";
 import authService from "../services/auth.service";
 
 export class AuthController {
-  async refreshToken(req: Request, res: Response) {
-    try {
-      const { refreshToken } = req.body;
-
-      if (!refreshToken) {
-        return res.status(400).json({
-          success: false,
-          message: "Please provide refresh token",
-          statusCode: 400,
-        });
-      }
-
-      const result = await authService.refreshToken(refreshToken);
-
-      res.status(200).json({
-        success: true,
-        data: result,
-        statusCode: 200,
-      });
-    } catch (error: any) {
-      res.status(401).json({
-        success: false,
-        message: error.message || "Token refresh failed",
-        statusCode: 401,
-      });
-    }
-  }
-
   async googleLogin(req: Request, res: Response) {
     try {
       const { idToken } = req.body;
