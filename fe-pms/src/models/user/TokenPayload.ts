@@ -1,6 +1,6 @@
 export interface TokenPayload{
     userId: string,
-    fullName:string,
+    fullname:string,
     email:string,
     role: string,
     avatar: string,
