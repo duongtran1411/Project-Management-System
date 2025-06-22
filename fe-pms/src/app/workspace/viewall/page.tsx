@@ -67,7 +67,7 @@ const columns: TableProps<DataType>["columns"] = [
     title: "Name",
     dataIndex: "name",
     key: "name",
-    render: (text: string, record: any) => (
+    render: (text: string, record) => (
       <div className="flex items-center space-x-2">
         <img src={record.logo} alt="logo" className="w-6 h-6 rounded-sm" />
         <span className="text-blue-600 font-medium">{text}</span>
@@ -88,7 +88,7 @@ const columns: TableProps<DataType>["columns"] = [
     title: "Lead",
     dataIndex: "lead",
     key: "lead",
-    render: (lead: any) => (
+    render: (lead) => (
       <div className="flex items-center space-x-2">
         <Avatar style={{ backgroundColor: lead.color }}>{lead.avatar}</Avatar>
         <span>{lead.name}</span>
@@ -116,7 +116,7 @@ const ProjectTable = () => {
         <Input placeholder="Search projects" className="w-64" />
       </div>
 
-      <Table
+      <Table<DataType>
         columns={columns}
         dataSource={data}
         pagination={false}
