@@ -1,14 +1,12 @@
 import User, { IUser } from "../models/user.model";
-import jwt from "jsonwebtoken";
 import { verifyGoogleIdToken } from "../utils/google-auth.util";
 import {
   sendForgotPasswordEmail,
   sendPasswordEmail,
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
+import { generateRefreshToken, generateToken } from "../utils/jwt.util";
 import { Role } from "../models";
-import roleService from "./role.service";
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 interface LoginResponse {
   user: Partial<IUser>;
@@ -22,65 +20,44 @@ export class AuthService {
     const googleUser = await verifyGoogleIdToken(idToken);
     // 2. Tìm user theo email
     let user = await User.findOne({ email: googleUser.email });
-    let roleDefault = await Role.findOne({name : {$eq : "USER"}})
+    let roleDefault = await Role.findOne({name:{$eq : 'USER'}})
     let isNewUser = false;
     let tempPassword = "";
+    let defaultRole = await Role.findOne({ name: "USER" });
     if (!user) {
       // 3. Nếu chưa có user, tạo user mới với mật khẩu random
       tempPassword = generateRandomPassword();
       user = await User.create({
-        name: googleUser.name,
         fullName: googleUser.name,
         email: googleUser.email,
         password: tempPassword,
         avatar: googleUser.picture,
         status: "ACTIVE",
         verified: true,
-        role: roleDefault?._id
+        role: roleDefault?._id, // Chỉ lưu ObjectId của role
       });
       isNewUser = true;
+      // 4. Chỉ gửi email mật khẩu khi tạo user mới lần đầu
+      await sendPasswordEmail(user.email, user.fullName, tempPassword);
     }
     if (!user.isActive) {
       throw new Error("Account is deactivated");
     }
-    // 4. Nếu là user mới, gửi email mật khẩu
-    if (isNewUser) {
-      await sendPasswordEmail(
-        user.email,
-        user.fullName || user.name,
-        tempPassword
-      );
-    }
     // 5. Cập nhật lastLogin
     user.lastLogin = new Date();
     await user.save();
-    // 6. Trả về JWT
-    const access_token = await this.generateToken(user);
-    const refresh_token = this.generateRefreshToken(user);
-    const { password: _, ...userResponse } = user.toObject();
+    // 6. Populate role để đảm bảo có đầy đủ thông tin role
+    user = await User.findById(user._id).populate("role");
+    // 7. Trả về JWT
+    const access_token = generateToken(user as IUser);
+    const refresh_token = generateRefreshToken(user as IUser);
+    const { password: _, ...userResponse } = user?.toObject() || {};
     return {
       user: userResponse,
       access_token,
       refresh_token,
     };
   }
-
-  async refreshToken(refreshToken: string): Promise<{ token: string }> {
-    try {
-      const decoded = jwt.verify(refreshToken, JWT_SECRET) as any;
-      const user = await User.findById(decoded.userId);
-
-      if (!user || !user.isActive) {
-        throw new Error("Invalid refresh token");
-      }
-
-      const token = await this.generateToken(user);
-      return { token };
-    } catch (error) {
-      throw new Error("Invalid refresh token");
-    }
-  }
-
   async loginWithEmail(
     email: string,
     password: string
@@ -110,45 +87,17 @@ export class AuthService {
     user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
-    const access_token = await this.generateToken(user);
-    const refresh_token = this.generateRefreshToken(user);
-    const { password: _, ...userResponse } = user.toObject();
+    // Populate role để đảm bảo có đầy đủ thông tin role
+    const populatedUser = await User.findById(user._id).populate("role");
+    const access_token = generateToken(populatedUser as IUser);
+    const refresh_token = generateRefreshToken(populatedUser as IUser);
+    const { password: _, ...userResponse } = populatedUser?.toObject() || {};
     return {
       user: userResponse,
       access_token,
       refresh_token,
     };
   }
-
-  private async generateToken(user: IUser): Promise<string> {
-    let roleName: string = '';
-    if(!user.role){
-      throw new Error("not found role of user")
-    }
-    roleName = await roleService.getRoleById(user.role)
-    return jwt.sign(
-      {
-        userId: (user._id as any).toString(),
-        email: user.email,
-        role: roleName,
-      },
-      JWT_SECRET,
-      { expiresIn: "30d" }
-    );
-  }
-
-  private generateRefreshToken(user: IUser): string {
-    return jwt.sign(
-      {
-        userId: (user._id as any).toString(),
-        email: user.email,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: "90d" }
-    );
-  }
-
   async forgotPassword(email: string): Promise<void> {
     const user = await User.findOne({ email });
     if (!user) throw new Error("Không tìm thấy người dùng với email này");
@@ -156,11 +105,7 @@ export class AuthService {
     user.password = tempPassword;
     user.failedLoginAttempts = 0;
     await user.save();
-    await sendForgotPasswordEmail(
-      user.email,
-      user.fullName || user.name,
-      tempPassword
-    );
+    await sendForgotPasswordEmail(user.email, user.fullName, tempPassword);
   }
 
   async changePassword(

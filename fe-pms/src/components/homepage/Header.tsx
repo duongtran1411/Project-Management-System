@@ -1,35 +1,40 @@
 "use client";
 import React from "react";
 import { Button, Avatar, Space, Dropdown, Menu } from "antd";
-import { UserOutlined } from "@ant-design/icons";
 import { Constants } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { MenuProps } from "antd";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { logout } from "@/lib/utils";
+import { jwtDecode } from "jwt-decode";
+import { TokenPayload } from "@/models/user/TokenPayload";
 const Header: React.FC = () => {
   const [token, setToken] = useState("");
-  const router = useRouter()
-  const userName = "John Doe";
+  const router = useRouter();
+  const [userName, setUserName] = useState<string>("");
+  const [avatar, setAvatar] = useState<string>("");
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
+      const decoded = jwtDecode<TokenPayload>(access_token);
+      setUserName(decoded.fullname)
+      setAvatar(decoded.avatar);
       setToken(access_token);
     }
   }, []);
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "workspace":
-        router.push('/workspace')
+        router.push("/workspace");
         console.log("Go to My Workspace");
         break;
       case "profile":
-        router.push('/profile')
+        router.push("/profile");
         console.log("Go to Profile");
         break;
       case "logout":
-        logout()
+        logout();
         console.log("Logging out...");
         break;
     }
@@ -65,7 +70,7 @@ const Header: React.FC = () => {
         {token ? (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Space className="cursor-pointer">
-              <Avatar icon={<UserOutlined />} />
+              <Avatar src={avatar} />
               <span className="text-gray-700">{userName}</span>
             </Space>
           </Dropdown>

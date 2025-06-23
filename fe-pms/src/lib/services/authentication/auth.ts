@@ -24,7 +24,11 @@ export const login = async (email: string, password: string) => {
             email, password
         })
 
-        if(response.status === 200){
+        if(response.data.success){
+            return response.data;
+        }
+
+        if(!response.data.success){
             return response.data;
         }
     } catch (error:any) {

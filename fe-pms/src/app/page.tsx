@@ -5,9 +5,21 @@ import React, { useState } from "react";
 import { Typography, Input, Button, Space } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import ImageAnimation from "@/components/homepage/ImageAnimation";
+import { useEffect } from "react";
+import { showSuccessToast } from "@/components/common/toast/toast";
+import { Constants } from "@/lib/constants";
 const { Text } = Typography;
 export default function Page() {
   const [site, setSite] = useState("fpt-team-mdoh239h");
+   const [loginSuccess, setLoginSuccess] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
+    if (token && !loginSuccess) {
+      showSuccessToast("Đăng nhập thành công!");
+      setLoginSuccess(true);
+    }
+  }, [loginSuccess]);
   return (
     <div className="flex h-screen">
       <div className="flex-1 overflow-auto bg-white">

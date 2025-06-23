@@ -53,43 +53,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <li>
                 <button className={getButtonClass("/admin/calendar")} onClick={() => router.push("/admin/calendar")}>
                   <FaRegCalendarAlt />
-                  <span className="flex-1 text-left">Calendar</span>
+                  <span className="flex-1 text-left">Email Template</span>
                 </button>
               </li>
               {/* Tasks (dropdown) */}
               <li>
                 <button className={getButtonClass("/admin/tasks")} onClick={() => router.push("/admin/tasks")}>
                   <FaRegListAlt />
-                  <span className="flex-1 text-left">Tasks</span>
+                  <span className="flex-1 text-left">Log System</span>
                   <HiOutlineChevronDown />
                 </button>
               </li>
-              {/* Forms (dropdown) */}
               <li>
-                <button className={getButtonClass("/admin/forms")} onClick={() => router.push("/admin/forms")}>
-                  <FaWpforms />
-                  <span className="flex-1 text-left">Forms</span>
-                  <HiOutlineChevronDown />
-                </button>
-              </li>
-              {/* Tables (dropdown) */}
-              <li>
-                <button className={getButtonClass("/admin/tables")} onClick={() => router.push("/admin/tables")}>
-                  <FaTable />
-                  <span className="flex-1 text-left">Tables</span>
-                  <HiOutlineChevronDown />
-                </button>
-              </li>
-              {/* Pages (dropdown) */}
-              <li>
-                <button className={getButtonClass("/admin/pages")} onClick={() => router.push("/admin/pages")}>
-                  <FaWpforms />
-                  <span className="flex-1 text-left">Pages</span>
+                <button className={getButtonClass("/admin/tasks")} onClick={() => router.push("/admin/tasks")}>
+                  <FaRegListAlt />
+                  <span className="flex-1 text-left">Grant Permission</span>
                   <HiOutlineChevronDown />
                 </button>
               </li>
             </ul>
-
           </nav>
         </div>
       </div>
