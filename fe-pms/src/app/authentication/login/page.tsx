@@ -1,7 +1,7 @@
 "use client";
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
 import { showErrorToast } from "@/components/common/toast/toast";
@@ -11,16 +11,15 @@ import { useRouter } from "next/navigation";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
+import { useSetAtom } from "jotai";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [errorLogin, setErrorLogin] = useState<string>("");
   const router = useRouter();
-
   //login
   const onFinish = async () => {
-    debugger;
     setLoading(true);
     try {
       const response = await login(email, password);
@@ -31,18 +30,16 @@ export default function Page() {
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
+          
           if (decoded.role === "ADMIN") {
             router.replace("/admin");
-            return;
           }
 
           if (decoded.role === "USER") {
             router.replace("/");
-            return;
           }
         }
       } else {
-        // Xóa token cũ khi login thất bại
         localStorage.removeItem(Constants.API_TOKEN_KEY);
         localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
         
@@ -52,8 +49,7 @@ export default function Page() {
             : response?.message || "Đăng nhập thất bại"
         showErrorToast(message)
       }
-    } catch (error: any) {
-      // Xóa token cũ khi có lỗi
+    } catch (error:any) {
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
       
@@ -71,7 +67,6 @@ export default function Page() {
   const handleLoginGoogle = async (credentialReponse: any) => {
     setLoading(true);
     try {
-      debugger;
       const credential = credentialReponse.credential;
       if (!credential) {
         showErrorToast("Tài khoản email không tồn tại");

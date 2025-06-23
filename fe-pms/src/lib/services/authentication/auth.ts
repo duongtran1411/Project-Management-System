@@ -29,7 +29,7 @@ export const login = async (email: string, password: string) => {
         }
 
         if(!response.data.success){
-            return response.data.message;
+            return response.data;
         }
     } catch (error:any) {
         if(error){
