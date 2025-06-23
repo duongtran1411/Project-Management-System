@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import mongoose from "mongoose";
 
-export class UserController {
-  async create(req: Request, res: Response) {
+class UserController {
+  create = async (req: Request, res: Response) => {
     try {
       const newUser = new User(req.body);
       const savedUser = await newUser.save();
@@ -11,9 +11,9 @@ export class UserController {
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async findAll(req: Request, res: Response) {
+  findAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const users = await User.find({ status: { $ne: "DELETED" } }).select(
         "-password"
@@ -22,37 +22,31 @@ export class UserController {
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async findOne(req: Request, res: Response) {
+  findOne = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       if (!mongoose.isValidObjectId(id)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid user ID" });
+        res.status(400).json({ success: false, message: "Invalid user ID" });
       }
 
       const user = await User.findById(id).select("-password");
       if (!user || user.status === "DELETED") {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        res.status(404).json({ success: false, message: "User not found" });
       }
 
       res.json({ success: true, data: user });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async update(req: Request, res: Response) {
+  update = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       if (!mongoose.isValidObjectId(id)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid user ID" });
+        res.status(400).json({ success: false, message: "Invalid user ID" });
       }
 
       const updatedUser = await User.findByIdAndUpdate(id, req.body, {
@@ -61,24 +55,20 @@ export class UserController {
       }).select("-password");
 
       if (!updatedUser) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        res.status(404).json({ success: false, message: "User not found" });
       }
 
       res.json({ success: true, data: updatedUser });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async delete(req: Request, res: Response) {
+  delete = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       if (!mongoose.isValidObjectId(id)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid user ID" });
+        res.status(400).json({ success: false, message: "Invalid user ID" });
       }
 
       const deletedUser = await User.findByIdAndUpdate(
@@ -88,24 +78,22 @@ export class UserController {
       );
 
       if (!deletedUser) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        res.status(404).json({ success: false, message: "User not found" });
       }
 
       res.json({ success: true, message: "User deleted successfully" });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async updateUserStatus(req: Request, res: Response) {
+  updateUserStatus = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { status } = req.body;
 
       if (!["ACTIVE", "INACTIVE", "DELETED"].includes(status)) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Invalid status. Must be 'ACTIVE', 'INACTIVE', or 'DELETED'",
         });
@@ -118,7 +106,7 @@ export class UserController {
       ).select("-password");
 
       if (!updatedUser) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: "User not found",
         });
@@ -135,7 +123,7 @@ export class UserController {
         message: error.message,
       });
     }
-  }
+  };
 }
 
 export default new UserController();

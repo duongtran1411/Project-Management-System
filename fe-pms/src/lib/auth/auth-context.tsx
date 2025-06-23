@@ -34,7 +34,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    
     if (!token || !isTokenValid(token)) {
       console.log("path", currentPath);
-      console.log("chạy vào không có token ở auth");
       setIsLoggedIn(false);
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);

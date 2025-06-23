@@ -17,9 +17,8 @@ export const authenticate = async (
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      return res
-        .status(401)
-        .json({ message: "No token, authorization denied" });
+      res.status(401).json({ message: "No token, authorization denied" });
+      return;
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as any;
@@ -28,11 +27,13 @@ export const authenticate = async (
       .populate("role");
 
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      res.status(401).json({ message: "User not found" });
+      return;
     }
 
     if (!user.isActive) {
-      return res.status(401).json({ message: "Account is deactivated" });
+      res.status(401).json({ message: "Account is deactivated" });
+      return;
     }
 
     req.user = user;
@@ -46,11 +47,11 @@ export const authenticate = async (
 export const authorize = (role: string) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: "Authorization required" });
+      res.status(401).json({ message: "Authorization required" });
     }
 
     if (req.user.role.name !== role) {
-      return res.status(403).json({
+      res.status(403).json({
         message: "You don't have permission to perform this action",
       });
     }

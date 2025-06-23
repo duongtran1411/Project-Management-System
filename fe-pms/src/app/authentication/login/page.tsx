@@ -22,7 +22,7 @@ export default function Page() {
   const onFinish = async () => {
     setLoading(true);
     try {
-      debugger
+      // debugger
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
@@ -31,7 +31,7 @@ export default function Page() {
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
-          
+
           if (decoded.role === "ADMIN") {
             router.replace("/admin");
           }
@@ -43,17 +43,17 @@ export default function Page() {
       } else {
         localStorage.removeItem(Constants.API_TOKEN_KEY);
         localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
-        
+
         const message =
           typeof response?.data?.message === "string"
             ? response.data.message
-            : response?.message || "Đăng nhập thất bại"
-        showErrorToast(message)
+            : response?.message || "Đăng nhập thất bại";
+        showErrorToast(message);
       }
-    } catch (error:any) {
+    } catch (error: any) {
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
-      
+
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
@@ -94,18 +94,18 @@ export default function Page() {
         // Xóa token cũ khi login thất bại
         localStorage.removeItem(Constants.API_TOKEN_KEY);
         localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
-        
+
         const message =
           typeof response?.data?.message === "string"
             ? response.data.message
-            : response?.message || "Đăng nhập thất bại"
-        showErrorToast(message)
+            : response?.message || "Đăng nhập thất bại";
+        showErrorToast(message);
       }
     } catch (error: any) {
       // Xóa token cũ khi có lỗi
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
-      
+
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
@@ -124,7 +124,8 @@ export default function Page() {
       name="login"
       initialValues={{ remember: true }}
       style={{ maxWidth: 360 }}
-      onFinish={onFinish}>
+      onFinish={onFinish}
+    >
       <div style={{ display: "flex", justifyContent: "center" }}>
         <Image
           width={300}
@@ -140,7 +141,8 @@ export default function Page() {
         rules={[
           { required: true, message: "Please input your email!" },
           { type: "email", message: "Email must be include @example.com!" },
-        ]}>
+        ]}
+      >
         <Input
           prefix={<UserOutlined />}
           placeholder="Email"
@@ -149,7 +151,8 @@ export default function Page() {
       </Form.Item>
       <Form.Item
         name="password"
-        rules={[{ required: true, message: "Please input your Password!" }]}>
+        rules={[{ required: true, message: "Please input your Password!" }]}
+      >
         <Input
           prefix={<LockOutlined />}
           type="password"
