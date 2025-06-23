@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Menu } from "antd";
 import {
     AppstoreOutlined,
@@ -14,7 +15,6 @@ import {
     CheckSquareOutlined,
     CodeOutlined,
 } from "@ant-design/icons";
-
 
 const menuItems = [
     { key: "Summary", label: "Summary", icon: <AppstoreOutlined /> },
@@ -31,6 +31,7 @@ const menuItems = [
 
 const HeaderProjectManagement = () => {
     const [selectedKey, setSelectedKey] = useState("Board");
+    const router = useRouter();
 
     return (
         <div className="w-full px-4 pt-3 bg-white shadow">
@@ -49,7 +50,10 @@ const HeaderProjectManagement = () => {
             <Menu
                 mode="horizontal"
                 selectedKeys={[selectedKey]}
-                onClick={(e) => setSelectedKey(e.key)}
+                onClick={(e) => {
+                    setSelectedKey(e.key);
+                    router.push(`/workspace/project-management/${e.key.toLowerCase().replace(/\s+/g, "-")}`);
+                }}
                 className="w-full bg-transparent border-none [&_.ant-menu-item]:pt-[6px] [&_.ant-menu-item]:pb-[10px]"
                 overflowedIndicator={null}
                 items={menuItems.map((item) => ({
@@ -62,7 +66,6 @@ const HeaderProjectManagement = () => {
                     ),
                 }))}
             />
-
         </div>
     );
 };
