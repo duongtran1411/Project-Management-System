@@ -41,7 +41,11 @@ const items: MenuProps["items"] = [
     children: [
       {
         key: "recent-projects",
-        label: <span>📊 Project Management</span>,
+        label: (
+          <Link href="/workspace/project-management">
+            <span>📊 Project Management</span>
+          </Link>
+        ),
       },
       {
         label: (
