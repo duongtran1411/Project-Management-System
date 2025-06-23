@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (decoded.role === "ADMIN" && !currentPath.startsWith("/admin")) {
       router.replace("/admin");
     }
-    else if (decoded.role === "USER" && currentPath.startsWith("/admin")) {
+    if (decoded.role === "USER" && currentPath.startsWith("/")) {
       router.replace("/");
     }
 

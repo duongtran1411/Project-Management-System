@@ -13,20 +13,16 @@ export default function RootLayout({
     setCollapsed(!colapsed);
   };
   return (
-    <html lang="en">
-      <body>
-        <HeaderWorkSpace onCollapse={onCollapse} />
-        <div>
-          <div className="flex h-screen">
-            <div className={`w-max bg-gray-100 w-max`}>
-              <MenuWorkSpace colapsed={colapsed} />
-            </div>
-            <div className="flex-1 p-4 overflow-y-auto bg-white">
-              {children}
-            </div>
+    <div>
+      <HeaderWorkSpace onCollapse={onCollapse} />
+      <div>
+        <div className="flex h-screen">
+          <div className={`w-max bg-gray-100 w-max`}>
+            <MenuWorkSpace colapsed={colapsed} />
           </div>
+          <div className="flex-1 p-4 overflow-y-auto bg-white">{children}</div>
         </div>
-      </body>
-    </html>
+      </div>
+    </div>
   );
 }

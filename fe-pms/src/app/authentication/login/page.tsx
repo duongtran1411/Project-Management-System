@@ -22,6 +22,7 @@ export default function Page() {
   const onFinish = async () => {
     setLoading(true);
     try {
+      debugger
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
