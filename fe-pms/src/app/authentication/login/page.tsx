@@ -68,7 +68,6 @@ export default function Page() {
   const handleLoginGoogle = async (credentialReponse: any) => {
     setLoading(true);
     try {
-
       const credential = credentialReponse.credential;
       if (!credential) {
         showErrorToast("Tài khoản email không tồn tại");
