@@ -3,16 +3,16 @@ import EmailTemplate from "../models/email.template.model";
 import mongoose from "mongoose";
 
 export class EmailTemplateController {
-  async create(req: Request, res: Response) {
+  create = async (req: Request, res: Response): Promise<void> => {
     try {
       const template = await EmailTemplate.create(req.body);
       res.status(201).json({ success: true, data: template });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async getAll(req: Request, res: Response) {
+  getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const templates = await EmailTemplate.find({
         status: { $ne: "DELETED" },
@@ -21,9 +21,9 @@ export class EmailTemplateController {
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async getById(req: Request, res: Response) {
+  getById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const template = await EmailTemplate.findOne({
@@ -31,7 +31,7 @@ export class EmailTemplateController {
         status: { $ne: "DELETED" },
       });
       if (!template) {
-        return res
+        res
           .status(404)
           .json({ success: false, message: "Email Template not found" });
       }
@@ -39,15 +39,15 @@ export class EmailTemplateController {
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async update(req: Request, res: Response) {
+  update = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
       const existing = await EmailTemplate.findById(id);
       if (!existing || existing.status === "DELETED") {
-        return res
+        res
           .status(404)
           .json({ success: false, message: "Email Template not found" });
       }
@@ -61,14 +61,14 @@ export class EmailTemplateController {
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
     }
-  }
+  };
 
-  async delete(req: Request, res: Response) {
+  delete = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
       if (!mongoose.isValidObjectId(id)) {
-        return res
+        res
           .status(400)
           .json({ success: false, message: "Invalid email template ID" });
       }
@@ -80,7 +80,7 @@ export class EmailTemplateController {
       );
 
       if (!deletedEmailTemplate) {
-        return res
+        res
           .status(404)
           .json({ success: false, message: "Email Template not found" });
       }
@@ -88,7 +88,7 @@ export class EmailTemplateController {
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
-  }
+  };
 }
 
 export default new EmailTemplateController();
