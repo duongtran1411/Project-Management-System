@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import authService from "../services/auth.service";
 
 export class AuthController {
-  async googleLogin(req: Request, res: Response) {
+  googleLogin = async (req: Request, res: Response): Promise<void> => {
     try {
       const { idToken } = req.body;
       if (!idToken)
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Missing idToken",
           statusCode: 400,
@@ -25,13 +25,13 @@ export class AuthController {
         statusCode: 400,
       });
     }
-  }
+  };
 
-  async login(req: Request, res: Response) {
+  login = async (req: Request, res: Response): Promise<void> => {
     try {
       const { email, password } = req.body;
       if (!email || !password) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Vui lòng nhập email và mật khẩu",
           statusCode: 400,
@@ -54,13 +54,13 @@ export class AuthController {
       }
       res.status(401).json(response);
     }
-  }
+  };
 
-  async forgotPassword(req: Request, res: Response) {
+  forgotPassword = async (req: Request, res: Response): Promise<void> => {
     try {
       const { email } = req.body;
       if (!email) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Vui lòng nhập email",
           statusCode: 400,
@@ -79,13 +79,13 @@ export class AuthController {
         statusCode: 400,
       });
     }
-  }
+  };
 
-  async changePassword(req: Request, res: Response) {
+  changePassword = async (req: Request, res: Response): Promise<void> => {
     try {
       const { email, oldPassword, newPassword } = req.body;
       if (!email || !oldPassword || !newPassword) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: "Thiếu thông tin đổi mật khẩu",
           statusCode: 400,
@@ -99,14 +99,14 @@ export class AuthController {
       });
     } catch (error: any) {
       if (error.message === "Email không tồn tại") {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: error.message,
           statusCode: 404,
         });
       }
       if (error.message === "Mật khẩu cũ không đúng") {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: error.message,
           statusCode: 400,
@@ -118,7 +118,7 @@ export class AuthController {
         statusCode: 500,
       });
     }
-  }
+  };
 }
 
 export default new AuthController();

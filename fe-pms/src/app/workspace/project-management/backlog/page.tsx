@@ -65,8 +65,8 @@ const columns: TableProps<DataType>["columns"] = [
         normalized === "done"
           ? "green"
           : normalized === "in progress"
-          ? "blue"
-          : "gray";
+            ? "blue"
+            : "gray";
 
       return <Tag color={color}>{status}</Tag>;
     },
@@ -81,7 +81,7 @@ const columns: TableProps<DataType>["columns"] = [
     title: "",
     dataIndex: "assignee",
     render: (assignee) => (
-      <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center">
+      <div className="flex items-center justify-center w-8 h-8 text-white bg-purple-600 rounded-full">
         {assignee}
       </div>
     ),
@@ -137,7 +137,7 @@ const data: DataType[] = [
 ];
 
 const overlayContent = (
-  <div className="flex flex-col gap-2 bg-white p-4 ml-2 rounded-md shadow-lg">
+  <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
     <Checkbox value="Option A">Trần Đại Dương</Checkbox>
     <Checkbox value="Option B">Nguyễn Thái Sơn</Checkbox>
     <Checkbox value="Option C">Hoàng Thị Hương Giang</Checkbox>
@@ -147,7 +147,7 @@ const overlayContent = (
 );
 
 const overlayEpic = (
-  <div className="flex flex-col gap-2 bg-white p-4 ml-2 rounded-md shadow-lg">
+  <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
     <Checkbox value="Option A">No Epic</Checkbox>
     <Checkbox value="Option B">SRS Document</Checkbox>
     <Checkbox value="Option C">Project Tracking</Checkbox>
@@ -182,8 +182,8 @@ export default function Backlog() {
     setShowTable(!showTable);
   };
   return (
-    <div className="p-6 bg-white min-h-screen ">
-      <div className="flex items-center gap-3 mb-4  top-0 left-0 right-0">
+    <div className="min-h-screen p-6 bg-white ">
+      <div className="top-0 left-0 right-0 flex items-center gap-3 mb-4">
         {/* Search */}
         <Input
           placeholder="Search"
@@ -218,7 +218,7 @@ export default function Backlog() {
         <div className="flex gap-2">
           <Dropdown overlay={overlayEpic} trigger={["click"]}>
             <Button>
-              <Space className="text-gray-700 font-semibold">
+              <Space className="font-semibold text-gray-700">
                 Epic
                 <DownOutlined />
               </Space>
@@ -231,7 +231,7 @@ export default function Backlog() {
       </div>
 
       <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
-        <div className="flex justify-between items-center bg-gray-100 p-2 rounded-t-md ">
+        <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
           {/* Left */}
           <div className="flex items-center gap-2">
             <Checkbox onChange={onChange} />
@@ -242,24 +242,24 @@ export default function Backlog() {
             )}
 
             <h3 className="font-semibold">SCRUM Sprint 2 </h3>
-            <span className="text-sm text-gray-500 ml-2">
+            <span className="ml-2 text-sm text-gray-500">
               13 Jun – 27 Jun (3 of 30 work items visible)
             </span>
           </div>
           {/* Right */}
           <div className="flex items-center gap-2 ">
             <div className="flex items-center ">
-              <Tag color="default" className="w-6 text-center p-0">
+              <Tag color="default" className="w-6 p-0 text-center">
                 0
               </Tag>
-              <Tag color="blue" className="w-6 text-center p-0">
+              <Tag color="blue" className="w-6 p-0 text-center">
                 0
               </Tag>
-              <Tag color="green" className="w-6 text-center p-0">
+              <Tag color="green" className="w-6 p-0 text-center">
                 0
               </Tag>
             </div>
-            <Button type="default" className="text-gray-600 font-semibold">
+            <Button type="default" className="font-semibold text-gray-600">
               Complete sprint
             </Button>
             <Dropdown
@@ -288,7 +288,7 @@ export default function Backlog() {
 
             <Button
               type="text"
-              className="font-semibold text-gray-600 my-1 w-full flex justify-start p-2"
+              className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
             >
               <span>
                 {" "}
@@ -301,29 +301,29 @@ export default function Backlog() {
 
       {/* Backlog Section */}
       <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
-        <div className="flex justify-between items-center  p-2 rounded-t-md ">
+        <div className="flex items-center justify-between p-2 rounded-t-md ">
           {/* Left */}
           <div className="flex items-center gap-2">
             <Checkbox onChange={onChange} disabled={true} />
             <DownOutlined className="text-sm" />
 
             <h3 className="font-semibold">Backlog </h3>
-            <span className="text-sm text-gray-500 ml-2">(0 work items)</span>
+            <span className="ml-2 text-sm text-gray-500">(0 work items)</span>
           </div>
           {/* Right */}
           <div className="flex items-center gap-2 ">
             <div className="flex items-center ">
-              <Tag color="default" className="w-6 text-center p-0">
+              <Tag color="default" className="w-6 p-0 text-center">
                 0
               </Tag>
-              <Tag color="blue" className="w-6 text-center p-0">
+              <Tag color="blue" className="w-6 p-0 text-center">
                 0
               </Tag>
-              <Tag color="green" className="w-6 text-center p-0">
+              <Tag color="green" className="w-6 p-0 text-center">
                 0
               </Tag>
             </div>
-            <Button type="default" className="text-gray-600 font-semibold">
+            <Button type="default" className="font-semibold text-gray-600">
               Create sprint
             </Button>
             <Dropdown
@@ -343,7 +343,7 @@ export default function Backlog() {
         </div>
         <Button
           type="text"
-          className="font-semibold text-gray-600 my-1 w-full flex justify-start p-2"
+          className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
         >
           <span>
             {" "}
