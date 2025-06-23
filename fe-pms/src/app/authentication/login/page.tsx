@@ -1,32 +1,28 @@
 "use client";
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
-import {
-  showErrorToast,
-} from "@/components/common/toast/toast";
+import { showErrorToast } from "@/components/common/toast/toast";
 import { jwtDecode } from "jwt-decode";
 import { Constants } from "@/lib/constants";
 import { useRouter } from "next/navigation";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
-import { User } from "@/models/user/User";
+import { useSetAtom } from "jotai";
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [userProfile, setUserProfile] = useState<User>();
+  const [errorLogin, setErrorLogin] = useState<string>("");
   const router = useRouter();
-  
-
   //login
   const onFinish = async () => {
-    debugger;
-    setLoading(true)
+    setLoading(true);
     try {
+      debugger
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
@@ -35,6 +31,7 @@ export default function Page() {
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
+          
           if (decoded.role === "ADMIN") {
             router.replace("/admin");
           }
@@ -43,15 +40,27 @@ export default function Page() {
             router.replace("/");
           }
         }
+      } else {
+        localStorage.removeItem(Constants.API_TOKEN_KEY);
+        localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+        
+        const message =
+          typeof response?.data?.message === "string"
+            ? response.data.message
+            : response?.message || "Đăng nhập thất bại"
+        showErrorToast(message)
       }
-    } catch (error: any) {
+    } catch (error:any) {
+      localStorage.removeItem(Constants.API_TOKEN_KEY);
+      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+      
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,10 +68,10 @@ export default function Page() {
   const handleLoginGoogle = async (credentialReponse: any) => {
     setLoading(true);
     try {
-      debugger;
       const credential = credentialReponse.credential;
       if (!credential) {
         showErrorToast("Tài khoản email không tồn tại");
+        return;
       }
 
       const response = await loginGoogle(credential);
@@ -81,20 +90,34 @@ export default function Page() {
             router.replace("/");
           }
         }
+      } else {
+        // Xóa token cũ khi login thất bại
+        localStorage.removeItem(Constants.API_TOKEN_KEY);
+        localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+        
+        const message =
+          typeof response?.data?.message === "string"
+            ? response.data.message
+            : response?.message || "Đăng nhập thất bại"
+        showErrorToast(message)
       }
     } catch (error: any) {
+      // Xóa token cũ khi có lỗi
+      localStorage.removeItem(Constants.API_TOKEN_KEY);
+      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+      
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
 
-  if(loading){
-    return <Spinner />
+  if (loading) {
+    return <Spinner />;
   }
   return (
     <Form
@@ -107,15 +130,16 @@ export default function Page() {
           width={300}
           src="/Project Hub logo.png"
           alt="Logo"
-          preview={false} 
+          preview={false}
           className="mb-4"
         />
       </div>
-      
+
       <Form.Item
         name="email"
-        rules={[{ required: true, message: "Please input your email!" },
-           { type: "email", message: "Email must be include @example.com!" }
+        rules={[
+          { required: true, message: "Please input your email!" },
+          { type: "email", message: "Email must be include @example.com!" },
         ]}>
         <Input
           prefix={<UserOutlined />}

@@ -18,7 +18,7 @@ const Header: React.FC = () => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
       const decoded = jwtDecode<TokenPayload>(access_token);
-      setUserName(decoded.email);
+      setUserName(decoded.fullname)
       setAvatar(decoded.avatar);
       setToken(access_token);
     }

@@ -19,7 +19,8 @@ export class AuthService {
     // 1. Xác thực token với Google
     const googleUser = await verifyGoogleIdToken(idToken);
     // 2. Tìm user theo email
-    let user = await User.findOne({ email: googleUser.email }).populate("role");
+    let user = await User.findOne({ email: googleUser.email });
+    let roleDefault = await Role.findOne({name:{$eq : 'USER'}})
     let isNewUser = false;
     let tempPassword = "";
     let defaultRole = await Role.findOne({ name: "USER" });
@@ -33,7 +34,7 @@ export class AuthService {
         avatar: googleUser.picture,
         status: "ACTIVE",
         verified: true,
-        role: defaultRole?._id, // Chỉ lưu ObjectId của role
+        role: roleDefault?._id, // Chỉ lưu ObjectId của role
       });
       isNewUser = true;
       // 4. Chỉ gửi email mật khẩu khi tạo user mới lần đầu
