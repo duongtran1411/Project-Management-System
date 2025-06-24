@@ -8,18 +8,22 @@ import ImageAnimation from "@/components/homepage/ImageAnimation";
 import { useEffect } from "react";
 import { showSuccessToast } from "@/components/common/toast/toast";
 import { Constants } from "@/lib/constants";
+import { jwtDecode } from "jwt-decode";
+import { TokenPayload } from "@/models/user/TokenPayload";
 const { Text } = Typography;
 export default function Page() {
   const [site, setSite] = useState("fpt-team-mdoh239h");
-   const [loginSuccess, setLoginSuccess] = useState(false);
-
+  const [name, setName] = useState<string>('');
   useEffect(() => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (token && !loginSuccess) {
+    const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
+    if (token && justLoggedIn === 'true') {
+      const decoded = jwtDecode<TokenPayload>(token);
+      setName(decoded.fullname);
       showSuccessToast("Đăng nhập thành công!");
-      setLoginSuccess(true);
+      localStorage.removeItem("justLoggedIn");
     }
-  }, [loginSuccess]);
+  }, []);
   return (
     <div className="flex h-screen">
       <div className="flex-1 overflow-auto bg-white">
@@ -31,11 +35,11 @@ export default function Page() {
               <br />
               task, and project
               <br />
-              together with Jira
+              together with Project Hub
             </p>
             <div className="mt-8">
               <Text className="text-4xl font-medium mb-2 inline-block relative text-center">
-                Welcome back, Nguyễn
+                Welcome back, {name}
                 <span className="absolute left-0 bottom-0 w-full h-2 bg-[#fde047] rounded-lg -z-10"></span>
               </Text>
               <div className="mt-4 mb-2">
@@ -71,12 +75,7 @@ export default function Page() {
             </div>
           </div>
 
-          {/* image */}
-          {/* <Image
-        src="/homepage1.png"
-        alt="Welcome Image"
-        className="w-full max-w-[600px] mx-auto block rounded-2xl shadow-[#0000001a_0px_18px_40px_0px]"
-      /> */}
+          
           <ImageAnimation />
         </div>
         <Footer />

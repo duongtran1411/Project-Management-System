@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const currentPath = window.location.pathname;
 
-   
     if (currentPath.startsWith("/authentication")) {
       if (token && isTokenValid(token)) {
         setIsLoggedIn(true);
@@ -31,25 +30,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
 
-   
     if (!token || !isTokenValid(token)) {
-      console.log("path", currentPath);
       setIsLoggedIn(false);
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
-      return
+      return;
     }
 
     setIsLoggedIn(true);
     const decoded = jwtDecode<TokenPayload>(token);
-    if (decoded.role === "ADMIN" && !currentPath.startsWith("/admin")) {
-      router.replace("/admin");
+    if (currentPath === "/") {
+      if (decoded.role === "ADMIN" && !currentPath.startsWith("/admin")) {
+        router.replace("/admin");
+      }
+      if (decoded.role === "USER") {
+        router.replace("/");
+      }
     }
-    if (decoded.role === "USER") {
-      router.replace("/");
-    }
-
   }, []);
 
   return (

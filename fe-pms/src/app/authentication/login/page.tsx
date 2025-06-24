@@ -35,6 +35,7 @@ export default function Page() {
         }
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
+          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
           router.replace(decoded.role === "ADMIN" ? "/admin" : "/");
         }
         return;
@@ -74,7 +75,9 @@ export default function Page() {
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
+        
         if (token) {
+          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
           const decoded = jwtDecode<TokenPayload>(token);
           if (decoded.role === "ADMIN") {
             router.replace("/admin");
