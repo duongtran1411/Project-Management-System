@@ -153,7 +153,7 @@ const BoardPage = () => {
         <Dropdown
           open={epicOpen}
           onOpenChange={setEpicOpen}
-          dropdownRender={() => epicDropdown}
+          popupRender={() => epicDropdown}
           trigger={["click"]}
         >
           <Button

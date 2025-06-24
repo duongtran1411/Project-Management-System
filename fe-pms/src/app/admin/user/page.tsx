@@ -8,14 +8,29 @@ import { FiSearch, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 import useSWR from "swr";
 import {Spin} from "antd";
 import { showErrorToast } from "@/components/common/toast/toast";
+import {Modal} from "antd";
+import {format} from 'date-fns';
 const UserAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 6;
+  const usersPerPage = 5;
   const [users, setUsers] = useState<User[]>([]);
+  const [open, setOpen] = useState(false);
+  const showModal = () => {
+    setOpen(true);
+  };
+  const hideModal = () => {
+    setOpen(false);
+  };
 
+  const showModalStatus = () => {
+    setOpen(true);
+  }
+
+  const hideModalStatus = () => {
+    setOpen(false);
+  }
   const getAllUser = async (url: string): Promise<User[]> => {
-    debugger;
     const response = await getAll(url);
     return response.data;
   };
@@ -67,6 +82,58 @@ const UserAdmin = () => {
     }
   };
 
+  const User = [
+  {
+    name: "Alice Johnson",
+    email: "alice@example.com",
+    role: "Admin",
+    failedLogin: 0,
+    status: "Active",
+    lastLogin: "2025-06-23"
+  },
+  {
+    name: "Bob Smith",
+    email: "bob@example.com",
+    role: "User",
+    failedLogin: 2,
+    status: "Locked",
+    lastLogin: "2025-06-22"
+  },
+  {
+    name: "Charlie Nguyen",
+    email: "charlie@example.com",
+    role: "Admin",
+    failedLogin: 1,
+    status: "Active",
+    lastLogin: "2025-06-24"
+  },
+  {
+    name: "Diana Lee",
+    email: "diana@example.com",
+    role: "User",
+    failedLogin: 0,
+    status: "Inactive",
+    lastLogin: "2025-06-20"
+  },
+  {
+    name: "Nguyễn Thành Hưng",
+    email: "hungnt2003@example.com",
+    role: "User",
+    failedLogin: 0,
+    status: "Active",
+    lastLogin: "2025-06-20"
+  },
+  {
+    name: "Nguyễn Thái Sơn",
+    email: "sonnt2003@example.com",
+    role: "User",
+    failedLogin: 0,
+    status: "Active",
+    lastLogin: "2025-06-20"
+  }
+];
+
+
   return (
     <div className="flex h-screen bg-gray-100">
       <div className="flex-1 p-8">
@@ -97,6 +164,9 @@ const UserAdmin = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                    No.
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                     Name
                   </th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
@@ -106,21 +176,29 @@ const UserAdmin = () => {
                     Role
                   </th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                    Failed Login
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
                     Status
                   </th>
                   <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Actions
+                    Last Login
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {currentUsers &&
-                  Array.isArray(currentUsers) &&
-                  currentUsers.map((user) => (
-                    <tr key={user._id} className="hover:bg-gray-50">
+                {User &&
+                  Array.isArray(User) &&
+                  User.map((user,index) => (
+                    <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {user.fullName}
+                          {index+1}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -130,34 +208,33 @@ const UserAdmin = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
                             user.role === "Admin"
                               ? "bg-purple-100 text-purple-800"
                               : "bg-green-100 text-green-800"
-                          }`}>
+                          }`} onClick={showModal}>
                           {user.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                     
+                      <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">
+                        <div className="flex justify-start space-x-3 items-center">
+                          {user.failedLogin}
+                        </div>
+                      </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
                             user.status === "Active"
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
-                          }`}>
-                          {user.status}
+                          }`} onClick={showModalStatus}>
+                          {user.status} 
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                        <div className="flex space-x-3">
-                          <button className="text-blue-600 hover:text-blue-900">
-                            <FiEdit2 size={20} />
-                          </button>
-                          <button
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() => handleDelete(user._id)}>
-                            <FiTrash2 size={20} />
-                          </button>
+                        <div className="flex space-x-3 items-center">
+                          {user.lastLogin}
                         </div>
                       </td>
                     </tr>
@@ -200,6 +277,26 @@ const UserAdmin = () => {
             </div>
           </div>
         </div>
+        <Modal
+        title="Change Role For User"
+        open={open}
+        onOk={hideModal}
+        onCancel={hideModal}
+        okText="Confrim"
+        cancelText="Cancel"
+      >
+        <p>Do you want change role</p>
+      </Modal>
+      <Modal
+        title="Change Status For User"
+        open={open}
+        onOk={hideModalStatus}
+        onCancel={hideModalStatus}
+        okText="Confrim"
+        cancelText="Cancel"
+      >
+        <p>Do you want change role</p>
+      </Modal>
       </div>
     </div>
   );
