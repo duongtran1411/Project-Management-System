@@ -38,9 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
-      if (!currentPath.startsWith("/authentication")) {
-        router.replace("/authentication/login");
-      }
       return
     }
 
@@ -49,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (decoded.role === "ADMIN" && !currentPath.startsWith("/admin")) {
       router.replace("/admin");
     }
-    if (decoded.role === "USER" && currentPath.startsWith("/")) {
+    if (decoded.role === "USER") {
       router.replace("/");
     }
 
