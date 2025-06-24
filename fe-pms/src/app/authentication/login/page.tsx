@@ -1,7 +1,7 @@
 "use client";
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
 import { showErrorToast } from "@/components/common/toast/toast";
@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
-import { useSetAtom } from "jotai";
+
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -22,7 +22,7 @@ export default function Page() {
   const onFinish = async () => {
     setLoading(true);
     try {
-      // debugger
+      debugger;
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
