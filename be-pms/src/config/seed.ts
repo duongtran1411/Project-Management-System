@@ -12,3 +12,16 @@ export async function seedAdminRole() {
     console.log("ADMIN role already exists");
   }
 }
+
+export async function seedUserRole() {
+  const userRole = await Role.findOne({ name: "USER" });
+  if (!userRole) {
+    await Role.create({
+      name: "USER",
+      description: "User role",
+    });
+    console.log("Seeded USER role");
+  } else {
+    console.log("USER role already exists");
+  }
+}
