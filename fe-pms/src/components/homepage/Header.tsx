@@ -57,8 +57,6 @@ const Header: React.FC = () => {
       key: "logout",
     },
   ];
-
-  const menu = <Menu onClick={handleMenuClick} items={items} />;
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
       <div className="flex items-center">
@@ -68,7 +66,7 @@ const Header: React.FC = () => {
 
       <div>
         {token ? (
-          <Dropdown overlay={menu} trigger={["click"]}>
+          <Dropdown menu={{ items, onClick: handleMenuClick }} trigger={["click"]}>
             <Space className="cursor-pointer">
               <Avatar src={avatar} />
               <span className="text-gray-700">{userName}</span>

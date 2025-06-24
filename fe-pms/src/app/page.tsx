@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import Footer from "@/components/homepage/Footer";
 import Header from "@/components/homepage/Header";
 import React, { useState } from "react";
@@ -13,15 +13,18 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 const { Text } = Typography;
 export default function Page() {
   const [site, setSite] = useState("fpt-team-mdoh239h");
-  const [name, setName] = useState<string>('');
+  const [name, setName] = useState<string>("");
   useEffect(() => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
-    if (token && justLoggedIn === 'true') {
+    if (token && justLoggedIn === "true") {
       const decoded = jwtDecode<TokenPayload>(token);
       setName(decoded.fullname);
       showSuccessToast("Đăng nhập thành công!");
       localStorage.removeItem("justLoggedIn");
+    } else if (token) {
+      const decoded = jwtDecode<TokenPayload>(token);
+      setName(decoded.fullname);
     }
   }, []);
   return (
@@ -75,7 +78,6 @@ export default function Page() {
             </div>
           </div>
 
-          
           <ImageAnimation />
         </div>
         <Footer />
