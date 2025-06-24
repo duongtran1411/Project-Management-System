@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IEpic extends Document {
   name: string;
   description: string;
-  projectId?: mongoose.Types.ObjectId;
+  projectId: mongoose.Types.ObjectId;
   milestonesId: mongoose.Types.ObjectId;
   assignee: mongoose.Types.ObjectId;
   status: string;
@@ -26,6 +26,7 @@ const epicSchema = new Schema<IEpic>(
     projectId: {
       type: Schema.Types.ObjectId,
       ref: "Project",
+      required: [true, "projectId is required"],
     },
     milestonesId: {
       type: Schema.Types.ObjectId,
