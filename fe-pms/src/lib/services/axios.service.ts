@@ -32,10 +32,14 @@ class AxiosService {
     this.instance.interceptors.response.use(
       (response) => this.handleResponse(response), // Handle success responses
       async (error) => {
-        if (error.response?.status === 401) {
-          return this.handle401Error(error)
+        const originalRequest = error.config;
+        if (
+          originalRequest?.url?.includes("/authentication/login")
+        ) {
+          return Promise.reject(error); 
         }
-        return Promise.reject(error)
+    
+        return Promise.reject(error);
       },
     )
   }
@@ -90,6 +94,11 @@ class AxiosService {
       return Promise.reject(error)
     }
 
+    if (
+      originalRequest?.url?.includes("/auth/login")
+    ) {
+      return Promise.reject(error);
+    }
     try {
       const { data } = await this.instance.post(Endpoints.Auth.REFRESH, {
         refreshToken,

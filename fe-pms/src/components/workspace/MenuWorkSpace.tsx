@@ -103,7 +103,7 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
     >
       <Menu
         mode="inline"
-        defaultSelectedKeys={["foryou"]}
+        defaultSelectedKeys={["projects"]}
         style={{ borderRight: 0 }}
         items={items}
         inlineCollapsed={colapsed}
