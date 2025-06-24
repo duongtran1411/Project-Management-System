@@ -19,8 +19,18 @@ import {
 const menuItems = [
   { key: "Summary", label: "Summary", icon: <AppstoreOutlined /> },
   { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined /> },
-  { key: "Backlog", label: "Backlog", icon: <UnorderedListOutlined /> },
-  { key: "Board", label: "Board", icon: <TableOutlined /> },
+  {
+    key: "Backlog",
+    label: "Backlog",
+    icon: <UnorderedListOutlined />,
+    url: "/workspace/project-management/backlog",
+  },
+  {
+    key: "Board",
+    label: "Board",
+    icon: <TableOutlined />,
+    url: "/workspace/project-management/",
+  },
   { key: "Calendar", label: "Calendar", icon: <CalendarOutlined /> },
   { key: "List", label: "List", icon: <BarsOutlined /> },
   { key: "Forms", label: "Forms", icon: <FormOutlined /> },
@@ -54,13 +64,10 @@ const HeaderProjectManagement = () => {
         selectedKeys={[selectedKey]}
         onClick={(e) => {
           setSelectedKey(e.key);
-          router.push(
-            selectedKey == "Board"
-              ? `/workspace/project-management/${e.key
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")}`
-              : `/workspace/project-management`
-          );
+          const selectedItem = menuItems.find((item) => item.key === e.key);
+          if (selectedItem?.url) {
+            router.push(selectedItem.url);
+          }
         }}
         className="w-full bg-transparent border-none [&_.ant-menu-item]:pt-[6px] [&_.ant-menu-item]:pb-[10px]"
         overflowedIndicator={null}
