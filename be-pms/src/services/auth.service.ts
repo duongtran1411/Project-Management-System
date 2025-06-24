@@ -20,10 +20,9 @@ export class AuthService {
     const googleUser = await verifyGoogleIdToken(idToken);
     // 2. Tìm user theo email
     let user = await User.findOne({ email: googleUser.email });
-    let roleDefault = await Role.findOne({name:{$eq : 'USER'}})
+    let roleDefault = await Role.findOne({ name: { $eq: "USER" } });
     let isNewUser = false;
     let tempPassword = "";
-    let defaultRole = await Role.findOne({ name: "USER" });
     if (!user) {
       // 3. Nếu chưa có user, tạo user mới với mật khẩu random
       tempPassword = generateRandomPassword();

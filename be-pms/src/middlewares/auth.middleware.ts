@@ -17,7 +17,7 @@ export const authenticate = async (
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      res.status(401).json({ message: "No token, authorization denied" });
+      res.status(401).json({ message: "Quyền truy cập bị từ chối" });
       return;
     }
 
@@ -27,12 +27,12 @@ export const authenticate = async (
       .populate("role");
 
     if (!user) {
-      res.status(401).json({ message: "User not found" });
+      res.status(401).json({ message: "Tài khoản không tồn tại" });
       return;
     }
 
     if (!user.isActive) {
-      res.status(401).json({ message: "Account is deactivated" });
+      res.status(401).json({ message: "Tài khoản đã bị khóa" });
       return;
     }
 
@@ -40,19 +40,19 @@ export const authenticate = async (
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);
-    res.status(401).json({ message: "Token is not valid" });
+    res.status(401).json({ message: "Token không hợp lệ" });
   }
 };
 
 export const authorize = (role: string) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      res.status(401).json({ message: "Authorization required" });
+      res.status(401).json({ message: "Yêu cầu quyền truy cập" });
     }
 
     if (req.user.role.name !== role) {
       res.status(403).json({
-        message: "You don't have permission to perform this action",
+        message: "Bạn không có quyền thực hiện hành động này",
       });
     }
 
