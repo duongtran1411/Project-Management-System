@@ -23,6 +23,8 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Đăng nhập thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ
  */
 router.post("/google-login", authController.googleLogin);
 
