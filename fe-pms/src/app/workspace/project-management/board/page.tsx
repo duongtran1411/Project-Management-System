@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Card, Avatar, Button, Input, Dropdown, Checkbox } from "antd";
 import { PlusOutlined, DownOutlined } from "@ant-design/icons";
+import DetailTask from "./detail-task/page";
 
 const epicOptions = [
   { label: "SDS Document", value: "SDS DOCUMENT", id: "SCRUM-16" },
@@ -22,6 +23,8 @@ const BoardPage = () => {
   const [search, setSearch] = useState("");
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [epicOpen, setEpicOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const columns: { title: string; tasks: Task[] }[] = [
     {
@@ -151,7 +154,7 @@ const BoardPage = () => {
         <Dropdown
           open={epicOpen}
           onOpenChange={setEpicOpen}
-          dropdownRender={() => epicDropdown}
+          popupRender={() => epicDropdown}
           trigger={["click"]}
         >
           <Button className="flex items-center font-semibold text-gray-700 " icon={null}>
@@ -193,6 +196,10 @@ const BoardPage = () => {
                   key={task.id}
                   className="transition-shadow shadow-sm cursor-pointer hover:shadow-md"
                   styles={{ body: { padding: "12px" } }}
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setModalOpen(true);
+                  }}
                 >
                   <div className="space-y-2">
                     <p className="text-gray-700">{task.title}</p>
@@ -227,6 +234,11 @@ const BoardPage = () => {
           </div>
         ))}
       </div>
+      <DetailTask
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        task={selectedTask}
+      />
     </div>
   );
 };
