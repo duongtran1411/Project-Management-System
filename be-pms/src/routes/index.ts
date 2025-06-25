@@ -3,6 +3,8 @@ import authRoutes from "./auth.routes";
 import userRoutes from "./user.route";
 import statisticsRoutes from "./statistics.routes";
 import emailTemplateRoutes from "./email.template.routes";
+import epicRoutes from "./epic.routes";
+import taskRoutes from "./task.routes";
 
 const router = Router();
 
@@ -11,6 +13,8 @@ router.use("/auth", authRoutes);
 router.use("/user", userRoutes);
 router.use("/statistics", statisticsRoutes);
 router.use("/emailTemplate", emailTemplateRoutes);
+router.use("/epic", epicRoutes);
+router.use("/task", taskRoutes);
 
 // Health check
 /**
