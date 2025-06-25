@@ -5,7 +5,26 @@ import mongoose from "mongoose";
 export class EmailTemplateController {
   create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const template = await EmailTemplate.create(req.body);
+      const { name, subject, header, body, footer, variables } = req.body;
+
+      let emailTemplate = await EmailTemplate.findOne({ name: name });
+
+      if (emailTemplate) {
+        res.status(400).json({
+          success: false,
+          message: "Email template already exist!",
+          statusCode: 400,
+        });
+      }
+
+      const template = await EmailTemplate.create({
+        name,
+        subject,
+        body,
+        footer,
+        variables,
+        status: "ACTIVE",
+      });
       res.status(201).json({ success: true, data: template });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });
