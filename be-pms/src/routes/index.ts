@@ -5,6 +5,7 @@ import statisticsRoutes from "./statistics.routes";
 import emailTemplateRoutes from "./email.template.routes";
 import epicRoutes from "./epic.routes";
 import taskRoutes from "./task.routes";
+import projectRoutes from "./project.routes";
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use("/statistics", statisticsRoutes);
 router.use("/emailTemplate", emailTemplateRoutes);
 router.use("/epic", epicRoutes);
 router.use("/task", taskRoutes);
+router.use("/project", projectRoutes);
 
 // Health check
 /**
