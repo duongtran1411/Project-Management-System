@@ -4,16 +4,16 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Menu } from "antd";
 import {
-    AppstoreOutlined,
-    ClockCircleOutlined,
-    UnorderedListOutlined,
-    TableOutlined,
-    CalendarOutlined,
-    BarsOutlined,
-    FormOutlined,
-    FlagOutlined,
-    CheckSquareOutlined,
-    CodeOutlined,
+  AppstoreOutlined,
+  ClockCircleOutlined,
+  UnorderedListOutlined,
+  TableOutlined,
+  CalendarOutlined,
+  BarsOutlined,
+  FormOutlined,
+  FlagOutlined,
+  CheckSquareOutlined,
+  CodeOutlined,
 } from "@ant-design/icons";
 
 const menuItems = [
@@ -30,21 +30,23 @@ const menuItems = [
 ];
 
 const HeaderProjectManagement = () => {
-    const [selectedKey, setSelectedKey] = useState("Board");
-    const router = useRouter();
+  const [selectedKey, setSelectedKey] = useState("Board");
+  const router = useRouter();
 
-    return (
-        <div className="w-full px-4 pt-3 bg-white shadow">
-            {/* Title */}
-            <div className="mb-1">
-                <span className="text-xs text-gray-600">Project</span>
-            </div>
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                    <span className="mr-2 text-xl">📊</span>
-                    <span className="text-base font-bold text-gray-800">Project Management</span>
-                </div>
-            </div>
+  return (
+    <div className="w-full px-4 pt-3 bg-white shadow">
+      {/* Title */}
+      <div className="mb-1">
+        <span className="text-xs text-gray-600">Project</span>
+      </div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center">
+          <span className="mr-2 text-xl">📊</span>
+          <span className="text-base font-bold text-gray-800">
+            Project Management
+          </span>
+        </div>
+      </div>
 
             {/* Menu */}
             <Menu

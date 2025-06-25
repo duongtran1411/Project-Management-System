@@ -2,7 +2,7 @@ import React from "react";
 
 const stats = [
     {
-        label: "Total Views",
+        label: "Total Workspace",
         value: "3.5K",
         icon: (
             <span className="p-3 bg-green-100 rounded-full">
@@ -14,7 +14,7 @@ const stats = [
         color: "text-green-500"
     },
     {
-        label: "Total Profit",
+        label: "Total Project",
         value: "$4.2K",
         icon: (
             <span className="p-3 bg-orange-100 rounded-full">
@@ -26,7 +26,7 @@ const stats = [
         color: "text-green-500"
     },
     {
-        label: "Total Products",
+        label: "Total Task",
         value: "3.5K",
         icon: (
             <span className="p-3 bg-purple-100 rounded-full">
@@ -54,17 +54,6 @@ const stats = [
 const Dashboard = () => {
     return (
         <div className="bg-[#F3F4F6]">
-            <div className="flex items-center justify-between px-6 py-4 mb-8 bg-white border-b">
-                <div>
-                    <h1 className="text-2xl font-bold">Dashboard</h1>
-                </div>
-                <div className="flex items-center gap-4 pr-8">
-                    <input className="px-6 py-2 border w-[300px] rounded-3xl bg-[#F3F4F6]" placeholder="Search" />
-
-                </div>
-            </div>
-
-
             <div className="grid grid-cols-1 gap-6 px-10 mb-8 md:grid-cols-4">
                 {stats.map((stat, idx) => (
                     <div key={idx} className="flex flex-col gap-2 p-6 bg-white shadow rounded-xl">

@@ -3,7 +3,7 @@ export class Endpoints {
     REFRESH: 'auth/refresh',
     LOGIN: 'auth/login',
     LOGIN_WITH_GOOGLE: 'auth/google-login',
-    
+    FORGOT_PASSWORD : 'auth/forgot-password'
   }
 
   static readonly User = {
