@@ -236,11 +236,14 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
               <span className="font-semibold text-gray-600">Tags:</span>
               <div className="flex flex-wrap gap-1">
-                {(task.tags || []).length > 0 ? (
-                  task.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
-                ) : (
-                  <span>None</span>
+                {task.tags && Array.isArray(task.tags) && (
+                  (task.tags || []).length > 0 ? (
+                    task.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
+                  ) : (
+                    <span>None</span>
+                  )
                 )}
+
               </div>
 
               <span className="font-semibold text-gray-600">Story Points:</span>
