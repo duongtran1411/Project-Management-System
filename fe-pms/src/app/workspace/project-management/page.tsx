@@ -221,9 +221,8 @@ const BoardPage = () => {
                     <div className="text-sm text-gray-500">{task.dueDate}</div>
                     <div className="flex items-center justify-between">
                       <span
-                        className={`font-medium text-gray-600 ${
-                          column.title === "DONE" ? "line-through" : ""
-                        }`}
+                        className={`font-medium text-gray-600 ${column.title === "DONE" ? "line-through" : ""
+                          }`}
                       >
                         {task.id}
                       </span>
