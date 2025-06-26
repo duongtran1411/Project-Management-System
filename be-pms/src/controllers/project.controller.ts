@@ -145,6 +145,54 @@ export class ProjectController {
       });
     }
   };
+
+  addMembers = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { contributors } = req.body;
+      const user = req.user;
+
+      if (!user) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+          statusCode: 401,
+        });
+      }
+
+      if (!contributors || !Array.isArray(contributors)) {
+        res.status(400).json({
+          success: false,
+          message: "Contributors must be an array of user IDs",
+          statusCode: 400,
+        });
+      }
+
+      const project = await projectService.addMember(id, contributors, user);
+
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: "Project not found",
+          statusCode: 404,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Contributors added successfully",
+        data: project,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Add contributors error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to add contributors",
+        statusCode: 400,
+      });
+    }
+  };
 }
 
 export default new ProjectController();

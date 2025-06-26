@@ -1,4 +1,5 @@
 import Project, { IProject } from "../models/project.model";
+import mongoose from "mongoose";
 
 export class ProjectService {
   async createProject(data: Partial<IProject>, user: any): Promise<IProject> {
@@ -63,6 +64,36 @@ export class ProjectService {
   async deleteProject(projectId: string): Promise<boolean> {
     const result = await Project.findByIdAndDelete(projectId);
     return !!result;
+  }
+
+  async addMember(
+    projectId: string,
+    contributorIds: string[],
+    user: any
+  ): Promise<IProject | null> {
+    const validContributorIds = contributorIds.map(
+      (id) => new mongoose.Types.ObjectId(id)
+    );
+
+    const project = await Project.findByIdAndUpdate(
+      projectId,
+      {
+        $addToSet: {
+          contributors: { $each: validContributorIds },
+        },
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "projectLead", select: "fullName email" },
+      { path: "defaultAssign", select: "fullName email" },
+      { path: "workspaceId", select: "name" },
+      { path: "contributors", select: "userId role" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+    ]);
+
+    return project;
   }
 }
 
