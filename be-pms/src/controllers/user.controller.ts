@@ -1,11 +1,34 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
 import mongoose from "mongoose";
+import { Role } from "../models";
 
 class UserController {
-  create = async (req: Request, res: Response) => {
+  create = async (req: Request, res: Response): Promise<void> => {
     try {
-      const newUser = new User(req.body);
+      const { fullName, email, password, avatar } = req.body;
+      let user = await User.findOne({ email: email });
+      let roleDefault = await Role.findOne({ name: { $eq: "USER" } });
+      let lastLogin = new Date();
+
+      if (user) {
+        res.status(400).json({
+          success: false,
+          message: "User already exist!",
+          statusCode: 400,
+        });
+      }
+
+      const newUser = new User({
+        fullName,
+        email,
+        password,
+        status: "ACTIVE",
+        verified: true,
+        avatar,
+        role: roleDefault?._id,
+        lastLogin,
+      });
       const savedUser = await newUser.save();
       res.status(201).json({ success: true, data: savedUser });
     } catch (error: any) {

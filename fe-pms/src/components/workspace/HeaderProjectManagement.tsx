@@ -17,16 +17,31 @@ import {
 } from "@ant-design/icons";
 
 const menuItems = [
-    { key: "Summary", label: "Summary", icon: <AppstoreOutlined /> },
-    { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined /> },
-    { key: "Backlog", label: "Backlog", icon: <UnorderedListOutlined />, url: '/workspace/project-management/backlog' },
-    { key: "Board", label: "Board", icon: <TableOutlined />, url: '/workspace/project-management/board' },
-    { key: "Calendar", label: "Calendar", icon: <CalendarOutlined /> },
-    { key: "List", label: "List", icon: <BarsOutlined /> },
-    { key: "Forms", label: "Forms", icon: <FormOutlined /> },
-    { key: "Goals", label: "Goals", icon: <FlagOutlined /> },
-    { key: "All work", label: "All work", icon: <CheckSquareOutlined /> },
-    { key: "Code", label: "Code", icon: <CodeOutlined /> },
+  {
+    key: "Summary",
+    label: "Summary",
+    icon: <AppstoreOutlined />,
+    url: "/workspace/project-management/summary",
+  },
+  { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined /> },
+  {
+    key: "Backlog",
+    label: "Backlog",
+    icon: <UnorderedListOutlined />,
+    url: "/workspace/project-management/backlog",
+  },
+  {
+    key: "Board",
+    label: "Board",
+    icon: <TableOutlined />,
+    url: "/workspace/project-management",
+  },
+  { key: "Calendar", label: "Calendar", icon: <CalendarOutlined /> },
+  { key: "List", label: "List", icon: <BarsOutlined /> },
+  { key: "Forms", label: "Forms", icon: <FormOutlined /> },
+  { key: "Goals", label: "Goals", icon: <FlagOutlined /> },
+  { key: "All work", label: "All work", icon: <CheckSquareOutlined /> },
+  { key: "Code", label: "Code", icon: <CodeOutlined /> },
 ];
 
 const HeaderProjectManagement = () => {
@@ -48,32 +63,31 @@ const HeaderProjectManagement = () => {
         </div>
       </div>
 
-            {/* Menu */}
-            <Menu
-                mode="horizontal"
-                selectedKeys={[selectedKey]}
-                onClick={(e) => {
-                    setSelectedKey(e.key);
-                    const selectedItem = menuItems.find(item => item.key === e.key);
-                    if (selectedItem?.url) {
-                        router.push(selectedItem.url);
-                    }
-                }}
-
-                className="w-full bg-transparent border-none [&_.ant-menu-item]:pt-[6px] [&_.ant-menu-item]:pb-[10px]"
-                overflowedIndicator={null}
-                items={menuItems.map((item) => ({
-                    key: item.key,
-                    label: (
-                        <span className="flex items-center gap-1 pr-1 text-sm font-semibold text-[#505258]">
-                            {item.icon}
-                            <span>{item.label}</span>
-                        </span>
-                    ),
-                }))}
-            />
-        </div>
-    );
+      {/* Menu */}
+      <Menu
+        mode="horizontal"
+        selectedKeys={[selectedKey]}
+        onClick={(e) => {
+          setSelectedKey(e.key);
+          const selectedItem = menuItems.find((item) => item.key === e.key);
+          if (selectedItem?.url) {
+            router.push(selectedItem.url);
+          }
+        }}
+        className="w-full bg-transparent border-none [&_.ant-menu-item]:pt-[6px] [&_.ant-menu-item]:pb-[10px]"
+        overflowedIndicator={null}
+        items={menuItems.map((item) => ({
+          key: item.key,
+          label: (
+            <span className="flex items-center gap-1 pr-1 text-sm font-semibold text-[#505258]">
+              {item.icon}
+              <span>{item.label}</span>
+            </span>
+          ),
+        }))}
+      />
+    </div>
+  );
 };
 
 export default HeaderProjectManagement;
