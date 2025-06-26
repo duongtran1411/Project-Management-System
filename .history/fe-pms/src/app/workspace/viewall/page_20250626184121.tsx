@@ -105,17 +105,12 @@ const columns: TableProps<DataType>["columns"] = [
 
 const ProjectTable = () => {
   const router = useRouter();
-  const handleCreateProject = () => {
-    router.push("/create-project");
-  };
   return (
     <div className="p-6 bg-white rounded shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Projects</h2>
         <div className="flex gap-2">
-          <Button type="primary" onClick={handleCreateProject}>
-            Create project
-          </Button>
+          <Button type="primary">Create project</Button>
         </div>
       </div>
 
