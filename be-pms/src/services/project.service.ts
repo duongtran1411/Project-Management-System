@@ -1,53 +1,66 @@
 import Project, { IProject } from "../models/project.model";
+import ProjectContributor, {
+  IProjectContributor,
+} from "../models/project.contributor.model";
 import mongoose from "mongoose";
 
 export class ProjectService {
-  async createProject(data: Partial<IProject>, user: any): Promise<IProject> {
+  async createProject(data: Partial<IProject>, user: any): Promise<any> {
     const project = await Project.create({
       ...data,
+      projectLead: user._id,
       createdBy: user._id,
       updatedBy: user._id,
     });
-    return project.populate([
+
+    const populatedProject = await project.populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
       { path: "workspaceId", select: "name" },
-      { path: "contributors", select: "userId role" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
+
+    return populatedProject.toObject();
   }
 
-  async getAllProjects(): Promise<IProject[]> {
-    return Project.find()
+  async getAllProjects(): Promise<any[]> {
+    const projects = await Project.find()
       .populate([
         { path: "projectLead", select: "fullName email" },
         { path: "defaultAssign", select: "fullName email" },
         { path: "workspaceId", select: "name" },
-        { path: "contributors", select: "userId role" },
         { path: "createdBy", select: "fullName email" },
         { path: "updatedBy", select: "fullName email" },
       ])
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return projects;
   }
 
-  async getProjectById(projectId: string): Promise<IProject | null> {
-    return Project.findById(projectId).populate([
+  async getProjectById(projectId: string): Promise<any> {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) return null;
+
+    const project = await Project.findById(projectId).populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
       { path: "workspaceId", select: "name" },
-      { path: "contributors", select: "userId role" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
+
+    return project?.toObject() || null;
   }
 
   async updateProject(
     projectId: string,
     updateData: Partial<IProject>,
     user: any
-  ): Promise<IProject | null> {
-    return Project.findByIdAndUpdate(
+  ): Promise<any> {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) return null;
+
+    const updated = await Project.findByIdAndUpdate(
       projectId,
       { ...updateData, updatedBy: user._id },
       { new: true, runValidators: true }
@@ -55,45 +68,22 @@ export class ProjectService {
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
       { path: "workspaceId", select: "name" },
-      { path: "contributors", select: "userId role" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
+
+    return updated?.toObject() || null;
   }
 
   async deleteProject(projectId: string): Promise<boolean> {
-    const result = await Project.findByIdAndDelete(projectId);
-    return !!result;
-  }
+    if (!mongoose.Types.ObjectId.isValid(projectId)) return false;
 
-  async addMember(
-    projectId: string,
-    contributorIds: string[],
-    user: any
-  ): Promise<IProject | null> {
-    const validContributorIds = contributorIds.map(
-      (id) => new mongoose.Types.ObjectId(id)
-    );
+    const deleted = await Project.findByIdAndDelete(projectId);
+    if (!deleted) return false;
 
-    const project = await Project.findByIdAndUpdate(
-      projectId,
-      {
-        $addToSet: {
-          contributors: { $each: validContributorIds },
-        },
-        updatedBy: user._id,
-      },
-      { new: true, runValidators: true }
-    ).populate([
-      { path: "projectLead", select: "fullName email" },
-      { path: "defaultAssign", select: "fullName email" },
-      { path: "workspaceId", select: "name" },
-      { path: "contributors", select: "userId role" },
-      { path: "createdBy", select: "fullName email" },
-      { path: "updatedBy", select: "fullName email" },
-    ]);
+    await ProjectContributor.deleteMany({ projectId });
 
-    return project;
+    return true;
   }
 }
 
