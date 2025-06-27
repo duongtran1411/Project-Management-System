@@ -17,11 +17,18 @@ import {
 } from "@ant-design/icons";
 
 const menuItems = [
-  { key: "Summary", label: "Summary", icon: <AppstoreOutlined /> },
+  {
+    key: "Summary",
+    label: "Summary",
+    icon: <AppstoreOutlined />,
+    url: "/workspace/project-management/summary",
+  },
   { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined /> },
+
   { key: "Backlog", label: "Backlog", icon: <UnorderedListOutlined />, url: '/workspace/project-management/backlog' },
   { key: "Board", label: "Board", icon: <TableOutlined />, url: '/workspace/project-management' },
-  { key: "Calendar", label: "Calendar", icon: <CalendarOutlined /> },
+  { key: "Calendar", label: "Calendar", icon: <CalendarOutlined />, url: '/workspace/project-management/calendar' },
+
   { key: "List", label: "List", icon: <BarsOutlined /> },
   { key: "Forms", label: "Forms", icon: <FormOutlined /> },
   { key: "Goals", label: "Goals", icon: <FlagOutlined /> },
@@ -54,12 +61,11 @@ const HeaderProjectManagement = () => {
         selectedKeys={[selectedKey]}
         onClick={(e) => {
           setSelectedKey(e.key);
-          const selectedItem = menuItems.find(item => item.key === e.key);
+          const selectedItem = menuItems.find((item) => item.key === e.key);
           if (selectedItem?.url) {
             router.push(selectedItem.url);
           }
         }}
-
         className="w-full bg-transparent border-none [&_.ant-menu-item]:pt-[6px] [&_.ant-menu-item]:pb-[10px]"
         overflowedIndicator={null}
         items={menuItems.map((item) => ({

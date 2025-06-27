@@ -55,3 +55,9 @@ a {
   font-style: normal;
   font-display: swap;
 }
+
+.rbc-event {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
