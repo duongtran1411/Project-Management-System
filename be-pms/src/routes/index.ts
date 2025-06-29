@@ -7,6 +7,7 @@ import epicRoutes from "./epic.routes";
 import taskRoutes from "./task.routes";
 import projectRoutes from "./project.routes";
 import projectContributorRoutes from "./project.contributor.routes";
+import workspaceRotes from "./workspace.routes";
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.use("/epic", epicRoutes);
 router.use("/task", taskRoutes);
 router.use("/project", projectRoutes);
 router.use("/projectContributor", projectContributorRoutes);
+router.use("/workspace", workspaceRotes);
 
 // Health check
 /**
