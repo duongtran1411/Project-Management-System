@@ -3,12 +3,31 @@ import ProjectContributor, {
   IProjectContributor,
 } from "../models/project.contributor.model";
 import mongoose from "mongoose";
+import Workspace, { IWorkspace } from "../models/workspace.model";
 
 export class ProjectService {
   async createProject(data: Partial<IProject>, user: any): Promise<any> {
+    if (data.workspaceId) {
+      const workspaceExists = await Workspace.exists({ _id: data.workspaceId });
+      if (!workspaceExists) {
+        throw new Error("Workspace not found");
+      }
+    }
+
+    const nameQuery: any = { name: data.name };
+    if (data.workspaceId) nameQuery.workspaceId = data.workspaceId;
+
+    const duplicate = await Project.exists(nameQuery);
+    if (duplicate) {
+      throw new Error(
+        "A project with the same name already exists in this workspace"
+      );
+    }
+
     const project = await Project.create({
       ...data,
       projectLead: user._id,
+      defaultAssign: user._id,
       createdBy: user._id,
       updatedBy: user._id,
     });
