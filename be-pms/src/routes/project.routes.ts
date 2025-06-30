@@ -4,7 +4,7 @@ import projectController from '../controllers/project.controller';
 import { authenticate } from "../middlewares/auth.middleware";
 const router = Router();
 
-
+router.get('/summary/:id', projectController.getSummary)
 router.post("/", authenticate, projectController.createProject);
 router.get("/", authenticate, projectController.getAllProjects);
 router.get("/:id", authenticate, projectController.getProjectById);
