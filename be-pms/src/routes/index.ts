@@ -5,7 +5,10 @@ import statisticsRoutes from "./statistics.routes";
 import emailTemplateRoutes from "./email.template.routes";
 import epicRoutes from "./epic.routes";
 import taskRoutes from "./task.routes";
-import projectRouter from './project.routes'
+import projectRoutes from "./project.routes";
+import projectContributorRoutes from "./project.contributor.routes";
+import workspaceRotes from "./workspace.routes";
+
 const router = Router();
 
 // Mount routes
@@ -15,7 +18,9 @@ router.use("/statistics", statisticsRoutes);
 router.use("/emailTemplate", emailTemplateRoutes);
 router.use("/epic", epicRoutes);
 router.use("/task", taskRoutes);
-router.use('/project',projectRouter)
+router.use("/project", projectRoutes);
+router.use("/projectContributor", projectContributorRoutes);
+router.use("/workspace", workspaceRotes);
 
 // Health check
 /**

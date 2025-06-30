@@ -12,7 +12,6 @@ export interface IProject extends Document {
   createdAt: Date;
   updatedAt: Date;
   description: string;
-  contributors?: mongoose.Types.ObjectId[];
   status: "TODO" | "INPROGRESS" | "COMPLETE";
 }
 
@@ -46,12 +45,6 @@ const projectSchema = new Schema<IProject>(
       ref: "Workspace",
     },
     description: { type: String },
-    contributors: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "ProjectContributor",
-      },
-    ],
     status: {
       type: String,
       enum: ["TODO", "INPROGRESS", "COMPLETE"],
@@ -64,7 +57,7 @@ const projectSchema = new Schema<IProject>(
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-    }
+    },
   },
   { timestamps: true }
 );
