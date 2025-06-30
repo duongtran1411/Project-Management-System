@@ -7,22 +7,13 @@ import routes from "./routes";
 import { seedAdminRole, seedUserRole } from "./config/seed";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger";
-import "./models";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Authorization"],
-    credentials: true,
-  })
-);
+app.use(cors({origin: "*"}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));

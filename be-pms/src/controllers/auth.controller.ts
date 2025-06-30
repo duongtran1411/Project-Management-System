@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
-import { AuthRequest } from "../middlewares/auth.middleware";
 import authService from "../services/auth.service";
-import activityLogService from "../services/activity.log.service";
 
 export class AuthController {
   googleLogin = async (req: Request, res: Response): Promise<void> => {
@@ -32,48 +30,25 @@ export class AuthController {
   login = async (req: Request, res: Response): Promise<void> => {
     try {
       const { email, password } = req.body;
-
+      if (!email || !password) {
+        res.status(400).json({
+          success: false,
+          message: "Vui lòng nhập email và mật khẩu",
+          statusCode: 400,
+        });
+      }
       const result = await authService.loginWithEmail(email, password);
-
-      // Log successful login
-      await activityLogService.createLog(
-        req,
-        "LOGIN",
-        "User",
-        result.user._id?.toString(),
-        result.user._id?.toString(),
-        { email, loginMethod: "email" },
-        "SUCCESS"
-      );
-
       res.status(200).json({
         success: true,
-        message: "Đăng nhập thành công",
         data: result,
         statusCode: 200,
       });
-      console.log(result.user);
     } catch (error: any) {
-      console.error("Login error:", error);
-
-      // Log failed login
-      await activityLogService.createLog(
-        req,
-        "LOGIN_FAILED",
-        "User",
-        undefined,
-        undefined,
-        { email: req.body.email, reason: error.message },
-        "FAILED",
-        error.message
-      );
-
       const response: any = {
         success: false,
         message: error.message || "Đăng nhập thất bại",
         statusCode: 401,
       };
-
       if (error.suggestForgotPassword) {
         response.suggestForgotPassword = true;
       }

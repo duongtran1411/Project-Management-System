@@ -49,6 +49,7 @@ router.post("/", authenticate, milestoneController.createMilestone);
  *         schema: { type: string, format: date }
  *     responses:
  *       200: { description: Lấy danh sách milestone thành công }
+ *       400: { description: Dữ liệu không hợp lệ }
  */
 router.get("/", milestoneController.getAllMilestones);
 
