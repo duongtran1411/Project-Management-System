@@ -41,15 +41,12 @@ router.post("/", authenticate, milestoneController.createMilestone);
  *       - in: query
  *         name: projectId
  *         schema: { type: string }
- *         description: Lọc theo ID dự án
  *       - in: query
  *         name: startDate
  *         schema: { type: string, format: date }
- *         description: Lọc theo ngày bắt đầu
  *       - in: query
  *         name: endDate
  *         schema: { type: string, format: date }
- *         description: Lọc theo ngày kết thúc
  *     responses:
  *       200: { description: Lấy danh sách milestone thành công }
  *       400: { description: Dữ liệu không hợp lệ }
@@ -67,11 +64,9 @@ router.get("/", milestoneController.getAllMilestones);
  *         name: id
  *         required: true
  *         schema: { type: string }
- *         description: ID của milestone
  *     responses:
  *       200: { description: Lấy thông tin milestone thành công }
  *       404: { description: Không tìm thấy milestone }
- *       400: { description: Dữ liệu không hợp lệ }
  */
 router.get("/:id", milestoneController.getMilestoneById);
 
@@ -87,7 +82,6 @@ router.get("/:id", milestoneController.getMilestoneById);
  *         name: id
  *         required: true
  *         schema: { type: string }
- *         description: ID của milestone
  *     requestBody:
  *       required: true
  *       content:
@@ -103,7 +97,6 @@ router.get("/:id", milestoneController.getMilestoneById);
  *     responses:
  *       200: { description: Cập nhật milestone thành công }
  *       404: { description: Không tìm thấy milestone }
- *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
 router.put("/:id", authenticate, milestoneController.updateMilestone);
@@ -119,11 +112,9 @@ router.put("/:id", authenticate, milestoneController.updateMilestone);
  *         name: id
  *         required: true
  *         schema: { type: string }
- *         description: ID của milestone
  *     responses:
  *       200: { description: Xóa milestone thành công }
  *       404: { description: Không tìm thấy milestone }
- *       400: { description: Dữ liệu không hợp lệ }
  */
 router.delete("/:id", milestoneController.deleteMilestone);
 
@@ -138,10 +129,8 @@ router.delete("/:id", milestoneController.deleteMilestone);
  *         name: projectId
  *         required: true
  *         schema: { type: string }
- *         description: ID của dự án
  *     responses:
  *       200: { description: Lấy danh sách milestone theo dự án thành công }
- *       400: { description: Dữ liệu không hợp lệ }
  */
 router.get("/project/:projectId", milestoneController.getMilestonesByProject);
 
@@ -156,19 +145,15 @@ router.get("/project/:projectId", milestoneController.getMilestonesByProject);
  *         name: startDate
  *         required: true
  *         schema: { type: string, format: date }
- *         description: Ngày bắt đầu
  *       - in: query
  *         name: endDate
  *         required: true
  *         schema: { type: string, format: date }
- *         description: Ngày kết thúc
  *       - in: query
  *         name: projectId
  *         schema: { type: string }
- *         description: ID của dự án (tùy chọn)
  *     responses:
  *       200: { description: Lấy danh sách milestone theo khoảng thời gian thành công }
- *       400: { description: Dữ liệu không hợp lệ }
  */
 router.get("/date-range", milestoneController.getMilestonesByDateRange);
 
@@ -182,14 +167,11 @@ router.get("/date-range", milestoneController.getMilestonesByDateRange);
  *       - in: query
  *         name: projectId
  *         schema: { type: string }
- *         description: ID của dự án (tùy chọn)
  *       - in: query
  *         name: limit
  *         schema: { type: integer, default: 10 }
- *         description: Số lượng milestone tối đa
  *     responses:
  *       200: { description: Lấy danh sách milestone sắp tới thành công }
- *       400: { description: Dữ liệu không hợp lệ }
  */
 router.get("/upcoming", milestoneController.getUpcomingMilestones);
 
@@ -203,10 +185,8 @@ router.get("/upcoming", milestoneController.getUpcomingMilestones);
  *       - in: query
  *         name: projectId
  *         schema: { type: string }
- *         description: ID của dự án (tùy chọn)
  *     responses:
  *       200: { description: Lấy danh sách milestone quá hạn thành công }
- *       400: { description: Dữ liệu không hợp lệ }
  */
 router.get("/overdue", milestoneController.getOverdueMilestones);
 
