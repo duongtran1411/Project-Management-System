@@ -23,7 +23,9 @@ const router = Router();
  *               startDate: { type: string, format: date }
  *               endDate: { type: string, format: date }
  *               goal: { type: string }
- *               projectId: { type: string }
+ *               projectId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
  *     responses:
  *       201: { description: Tạo milestone thành công }
  *       400: { description: Dữ liệu không hợp lệ }
@@ -40,7 +42,7 @@ router.post("/", authenticate, milestoneController.createMilestone);
  *     parameters:
  *       - in: query
  *         name: projectId
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *       - in: query
  *         name: startDate
  *         schema: { type: string, format: date }
@@ -62,7 +64,7 @@ router.get("/", milestoneController.getAllMilestones);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *     responses:
  *       200: { description: Lấy thông tin milestone thành công }
  *       404: { description: Không tìm thấy milestone }
@@ -80,7 +82,7 @@ router.get("/:id", milestoneController.getMilestoneById);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *     requestBody:
  *       required: true
  *       content:
@@ -92,7 +94,9 @@ router.get("/:id", milestoneController.getMilestoneById);
  *               startDate: { type: string, format: date }
  *               endDate: { type: string, format: date }
  *               goal: { type: string }
- *               projectId: { type: string }
+ *               projectId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
  *     responses:
  *       200: { description: Cập nhật milestone thành công }
  *       404: { description: Không tìm thấy milestone }
@@ -110,7 +114,7 @@ router.put("/:id", authenticate, milestoneController.updateMilestone);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *     responses:
  *       200: { description: Xóa milestone thành công }
  *       404: { description: Không tìm thấy milestone }
@@ -127,7 +131,7 @@ router.delete("/:id", milestoneController.deleteMilestone);
  *       - in: path
  *         name: projectId
  *         required: true
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *     responses:
  *       200: { description: Lấy danh sách milestone theo dự án thành công }
  */
@@ -150,7 +154,7 @@ router.get("/project/:projectId", milestoneController.getMilestonesByProject);
  *         schema: { type: string, format: date }
  *       - in: query
  *         name: projectId
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *     responses:
  *       200: { description: Lấy danh sách milestone theo khoảng thời gian thành công }
  */
@@ -165,7 +169,7 @@ router.get("/date-range", milestoneController.getMilestonesByDateRange);
  *     parameters:
  *       - in: query
  *         name: projectId
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *       - in: query
  *         name: limit
  *         schema: { type: integer, default: 10 }
@@ -183,7 +187,7 @@ router.get("/upcoming", milestoneController.getUpcomingMilestones);
  *     parameters:
  *       - in: query
  *         name: projectId
- *         schema: { type: string }
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
  *     responses:
  *       200: { description: Lấy danh sách milestone quá hạn thành công }
  */

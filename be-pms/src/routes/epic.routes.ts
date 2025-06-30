@@ -21,9 +21,15 @@ const router = Router();
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               projectId: { type: string }
- *               milestonesId: { type: string }
- *               assignee: { type: string }
+ *               projectId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               milestonesId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               assignee:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
  *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
  *     responses:
  *       201: { description: Tạo epic thành công }
@@ -98,9 +104,15 @@ router.get("/:id", epicController.getEpicById);
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               projectId: { type: string }
- *               milestonesId: { type: string }
- *               assignee: { type: string }
+ *               projectId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               milestonesId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               assignee:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
  *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
  *     responses:
  *       200: { description: Cập nhật epic thành công }
