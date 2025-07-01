@@ -1,4 +1,4 @@
-import "antd/dist/reset.css"; 
+// import "antd/dist/reset.css"; 
 import "@/styles/globals.css"; 
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth/auth-context";
@@ -17,16 +17,6 @@ export default function RootLayout({
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   return (
     <html lang="en">
-      <head>
-        {/* ✅ Preload font ở đây */}
-        <link
-          rel="preload"
-          href="/fonts/CharlieText-Regular.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-      </head>
       <body>
         <AuthProvider>
           <GoogleOAuthProvider clientId={clientId ? clientId : ""}>

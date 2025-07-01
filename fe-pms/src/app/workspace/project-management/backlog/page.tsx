@@ -191,7 +191,7 @@ export default function Backlog() {
           className="bg-gray-100 w-[184px] h-[32px] border-gray-400"
         />
         {/* Search by member */}
-        <Dropdown overlay={overlayContent} trigger={["click"]}>
+        <Dropdown popupRender={() => overlayContent} trigger={["click"]}>
           <div className="cursor-pointer">
             <Avatar.Group
               size={30}
@@ -216,7 +216,7 @@ export default function Backlog() {
 
         {/* Search by epic */}
         <div className="flex gap-2">
-          <Dropdown overlay={overlayEpic} trigger={["click"]}>
+          <Dropdown popupRender={()=>overlayEpic} trigger={["click"]}>
             <Button>
               <Space className="font-semibold text-gray-700">
                 Epic

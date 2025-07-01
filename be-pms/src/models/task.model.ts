@@ -59,12 +59,12 @@ const taskSchema = new Schema<ITask>(
     },
     status: {
       type: String,
-      enum: ["TO_DO", "IN_PROGRESS", "DONE", "BLOCKED"],
+      enum: ["TO_DO", "IN_PROGRESS", "DONE"],
       default: "TO_DO",
     },
     priority: {
       type: String,
-      enum: ["LOW", "MEDIUM", "HIGH", "URGENT"],
+      enum: ["LOW", "MEDIUM", "HIGH"],
       default: "MEDIUM",
     },
     createdBy: {

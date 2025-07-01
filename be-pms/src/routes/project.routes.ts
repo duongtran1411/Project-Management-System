@@ -1,7 +1,7 @@
-import { Router } from "express";
-import projectController from "../controllers/project.controller";
-import { authenticate } from "../middlewares/auth.middleware";
 
+import { Router } from 'express'
+import projectController from '../controllers/project.controller';
+import { authenticate } from "../middlewares/auth.middleware";
 const router = Router();
 
 /**
@@ -120,5 +120,21 @@ router.put("/:id", authenticate, projectController.updateProject);
  *       401: { description: Không có quyền truy cập }
  */
 router.delete("/:id", authenticate, projectController.deleteProject);
-
+/**
+ * @openapi
+ * /project/summary/{projectId}:
+ *   get:
+ *     summary: dashboard project
+ *     tags: [Project]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId  
+ *         required: true
+ *     responses:
+ *       200: { description: lấy summary project thành công }
+ *       404: { description: Không tìm thấy project }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get('/summary/:id', authenticate, projectController.getSummary)
 export default router;
