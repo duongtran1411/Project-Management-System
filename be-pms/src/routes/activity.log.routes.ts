@@ -20,7 +20,9 @@ const router = Router();
  *         schema: { type: string }
  *       - in: query
  *         name: userId
- *         schema: { type: string }
+ *         schema:
+ *           type: string
+ *           example: "60d21b4667d0d8992e610c85"
  *       - in: query
  *         name: ipAddress
  *         schema: { type: string }
@@ -134,7 +136,9 @@ router.get("/ip/:ipAddress", authenticate, activityLogController.getLogsByIp);
  *       - in: path
  *         name: userId
  *         required: true
- *         schema: { type: string }
+ *         schema:
+ *           type: string
+ *           example: "60d21b4667d0d8992e610c85"
  *       - in: query
  *         name: limit
  *         schema: { type: integer, default: 100 }

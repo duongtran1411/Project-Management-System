@@ -4,9 +4,45 @@ import ProjectContributor, {
     IProjectContributor,
 } from "../models/project.contributor.model";
 import mongoose from "mongoose";
+import Workspace, { IWorkspace } from "../models/workspace.model";
 
 export class ProjectService {
-    
+    async createProject(data: Partial<IProject>, user: any): Promise<any> {
+        if (data.workspaceId) {
+            const workspaceExists = await Workspace.exists({ _id: data.workspaceId });
+            if (!workspaceExists) {
+                throw new Error("Workspace not found");
+            }
+        }
+
+        const nameQuery: any = { name: data.name };
+        if (data.workspaceId) nameQuery.workspaceId = data.workspaceId;
+
+        const duplicate = await Project.exists(nameQuery);
+        if (duplicate) {
+            throw new Error(
+                "A project with the same name already exists in this workspace"
+            );
+        }
+
+        const project = await Project.create({
+            ...data,
+            projectLead: user._id,
+            defaultAssign: user._id,
+            createdBy: user._id,
+            updatedBy: user._id,
+        });
+
+        const populatedProject = await project.populate([
+            { path: "projectLead", select: "fullName email" },
+            { path: "defaultAssign", select: "fullName email" },
+            { path: "workspaceId", select: "name" },
+            { path: "createdBy", select: "fullName email" },
+            { path: "updatedBy", select: "fullName email" },
+        ]);
+
+        return populatedProject.toObject();
+    }
     async GetStatiscalTask(projectId: string) {
         const totalTask = await Task.countDocuments({ projectId });
         const taskProgress = await Task.countDocuments({ projectId, status: { $eq: 'IN_PROGRESS' } })
@@ -141,24 +177,7 @@ export class ProjectService {
         return { taskPriority }
     }
 
-    async createProject(data: Partial<IProject>, user: any): Promise<any> {
-        const project = await Project.create({
-            ...data,
-            projectLead: user._id,
-            createdBy: user._id,
-            updatedBy: user._id,
-        });
 
-        const populatedProject = await project.populate([
-            { path: "projectLead", select: "fullName email" },
-            { path: "defaultAssign", select: "fullName email" },
-            { path: "workspaceId", select: "name" },
-            { path: "createdBy", select: "fullName email" },
-            { path: "updatedBy", select: "fullName email" },
-        ]);
-
-        return populatedProject.toObject();
-    }
 
     async getAllProjects(): Promise<any[]> {
         const projects = await Project.find()
