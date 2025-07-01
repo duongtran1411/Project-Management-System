@@ -79,10 +79,6 @@ export default function Page() {
         if (token) {
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
           const decoded = jwtDecode<TokenPayload>(token);
-          if (decoded.role === "ADMIN") {
-            router.replace("/admin");
-          }
-
           if (decoded.role === "USER") {
             router.replace("/");
           }
