@@ -90,14 +90,96 @@ export class AuthController {
           message: "Vui lòng nhập email",
           statusCode: 400,
         });
+        return;
       }
-      await authService.forgotPassword(email);
+
+      const result = await authService.forgotPassword(email);
+
+      // Log activity
+      await activityLogService.createLog(
+        req,
+        "FORGOT_PASSWORD_REQUEST",
+        "User",
+        undefined,
+        undefined,
+        { email },
+        "SUCCESS"
+      );
+
       res.json({
         success: true,
-        message: "Mật khẩu mới đã được gửi về email của bạn",
+        message: result.message,
+        data: { token: result.token },
         statusCode: 200,
       });
     } catch (error: any) {
+      // Log failed request
+      await activityLogService.createLog(
+        req,
+        "FORGOT_PASSWORD_REQUEST",
+        "User",
+        undefined,
+        undefined,
+        { email: req.body.email, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
+      res.status(400).json({
+        success: false,
+        message: error.message,
+        statusCode: 400,
+      });
+    }
+  };
+
+  verifyOTPAndResetPassword = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { token, otp, newPassword } = req.body;
+
+      if (!token || !otp || !newPassword) {
+        res.status(400).json({
+          success: false,
+          message: "Thiếu thông tin xác thực",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      await authService.verifyOTPAndResetPassword(token, otp, newPassword);
+
+      // Log successful password reset
+      await activityLogService.createLog(
+        req,
+        "PASSWORD_RESET",
+        "User",
+        undefined,
+        undefined,
+        { token, method: "OTP" },
+        "SUCCESS"
+      );
+
+      res.json({
+        success: true,
+        message: "Đặt lại mật khẩu thành công",
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      // Log failed password reset
+      await activityLogService.createLog(
+        req,
+        "PASSWORD_RESET",
+        "User",
+        undefined,
+        undefined,
+        { token: req.body.token, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
       res.status(400).json({
         success: false,
         message: error.message,

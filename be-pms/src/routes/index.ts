@@ -10,6 +10,7 @@ import projectContributorRoutes from "./project.contributor.routes";
 import workspaceRotes from "./workspace.routes";
 import milestoneRoutes from "./milestone.routes";
 import activityLogRoutes from "./activity.log.routes";
+import passwordResetRoutes from "./password-reset.routes";
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.use("/projectContributor", projectContributorRoutes);
 router.use("/workspace", workspaceRotes);
 router.use("/milestone", milestoneRoutes);
 router.use("/activity-log", activityLogRoutes);
+router.use("/password-reset", passwordResetRoutes);
 
 // Health check
 /**

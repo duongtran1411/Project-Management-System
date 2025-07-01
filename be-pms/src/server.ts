@@ -8,6 +8,10 @@ import { seedAdminRole, seedUserRole } from "./config/seed";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger";
 import "./models";
+import {
+  startCleanupScheduler,
+  runInitialCleanup,
+} from "./utils/cleanup-scheduler";
 
 dotenv.config();
 
@@ -83,6 +87,10 @@ const startServer = async () => {
         `📝 API Documentation (SwaggerUI): http://localhost:${PORT}/api-docs`
       );
     });
+
+    // Khởi động cleanup scheduler
+    startCleanupScheduler();
+    await runInitialCleanup();
   } catch (error) {
     console.error("❌ Failed to connect to MongoDB:", error);
     console.log(
