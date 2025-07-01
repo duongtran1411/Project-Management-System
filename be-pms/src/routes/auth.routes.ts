@@ -58,7 +58,7 @@ router.post("/login", authController.login);
  * @openapi
  * /auth/forgot-password:
  *   post:
- *     summary: Quên mật khẩu (gửi mật khẩu mới về email)
+ *     summary: Quên mật khẩu (gửi OTP xác thực)
  *     tags:
  *       - Auth
  *     requestBody:
@@ -73,9 +73,55 @@ router.post("/login", authController.login);
  *                 example: user@example.com
  *     responses:
  *       200:
- *         description: Mật khẩu mới đã được gửi về email
+ *         description: OTP đã được gửi về email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
  */
 router.post("/forgot-password", authController.forgotPassword);
+
+/**
+ * @openapi
+ * /auth/verify-otp-reset-password:
+ *   post:
+ *     summary: Xác thực OTP và đặt lại mật khẩu
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: "reset_token_from_forgot_password"
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *               newPassword:
+ *                 type: string
+ *                 example: "newpassword123"
+ *     responses:
+ *       200:
+ *         description: Đặt lại mật khẩu thành công
+ */
+router.post(
+  "/verify-otp-reset-password",
+  authController.verifyOTPAndResetPassword
+);
 
 /**
  * @openapi

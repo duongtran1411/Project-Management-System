@@ -41,3 +41,15 @@ export async function sendForgotPasswordEmail(
       <p>Hãy đổi mật khẩu sau khi đăng nhập.</p>`,
   });
 }
+
+export async function sendOTPEmail(to: string, name: string, otp: string) {
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || "noreply@example.com",
+    to,
+    subject: "Mã xác thực đặt lại mật khẩu",
+    html: `<p>Xin chào <b>${name}</b>,</p>
+      <p>Mã xác thực của bạn là: <b style="font-size: 24px; color: #007bff;">${otp}</b></p>
+      <p>Mã này có hiệu lực trong 15 phút.</p>
+      <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>`,
+  });
+}
