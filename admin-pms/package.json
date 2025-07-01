@@ -1,9 +1,9 @@
 {
-  "name": "fe-pms",
+  "name": "admin-pms",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H localhost -p 3000",
+    "dev": "next dev -H localhost -p 3002",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
