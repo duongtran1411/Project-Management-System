@@ -190,7 +190,7 @@ const UserAdmin = () => {
                 {User &&
                   Array.isArray(User) &&
                   User.map((user,index) => (
-                    <tr className="hover:bg-gray-50">
+                    <tr key={user.email} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {index+1}

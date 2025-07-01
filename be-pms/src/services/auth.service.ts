@@ -3,10 +3,17 @@ import { verifyGoogleIdToken } from "../utils/google-auth.util";
 import {
   sendForgotPasswordEmail,
   sendPasswordEmail,
+  sendOTPEmail,
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
 import { generateRefreshToken, generateToken } from "../utils/jwt.util";
-import { Role } from "../models";
+import { Role, PasswordReset } from "../models";
+import {
+  generateOTP,
+  generateResetToken,
+  hashOTP,
+  verifyOTP,
+} from "../utils/password-reset.util";
 
 interface LoginResponse {
   user: Partial<IUser>;
@@ -97,14 +104,78 @@ export class AuthService {
       refresh_token,
     };
   }
-  async forgotPassword(email: string): Promise<void> {
+  async forgotPassword(
+    email: string
+  ): Promise<{ token: string; message: string }> {
     const user = await User.findOne({ email });
     if (!user) throw new Error("Không tìm thấy người dùng với email này");
-    const tempPassword = generateRandomPassword();
-    user.password = tempPassword;
+
+    // Xóa các request reset password cũ
+    await PasswordReset.deleteMany({ email, isUsed: false });
+
+    // Tạo OTP và token
+    const otp = generateOTP();
+    const token = generateResetToken();
+
+    // Lưu thông tin reset password
+    await PasswordReset.create({
+      email,
+      token,
+      otp: hashOTP(otp),
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 phút
+    });
+
+    // Gửi OTP qua email
+    await sendOTPEmail(user.email, user.fullName, otp);
+
+    return {
+      token,
+      message: "Mã xác thực đã được gửi đến email của bạn",
+    };
+  }
+
+  async verifyOTPAndResetPassword(
+    token: string,
+    otp: string,
+    newPassword: string
+  ): Promise<void> {
+    const resetRecord = await PasswordReset.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!resetRecord) {
+      throw new Error("Token không hợp lệ hoặc đã hết hạn");
+    }
+
+    // Kiểm tra số lần thử
+    if (resetRecord.attempts >= resetRecord.maxAttempts) {
+      throw new Error("Đã vượt quá số lần thử, vui lòng yêu cầu mã mới");
+    }
+
+    // Tăng số lần thử
+    resetRecord.attempts += 1;
+    await resetRecord.save();
+
+    // Xác thực OTP
+    if (!verifyOTP(otp, resetRecord.otp)) {
+      throw new Error("Mã xác thực không đúng");
+    }
+
+    // Cập nhật mật khẩu
+    const user = await User.findOne({ email: resetRecord.email });
+    if (!user) {
+      throw new Error("Không tìm thấy người dùng");
+    }
+
+    user.password = newPassword;
     user.failedLoginAttempts = 0;
     await user.save();
-    await sendForgotPasswordEmail(user.email, user.fullName, tempPassword);
+
+    // Đánh dấu token đã sử dụng
+    resetRecord.isUsed = true;
+    await resetRecord.save();
   }
 
   async changePassword(

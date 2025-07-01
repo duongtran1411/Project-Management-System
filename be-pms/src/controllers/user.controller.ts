@@ -38,9 +38,10 @@ class UserController {
 
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const users = await User.find({ status: { $ne: "DELETED" } }).select(
-        "-password"
-      );
+      const users = await User.find({ status: { $ne: "DELETED" } })
+        .select("-password")
+        .populate("role", "_id name");
+
       res.json({ success: true, data: users });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });

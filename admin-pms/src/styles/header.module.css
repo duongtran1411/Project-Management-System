@@ -1,0 +1,19 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-left: 180px;
+}
+
+.nameProject {
+  margin: 0;
+  font-size: 25px;
+}
+.logo {
+  width: 40px;
+  height: 40px;
+}
+.container:hover {
+  cursor: pointer;
+}

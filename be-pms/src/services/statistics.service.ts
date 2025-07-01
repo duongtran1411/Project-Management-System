@@ -1,4 +1,4 @@
-import { Project, Task, User } from "../models";
+import { Project, Task, User, ProjectContributor } from "../models";
 
 export class StatisticsService {
   async getProjectStatistics() {
@@ -12,11 +12,13 @@ export class StatisticsService {
     // Thống kê project theo status
     const projectStatusStats = await Project.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } },
+      { $project: { status: "$_id", count: 1, _id: 0 } },
     ]);
 
     // Thống kê task theo status
     const taskStatusStats = await Task.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } },
+      { $project: { status: "$_id", count: 1, _id: 0 } },
     ]);
 
     return {
