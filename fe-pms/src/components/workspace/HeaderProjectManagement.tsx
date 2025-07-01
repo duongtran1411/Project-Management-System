@@ -24,19 +24,11 @@ const menuItems = [
     url: "/workspace/project-management/summary",
   },
   { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined /> },
-  {
-    key: "Backlog",
-    label: "Backlog",
-    icon: <UnorderedListOutlined />,
-    url: "/workspace/project-management/backlog",
-  },
-  {
-    key: "Board",
-    label: "Board",
-    icon: <TableOutlined />,
-    url: "/workspace/project-management",
-  },
-  { key: "Calendar", label: "Calendar", icon: <CalendarOutlined /> },
+
+  { key: "Backlog", label: "Backlog", icon: <UnorderedListOutlined />, url: '/workspace/project-management/backlog' },
+  { key: "Board", label: "Board", icon: <TableOutlined />, url: '/workspace/project-management' },
+  { key: "Calendar", label: "Calendar", icon: <CalendarOutlined />, url: '/workspace/project-management/calendar' },
+
   { key: "List", label: "List", icon: <BarsOutlined /> },
   { key: "Forms", label: "Forms", icon: <FormOutlined /> },
   { key: "Goals", label: "Goals", icon: <FlagOutlined /> },

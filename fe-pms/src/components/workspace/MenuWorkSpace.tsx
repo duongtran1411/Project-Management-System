@@ -70,13 +70,17 @@ const items: MenuProps["items"] = [
     icon: <DashboardOutlined />,
   },
   {
-    label: "Teams",
+    label: (
+      <Link href="/workspace/teams" className="flex items-center gap-2">
+        Teams
+      </Link>
+    ),
     key: "teams",
     icon: <TeamOutlined />,
   },
   {
     label: (
-      <Link href="#" className="flex justify-between items-center">
+      <Link href="#" className="flex items-center justify-between">
         <span>Assets</span> <span>↗</span>
       </Link>
     ),
@@ -85,7 +89,7 @@ const items: MenuProps["items"] = [
   },
   {
     label: (
-      <Link href="#" className="flex justify-between items-center">
+      <Link href="#" className="flex items-center justify-between">
         <span>Goals</span> <span>↗</span>
       </Link>
     ),
@@ -97,9 +101,8 @@ const items: MenuProps["items"] = [
 const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
   return (
     <div
-      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${
-        colapsed ? "w-max" : "w-64"
-      } transition-all duration-300`}
+      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${colapsed ? "w-max" : "w-64"
+        } transition-all duration-300`}
     >
       <Menu
         mode="inline"

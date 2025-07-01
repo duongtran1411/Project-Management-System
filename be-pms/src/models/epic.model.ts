@@ -38,7 +38,7 @@ const epicSchema = new Schema<IEpic>(
     },
     status: {
       type: String,
-      enum: ["TO_DO", "IN_PROGRESS", "DONE", "BLOCKED"],
+      enum: ["TO_DO", "IN_PROGRESS", "DONE"],
       default: "TO_DO",
     },
     createdBy: {
