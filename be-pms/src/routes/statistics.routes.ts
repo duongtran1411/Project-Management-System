@@ -1,24 +1,19 @@
 import { Router } from "express";
 import statisticsController from "../controllers/statistics.controller";
-import { authenticate, authorize } from "../middlewares/auth.middleware";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
 /**
  * @openapi
- * /statistics/projects:
+ * /statistics:
  *   get:
- *     summary: Lấy thống kê dự án
- *     tags:
- *       - Statistics
- *     security:
- *       - bearerAuth: []
+ *     summary: Lấy thống kê tổng quan hệ thống
+ *     tags: [Statistics]
+ *     security: [bearerAuth: []]
+ *     responses:
+ *       200:
+ *         description: Lấy thống kê thành công
  */
-router.get(
-  "/projects",
-  authenticate,
-  authorize("ADMIN"),
-  statisticsController.getProjectStatistics
-);
-
+router.get("/", authenticate, statisticsController.getProjectStatistics);
 export default router;
