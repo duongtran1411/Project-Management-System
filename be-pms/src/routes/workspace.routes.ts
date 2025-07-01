@@ -12,7 +12,6 @@ const router = Router();
  *     tags: [Workspace]
  *     security: [bearerAuth: []]
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
@@ -21,10 +20,6 @@ const router = Router();
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               projectIds:
- *                 type: array
- *                 items: { type: string }
- *               ownerId: { type: string }
  *     responses:
  *       201: { description: Tạo workspace thành công }
  *       400: { description: Dữ liệu không hợp lệ }

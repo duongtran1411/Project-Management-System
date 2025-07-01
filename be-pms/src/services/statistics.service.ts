@@ -1,4 +1,4 @@
-import { Project, Task, User } from "../models";
+import { Project, Task, User, ProjectContributor } from "../models";
 
 export class StatisticsService {
   async getProjectStatistics() {
