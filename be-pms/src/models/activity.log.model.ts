@@ -36,6 +36,7 @@ const activityLogSchema = new Schema<IActivityLog>(
         "LOGOUT",
         "REGISTER",
         "PASSWORD_RESET",
+        "FORGOT_PASSWORD_REQUEST",
         "LOGIN_FAILED",
         // User actions
         "USER_CREATE",
