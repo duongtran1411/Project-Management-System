@@ -14,6 +14,7 @@ import {
   hashOTP,
   verifyOTP,
 } from "../utils/password-reset.util";
+import roleService from "./role.service";
 
 interface LoginResponse {
   user: Partial<IUser>;
@@ -104,6 +105,55 @@ export class AuthService {
       refresh_token,
     };
   }
+
+  async loginWithEmailAdmin(
+    email: string,
+    password: string
+  ): Promise<LoginResponse> {
+    const user = await User.findOne({ email })
+      .select("+password")
+      .populate("role");
+    if (!user) {
+      throw new Error("Email không tồn tại");
+    }
+    if (!user.isActive) {
+      throw new Error("Tài khoản đã bị vô hiệu hoá");
+    }
+
+    // Kiểm tra role admin
+    if (!user.role || (user.role as any).name !== "ADMIN") {
+      throw new Error("Chỉ admin mới có quyền truy cập vào trang này");
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      await user.save();
+      if (user.failedLoginAttempts >= 2) {
+        const err: any = new Error(
+          "Mật khẩu của bạn không đúng, vui lòng đổi mật khẩu"
+        );
+        err.suggestForgotPassword = true;
+        throw err;
+      }
+      throw new Error("Mật khẩu của bạn không đúng");
+    }
+    user.failedLoginAttempts = 0;
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Populate role để đảm bảo có đầy đủ thông tin role
+    const populatedUser = await User.findById(user._id).populate("role");
+    const access_token = generateToken(populatedUser as IUser);
+    const refresh_token = generateRefreshToken(populatedUser as IUser);
+    const { password: _, ...userResponse } = populatedUser?.toObject() || {};
+    return {
+      user: userResponse,
+      access_token,
+      refresh_token,
+    };
+  }
+
   async forgotPassword(
     email: string
   ): Promise<{ token: string; message: string }> {

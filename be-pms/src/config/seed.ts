@@ -55,7 +55,6 @@ export async function seedAdminUser() {
     console.log("✅ Admin user created successfully");
     console.log("📧 Email: admin@pms.com");
     console.log("🔑 Password: admin123");
-    console.log("⚠️  Please change the password after first login!");
   } catch (error) {
     console.error("❌ Error creating admin user:", error);
   }
