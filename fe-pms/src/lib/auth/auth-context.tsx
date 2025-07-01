@@ -5,7 +5,6 @@ import { Constants } from "../constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { isTokenValid } from "@/helpers/auth/checktoken";
-import { logout } from "../utils";
 
 interface AuthContextType {
   isLoggedIn: boolean;

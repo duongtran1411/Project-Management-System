@@ -21,11 +21,21 @@ const router = Router();
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               epic: { type: string }
- *               milestones: { type: string }
- *               assignee: { type: string }
- *               reporter: { type: string }
- *               projectId: { type: string }
+ *               epic:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               milestones:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               assignee:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               reporter:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               projectId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
  *               startDate: { type: string, format: date }
  *               dueDate: { type: string, format: date }
  *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
@@ -116,11 +126,21 @@ router.get("/:id", taskController.getTaskById);
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               epic: { type: string }
- *               milestones: { type: string }
- *               assignee: { type: string }
- *               reporter: { type: string }
- *               projectId: { type: string }
+ *               epic:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               milestones:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               assignee:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               reporter:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               projectId:
+ *                 type: string
+ *                 example: "60d21b4667d0d8992e610c85"
  *               startDate: { type: string, format: date }
  *               dueDate: { type: string, format: date }
  *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
