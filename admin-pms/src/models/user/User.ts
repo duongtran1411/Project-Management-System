@@ -1,3 +1,5 @@
+import { Role } from "../role/Role";
+
 export interface User{
     _id: string,
     fullName: string,
@@ -6,7 +8,7 @@ export interface User{
     status: string,
     failedLoginAttempts: number,
     verified: boolean,
-    role: string,
+    role: Role,
     lastLogin: string,
     createdAt: string,
     updatedAt: string

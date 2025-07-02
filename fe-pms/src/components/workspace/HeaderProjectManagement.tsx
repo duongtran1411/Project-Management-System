@@ -23,7 +23,7 @@ const menuItems = [
     icon: <AppstoreOutlined />,
     url: "/workspace/project-management/summary",
   },
-  { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined /> },
+  { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined />, url: '/workspace/project-management/timeline' },
 
   { key: "Backlog", label: "Backlog", icon: <UnorderedListOutlined />, url: '/workspace/project-management/backlog' },
   { key: "Board", label: "Board", icon: <TableOutlined />, url: '/workspace/project-management' },

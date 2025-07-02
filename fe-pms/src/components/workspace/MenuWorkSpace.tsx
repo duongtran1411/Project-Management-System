@@ -18,7 +18,11 @@ import Link from "next/link";
 
 const items: MenuProps["items"] = [
   {
-    label: "For you",
+    label: (
+      <Link href="/workspace/foryou" >
+        For you
+      </Link>
+    ),
     key: "foryou",
     icon: <UserOutlined />,
   },

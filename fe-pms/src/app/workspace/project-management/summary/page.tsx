@@ -130,7 +130,7 @@ const summaryCards = [
 
 export default function SummaryPage() {
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen p-4 bg-gray-50">
       {/* Statistics Cards */}
       <Row gutter={16} className="mb-6">
         {summaryCards.map((card, index) => (
@@ -148,7 +148,7 @@ export default function SummaryPage() {
             >
               <div className={`${card.bgColor} rounded-[4px]`}>{card.icon}</div>
               <div className="text-2xl font-bold">{card.value}</div>
-              <span className="text-gray-700 font-semibold">{card.title}</span>
+              <span className="font-semibold text-gray-700">{card.title}</span>
             </Card>
           </Col>
         ))}
@@ -158,8 +158,8 @@ export default function SummaryPage() {
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
           <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
-            <div className="font-semibold mb-2">Status overview</div>
-            <span className="text-sm text-gray-500 mb-2">
+            <div className="mb-2 font-semibold">Status overview</div>
+            <span className="mb-2 text-sm text-gray-500">
               Get a snapshot of the status of your work items.{" "}
             </span>
 
@@ -177,8 +177,8 @@ export default function SummaryPage() {
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
           <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
-            <div className="font-semibold mb-2">Priority breakdown</div>
-            <span className="text-sm text-gray-500 mb-2">
+            <div className="mb-2 font-semibold">Priority breakdown</div>
+            <span className="mb-2 text-sm text-gray-500">
               Get a holistic view of how work is being prioritized.
             </span>
 
@@ -187,8 +187,8 @@ export default function SummaryPage() {
         </Col>
         <Col xs={24} md={12}>
           <Card className="!shadow !rounded-xl">
-            <div className="font-semibold mb-2">Team workload</div>
-            <span className="text-sm text-gray-500 mb-2">
+            <div className="mb-2 font-semibold">Team workload</div>
+            <span className="mb-2 text-sm text-gray-500">
               Monitor the capacity of your team.
             </span>
             <Table
