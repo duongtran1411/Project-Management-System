@@ -71,7 +71,7 @@ const columns: TableProps<DataType>["columns"] = [
     render: (text: string, record) => (
       <div className="flex items-center space-x-2">
         <img src={record.logo} alt="logo" className="w-6 h-6 rounded-sm" />
-        <span className="text-blue-600 font-medium">{text}</span>
+        <span className="font-medium text-blue-600">{text}</span>
       </div>
     ),
   },
@@ -110,7 +110,7 @@ const ProjectTable = () => {
   };
   return (
     <div className="p-6 bg-white rounded shadow">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Projects</h2>
         <div className="flex gap-2">
           <Button type="primary" onClick={handleCreateProject}>
