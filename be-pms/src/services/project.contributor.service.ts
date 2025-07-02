@@ -27,6 +27,7 @@ export class ProjectContributorService {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
     const contributors = await ProjectContributor.find({ projectId })
+      .select("-projectId")
       .populate([
         { path: "userId", select: "fullName email avatar" },
         { path: "roleId", select: "name" },
