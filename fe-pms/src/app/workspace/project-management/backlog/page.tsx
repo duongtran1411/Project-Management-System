@@ -32,12 +32,12 @@ interface DataType {
 }
 
 const columns: TableProps<DataType>["columns"] = [
-  {
-    title: "",
-    dataIndex: "checkbox",
-    render: (_, record) => <Checkbox checked={record.checked} />,
-    width: 50,
-  },
+  // {
+  //   title: "",
+  //   dataIndex: "checkbox",
+  //   render: (_, record) => <Checkbox checked={record.checked} />,
+  //   width: 50,
+  // },
   {
     title: "",
     dataIndex: "key",
@@ -65,8 +65,8 @@ const columns: TableProps<DataType>["columns"] = [
         normalized === "done"
           ? "green"
           : normalized === "in progress"
-            ? "blue"
-            : "gray";
+          ? "blue"
+          : "gray";
 
       return <Tag color={color}>{status}</Tag>;
     },
@@ -216,7 +216,7 @@ export default function Backlog() {
 
         {/* Search by epic */}
         <div className="flex gap-2">
-          <Dropdown popupRender={()=>overlayEpic} trigger={["click"]}>
+          <Dropdown popupRender={() => overlayEpic} trigger={["click"]}>
             <Button>
               <Space className="font-semibold text-gray-700">
                 Epic
