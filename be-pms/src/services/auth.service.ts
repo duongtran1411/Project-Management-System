@@ -3,10 +3,18 @@ import { verifyGoogleIdToken } from "../utils/google-auth.util";
 import {
   sendForgotPasswordEmail,
   sendPasswordEmail,
+  sendOTPEmail,
 } from "../utils/email.util";
 import { generateRandomPassword } from "../utils/password.util";
 import { generateRefreshToken, generateToken } from "../utils/jwt.util";
-import { Role } from "../models";
+import { Role, PasswordReset } from "../models";
+import {
+  generateOTP,
+  generateResetToken,
+  hashOTP,
+  verifyOTP,
+} from "../utils/password-reset.util";
+import roleService from "./role.service";
 
 interface LoginResponse {
   user: Partial<IUser>;
@@ -97,14 +105,127 @@ export class AuthService {
       refresh_token,
     };
   }
-  async forgotPassword(email: string): Promise<void> {
+
+  async loginWithEmailAdmin(
+    email: string,
+    password: string
+  ): Promise<LoginResponse> {
+    const user = await User.findOne({ email })
+      .select("+password")
+      .populate("role");
+    if (!user) {
+      throw new Error("Email không tồn tại");
+    }
+    if (!user.isActive) {
+      throw new Error("Tài khoản đã bị vô hiệu hoá");
+    }
+
+    // Kiểm tra role admin
+    if (!user.role || (user.role as any).name !== "ADMIN") {
+      throw new Error("Chỉ admin mới có quyền truy cập vào trang này");
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+      await user.save();
+      if (user.failedLoginAttempts >= 2) {
+        const err: any = new Error(
+          "Mật khẩu của bạn không đúng, vui lòng đổi mật khẩu"
+        );
+        err.suggestForgotPassword = true;
+        throw err;
+      }
+      throw new Error("Mật khẩu của bạn không đúng");
+    }
+    user.failedLoginAttempts = 0;
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Populate role để đảm bảo có đầy đủ thông tin role
+    const populatedUser = await User.findById(user._id).populate("role");
+    const access_token = generateToken(populatedUser as IUser);
+    const refresh_token = generateRefreshToken(populatedUser as IUser);
+    const { password: _, ...userResponse } = populatedUser?.toObject() || {};
+    return {
+      user: userResponse,
+      access_token,
+      refresh_token,
+    };
+  }
+
+  async forgotPassword(
+    email: string
+  ): Promise<{ token: string; message: string }> {
     const user = await User.findOne({ email });
     if (!user) throw new Error("Không tìm thấy người dùng với email này");
-    const tempPassword = generateRandomPassword();
-    user.password = tempPassword;
+
+    // Xóa các request reset password cũ
+    await PasswordReset.deleteMany({ email, isUsed: false });
+
+    // Tạo OTP và token
+    const otp = generateOTP();
+    const token = generateResetToken();
+
+    // Lưu thông tin reset password
+    await PasswordReset.create({
+      email,
+      token,
+      otp: hashOTP(otp),
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 phút
+    });
+
+    // Gửi OTP qua email
+    await sendOTPEmail(user.email, user.fullName, otp);
+
+    return {
+      token,
+      message: "Mã xác thực đã được gửi đến email của bạn",
+    };
+  }
+
+  async verifyOTPAndResetPassword(
+    token: string,
+    otp: string,
+    newPassword: string
+  ): Promise<void> {
+    const resetRecord = await PasswordReset.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!resetRecord) {
+      throw new Error("Token không hợp lệ hoặc đã hết hạn");
+    }
+
+    // Kiểm tra số lần thử
+    if (resetRecord.attempts >= resetRecord.maxAttempts) {
+      throw new Error("Đã vượt quá số lần thử, vui lòng yêu cầu mã mới");
+    }
+
+    // Tăng số lần thử
+    resetRecord.attempts += 1;
+    await resetRecord.save();
+
+    // Xác thực OTP
+    if (!verifyOTP(otp, resetRecord.otp)) {
+      throw new Error("Mã xác thực không đúng");
+    }
+
+    // Cập nhật mật khẩu
+    const user = await User.findOne({ email: resetRecord.email });
+    if (!user) {
+      throw new Error("Không tìm thấy người dùng");
+    }
+
+    user.password = newPassword;
     user.failedLoginAttempts = 0;
     await user.save();
-    await sendForgotPasswordEmail(user.email, user.fullName, tempPassword);
+
+    // Đánh dấu token đã sử dụng
+    resetRecord.isUsed = true;
+    await resetRecord.save();
   }
 
   async changePassword(

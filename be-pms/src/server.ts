@@ -4,16 +4,29 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import { connectDB } from "./config/mongodb";
 import routes from "./routes";
-import { seedAdminRole, seedUserRole } from "./config/seed";
+import { seedAdminRole, seedAdminUser, seedUserRole } from "./config/seed";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger";
+import "./models";
+import {
+  startCleanupScheduler,
+  runInitialCleanup,
+} from "./utils/cleanup-scheduler";
 
 dotenv.config();
 
 const app = express();
 
 // Middleware
-app.use(cors({origin: "*"}));
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Authorization"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -64,6 +77,7 @@ const startServer = async () => {
       console.log("✅ Connected to MongoDB");
       await seedAdminRole();
       await seedUserRole();
+      await seedAdminUser();
     } else {
       console.log("⚠️  Skipping MongoDB connection (SKIP_DB=true)");
     }
@@ -74,6 +88,10 @@ const startServer = async () => {
         `📝 API Documentation (SwaggerUI): http://localhost:${PORT}/api-docs`
       );
     });
+
+    // Khởi động cleanup scheduler
+    startCleanupScheduler();
+    await runInitialCleanup();
   } catch (error) {
     console.error("❌ Failed to connect to MongoDB:", error);
     console.log(

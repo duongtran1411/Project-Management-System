@@ -5,7 +5,6 @@ import { Constants } from "../constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { isTokenValid } from "@/helpers/auth/checktoken";
-import { logout } from "../utils";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -25,8 +24,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoggedIn(true);
       } else {
         setIsLoggedIn(false);
-        localStorage.removeItem(Constants.API_TOKEN_KEY);
-        localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
       }
     }
 
@@ -34,19 +31,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoggedIn(false);
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
-
       return;
     }
 
     setIsLoggedIn(true);
     const decoded = jwtDecode<TokenPayload>(token);
-    if (currentPath === "/") {
-      if (decoded.role === "ADMIN" && !currentPath.startsWith("/admin")) {
-        router.replace("/admin");
-      }
-      if (decoded.role === "USER") {
-        router.replace("/");
-      }
+    if (decoded.role === "USER" && !currentPath.startsWith('/')) {
+      router.replace("/");
     }
   }, []);
 

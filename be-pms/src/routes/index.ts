@@ -6,6 +6,11 @@ import emailTemplateRoutes from "./email.template.routes";
 import epicRoutes from "./epic.routes";
 import taskRoutes from "./task.routes";
 import projectRoutes from "./project.routes";
+import projectContributorRoutes from "./project.contributor.routes";
+import workspaceRotes from "./workspace.routes";
+import milestoneRoutes from "./milestone.routes";
+import activityLogRoutes from "./activity.log.routes";
+import passwordResetRoutes from "./password-reset.routes";
 
 const router = Router();
 
@@ -17,6 +22,11 @@ router.use("/emailTemplate", emailTemplateRoutes);
 router.use("/epic", epicRoutes);
 router.use("/task", taskRoutes);
 router.use("/project", projectRoutes);
+router.use("/projectContributor", projectContributorRoutes);
+router.use("/workspace", workspaceRotes);
+router.use("/milestone", milestoneRoutes);
+router.use("/activity-log", activityLogRoutes);
+router.use("/password-reset", passwordResetRoutes);
 
 // Health check
 /**

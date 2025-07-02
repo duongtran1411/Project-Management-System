@@ -15,3 +15,7 @@ export {
   IProjectPermission,
 } from "./project.permission.model";
 export { default as ProjectContributor } from "./project.contributor.model";
+export {
+  default as PasswordReset,
+  IPasswordReset,
+} from "./password.reset.model";
