@@ -1,44 +1,22 @@
 "use client";
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  CheckboxProps,
-  Dropdown,
-  Input,
-  Space,
-  Tag,
-} from "antd";
+import { Avatar, Button, Checkbox, Dropdown, Input, Space, Tag } from "antd";
 
 import { DownOutlined, SearchOutlined } from "@ant-design/icons";
 import React, { useState, useMemo, useEffect } from "react";
 import useSWR, { mutate } from "swr";
 import { Endpoints } from "@/lib/endpoints";
-import { CreateMilestone, Epic, Milestone, Task } from "@/types/types";
+import {
+  Contributor,
+  CreateMilestone,
+  Epic,
+  Milestone,
+  Task,
+} from "@/types/types";
 import SprintSection from "@/components/workspace/backlog/SprintSection";
 import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
 import { createMilestone } from "@/lib/services/milestone/milestone";
 
-const overlayContent = (
-  <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
-    <Checkbox value="Option A">Trần Đại Dương</Checkbox>
-    <Checkbox value="Option B">Nguyễn Thái Sơn</Checkbox>
-    <Checkbox value="Option C">Hoàng Thị Hương Giang</Checkbox>
-    <Checkbox value="Option D">Lê Văn Việt</Checkbox>
-    <Checkbox value="Option D">Unassigned</Checkbox>
-  </div>
-);
-
-//   {
-//     key: "edit",
-//     label: "Edit sprint",
-//   },
-//   {
-//     key: "delete",
-//     label: "Delete sprint",
-//   },
-// ];
 export default function Backlog() {
   const projectId = "64b1e2005a1c000002222201";
 
@@ -63,6 +41,15 @@ export default function Backlog() {
     fetcher
   );
 
+  const { data: contributorData } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
+      projectId
+    )}`,
+    fetcher
+  );
+
+  console.log("user data", contributorData);
+
   const { data: milestoneData } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.GET_BY_PROJECT(
       projectId
@@ -75,7 +62,7 @@ export default function Backlog() {
     );
   };
 
-  console.log("milestone list", milestoneData);
+  // console.log("milestone list", milestoneData);
 
   // Filtered tasks based on search criteria
   const filteredTasks = useMemo(() => {
@@ -120,8 +107,12 @@ export default function Backlog() {
     searchText || selectedAssignees.length > 0 || selectedEpics.length > 0;
 
   const overlayEpic = (
-    <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
-      <Checkbox.Group value={selectedEpics} onChange={setSelectedEpics}>
+    <div className="p-4 ml-2 bg-white rounded-md shadow-lg">
+      <Checkbox.Group
+        value={selectedEpics}
+        onChange={setSelectedEpics}
+        className="flex flex-col gap-2 "
+      >
         {epicData?.data?.map((epic: Epic) => (
           <Checkbox key={epic._id} value={epic._id}>
             {epic.name}
@@ -130,12 +121,21 @@ export default function Backlog() {
       </Checkbox.Group>
     </div>
   );
-
-  console.log("Epic Data:", taskData);
-
-  const onChange: CheckboxProps["onChange"] = (e) => {
-    console.log(`checked = ${e.target.checked}`);
-  };
+  const overlayContributor = (
+    <div className=" p-4 ml-2 bg-white rounded-md shadow-lg">
+      <Checkbox.Group
+        value={selectedAssignees}
+        onChange={setSelectedAssignees}
+        className="flex flex-col  gap-2"
+      >
+        {contributorData?.data?.map((contributor: Contributor) => (
+          <Checkbox key={contributor._id} value={contributor._id}>
+            {contributor?.userId?.fullName}
+          </Checkbox>
+        ))}
+      </Checkbox.Group>
+    </div>
+  );
 
   //Create new task
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -168,7 +168,7 @@ export default function Backlog() {
         />
 
         {/* Search by member */}
-        <Dropdown popupRender={() => overlayContent} trigger={["click"]}>
+        <Dropdown popupRender={() => overlayContributor} trigger={["click"]}>
           <div className="cursor-pointer">
             <Avatar.Group
               size={30}
@@ -178,15 +178,17 @@ export default function Backlog() {
               }}
             >
               <Avatar style={{ backgroundColor: "#f56a00" }}>K</Avatar>
-              <Avatar
-                style={{
-                  backgroundColor: "#f0f1f3",
-                  color: "black",
-                  fontSize: "12px",
-                }}
-              >
-                +2
-              </Avatar>
+              {contributorData?.data.length > 1 && (
+                <Avatar
+                  style={{
+                    backgroundColor: "#f0f1f3",
+                    color: "black",
+                    fontSize: "12px",
+                  }}
+                >
+                  +{contributorData.data.length}
+                </Avatar>
+              )}
             </Avatar.Group>
           </div>
         </Dropdown>
@@ -226,7 +228,6 @@ export default function Backlog() {
         <div className="flex items-center justify-between p-2 rounded-t-md ">
           {/* Left */}
           <div className="flex items-center gap-2">
-            <Checkbox onChange={onChange} disabled={true} />
             <DownOutlined className="text-sm" />
 
             <h3 className="font-semibold">Backlog </h3>

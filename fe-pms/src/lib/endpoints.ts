@@ -8,7 +8,8 @@ export class Endpoints {
 
   static readonly User = {
     GET_ALL: "user",
-    GET_BY_PROJECT: (projectId: string) => `user/project/${projectId}`,
+    GET_BY_PROJECT: (projectId: string) =>
+      `projectContributor/project/${projectId}`,
   };
 
   static readonly Epic = {

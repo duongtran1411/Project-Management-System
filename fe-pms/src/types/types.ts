@@ -54,3 +54,15 @@ export interface CreateMilestone {
   goal?: string;
   projectId: string;
 }
+
+export interface Contributor {
+  _id: string;
+  userId: {
+    _id: string;
+    fullName: string;
+    email: string;
+    avatar: string;
+  };
+  roleId: string | null;
+  joinedAt: string; // hoặc Date nếu bạn muốn dùng kiểu Date
+}

@@ -5,7 +5,6 @@ import {
   DeleteOutlined,
   DownOutlined,
   EllipsisOutlined,
-  FastForwardOutlined,
   PlusOutlined,
   RightOutlined,
 } from "@ant-design/icons";
