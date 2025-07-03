@@ -1,3 +1,4 @@
+import { Pagination } from "../pagination/Pagination";
 import { User } from "../user/User";
 
 export interface ActivityLog{
@@ -14,4 +15,5 @@ export interface ActivityLog{
     requestMethod: string
     requestUrl: string
     createdAt: string
+    pagination: Pagination
 }
