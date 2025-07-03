@@ -127,4 +127,28 @@ router.put("/:id", projectContributorController.updateContributor);
  */
 router.delete("/:id", projectContributorController.deleteContributor);
 
+/**
+ * @openapi
+ * /project-contributor/project/{projectId}/users:
+ *   get:
+ *     summary: Lấy danh sách user thuộc project
+ *     tags: [Project Contributor]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Danh sách user trong project
+ *       400:
+ *         description: Lỗi không lấy được danh sách user
+ */
+router.get(
+  "/project/:projectId/users",
+  projectContributorController.getContributorsByProject
+);
+
 export default router;
