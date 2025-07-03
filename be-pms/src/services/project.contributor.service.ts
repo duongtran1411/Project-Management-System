@@ -86,6 +86,17 @@ export class ProjectContributorService {
     });
     return !!result;
   }
+
+  async getProjectsByUserId(userId: string): Promise<any[]> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) return [];
+
+    const contributors = await ProjectContributor.find({ userId })
+      .populate({ path: "projectId", select: "name icon projectType" })
+      .select("projectId") // Chỉ cần trường projectId
+      .lean();
+
+    return contributors.map((c) => c.projectId);
+  }
 }
 
 export default new ProjectContributorService();
