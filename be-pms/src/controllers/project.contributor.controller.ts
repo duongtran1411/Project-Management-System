@@ -142,6 +142,30 @@ export class ProjectContributorController {
       });
     }
   };
+
+  getProjectsByUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { userId } = req.params;
+
+      const projects = await projectContributorService.getProjectsByUserId(
+        userId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Projects by user fetched successfully",
+        data: projects,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get projects by user error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to get projects by user",
+        statusCode: 400,
+      });
+    }
+  };
 }
 
 export default new ProjectContributorController();
