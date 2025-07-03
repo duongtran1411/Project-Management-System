@@ -5,6 +5,7 @@ import {
   Checkbox,
   CheckboxProps,
   Dropdown,
+  Image,
   Input,
   Space,
   Table,
@@ -19,7 +20,7 @@ import {
   RightOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 
@@ -33,6 +34,30 @@ interface DataType {
   checked: boolean;
 }
 
+interface Task {
+  _id: string;
+  name: string;
+  description?: string;
+  status: string;
+  priority: string;
+  assignee?: {
+    _id: string;
+    name?: string;
+    email?: string;
+  };
+  epic?: {
+    _id: string;
+    name: string;
+  };
+  startDate?: string;
+  dueDate?: string;
+}
+
+interface Epic {
+  _id: string;
+  name: string;
+}
+
 const columns: TableProps<DataType>["columns"] = [
   // {
   //   title: "",
@@ -40,14 +65,7 @@ const columns: TableProps<DataType>["columns"] = [
   //   render: (_, record) => <Checkbox checked={record.checked} />,
   //   width: 50,
   // },
-  {
-    title: "",
-    dataIndex: "key",
-    render: (key) => (
-      <span className="w-[200px] line-through whitespace-nowrap">{key}</span>
-    ),
-    className: "w-[200px]",
-  },
+
   {
     title: "",
     dataIndex: "name",
@@ -56,7 +74,7 @@ const columns: TableProps<DataType>["columns"] = [
   {
     title: "",
     dataIndex: "epic",
-    render: (epic) => <Tag color="purple">{epic}</Tag>,
+    render: (epic) => (epic ? <Tag color="purple">{epic?.name}</Tag> : <></>),
   },
   {
     title: "",
@@ -66,7 +84,7 @@ const columns: TableProps<DataType>["columns"] = [
       const color =
         normalized === "done"
           ? "green"
-          : normalized === "in progress"
+          : normalized === "in_progress"
           ? "blue"
           : "gray";
 
@@ -77,64 +95,20 @@ const columns: TableProps<DataType>["columns"] = [
   {
     title: "",
     dataIndex: "startDate",
-    render: (status) => <Tag>{status}</Tag>,
+    render: (startDate) => <Tag color="orange">{startDate.slice(0, 10)}</Tag>,
   },
   {
     title: "",
     dataIndex: "assignee",
     render: (assignee) => (
-      <div className="flex items-center justify-center w-8 h-8 text-white bg-purple-600 rounded-full">
-        {assignee}
+      <div className="flex rounded-full">
+        {assignee?.avatar ? (
+          <Avatar src={assignee?.avatar} />
+        ) : (
+          <Avatar>U</Avatar>
+        )}
       </div>
     ),
-  },
-];
-
-const data: DataType[] = [
-  {
-    key: "SCRUM-101",
-    name: "Implement login API",
-    epic: "Authentication",
-    status: "TO DO",
-    startDate: "2025-06-20",
-    assignee: "Alice",
-    checked: false,
-  },
-  {
-    key: "SCRUM-102",
-    name: "Build user dashboard",
-    epic: "User Interface",
-    status: "IN PROGRESS",
-    startDate: "2025-06-18",
-    assignee: "Bob",
-    checked: true,
-  },
-  {
-    key: "SCRUM-103",
-    name: "Create project API",
-    epic: "Project Management",
-    status: "DONE",
-    startDate: "2025-06-15",
-    assignee: "Charlie",
-    checked: true,
-  },
-  {
-    key: "SCRUM-104",
-    name: "Fix bug in task filter",
-    epic: "Task Module",
-    status: "TO DO",
-    startDate: "2025-06-22",
-    assignee: "Diana",
-    checked: false,
-  },
-  {
-    key: "SCRUM-105",
-    name: "Optimize database queries",
-    epic: "Performance",
-    status: "IN PROGRESS",
-    startDate: "2025-06-19",
-    assignee: "Eve",
-    checked: false,
   },
 ];
 
@@ -169,6 +143,12 @@ const items = [
 export default function Backlog() {
   const projectId = "64b1e2005a1c000002222201";
   const [showTable, setShowTable] = useState<boolean>(true);
+
+  // Search states
+  const [searchText, setSearchText] = useState<string>("");
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+  const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
+
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
   const { data: epicData } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
@@ -184,12 +164,57 @@ export default function Backlog() {
     fetcher
   );
 
-  const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
+  const { data: userData } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
+      projectId
+    )}`,
+    fetcher
+  );
+
+  console.log("User Data:", userData);
+
+  // Filtered tasks based on search criteria
+  const filteredTasks = useMemo(() => {
+    if (!taskData?.data) return [];
+
+    return taskData.data.filter((task: Task) => {
+      // Search by task name
+      const nameMatch =
+        !searchText ||
+        task.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        (task.description &&
+          task.description.toLowerCase().includes(searchText.toLowerCase()));
+
+      // Filter by assignee
+      const assigneeMatch =
+        selectedAssignees.length === 0 ||
+        (task.assignee?._id && selectedAssignees.includes(task.assignee._id)) ||
+        (selectedAssignees.includes("unassigned") && !task.assignee);
+
+      // Filter by epic
+      const epicMatch =
+        selectedEpics.length === 0 ||
+        (task.epic?._id && selectedEpics.includes(task.epic._id));
+
+      return nameMatch && assigneeMatch && epicMatch;
+    });
+  }, [taskData?.data, searchText, selectedAssignees, selectedEpics]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchText("");
+    setSelectedAssignees([]);
+    setSelectedEpics([]);
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    searchText || selectedAssignees.length > 0 || selectedEpics.length > 0;
 
   const overlayEpic = (
     <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
       <Checkbox.Group value={selectedEpics} onChange={setSelectedEpics}>
-        {epicData?.data?.map((epic: any) => (
+        {epicData?.data?.map((epic: Epic) => (
           <Checkbox key={epic._id} value={epic._id}>
             {epic.name}
           </Checkbox>
@@ -211,10 +236,13 @@ export default function Backlog() {
       <div className="top-0 left-0 right-0 flex items-center gap-3 mb-4">
         {/* Search */}
         <Input
-          placeholder="Search"
+          placeholder="Search tasks..."
           prefix={<SearchOutlined className="text-gray-400" />}
           className="bg-gray-100 w-[184px] h-[32px] border-gray-400"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
+
         {/* Search by member */}
         <Dropdown popupRender={() => overlayContent} trigger={["click"]}>
           <div className="cursor-pointer">
@@ -240,19 +268,24 @@ export default function Backlog() {
         </Dropdown>
 
         {/* Search by epic */}
-        <div className="flex gap-2">
-          <Dropdown popupRender={() => overlayEpic} trigger={["click"]}>
-            <Button>
-              <Space className="font-semibold text-gray-700">
-                Epic
-                <DownOutlined />
-              </Space>
-            </Button>
-          </Dropdown>
-        </div>
-        <Button type="text" className="font-semibold text-gray-600">
-          Clear filters
-        </Button>
+        <Dropdown popupRender={() => overlayEpic} trigger={["click"]}>
+          <Button>
+            <Space className="font-semibold text-gray-700">
+              Epic
+              <DownOutlined />
+            </Space>
+          </Button>
+        </Dropdown>
+
+        {hasActiveFilters && (
+          <Button
+            type="text"
+            className="font-semibold text-gray-600"
+            onClick={clearFilters}
+          >
+            Clear filters
+          </Button>
+        )}
       </div>
 
       <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
@@ -268,20 +301,31 @@ export default function Backlog() {
 
             <h3 className="font-semibold">SCRUM Sprint 2 </h3>
             <span className="ml-2 text-sm text-gray-500">
-              13 Jun – 27 Jun (3 of 30 work items visible)
+              13 Jun – 27 Jun ({filteredTasks.length} of{" "}
+              {taskData?.data?.length || 0} work items visible)
             </span>
           </div>
           {/* Right */}
           <div className="flex items-center gap-2 ">
             <div className="flex items-center ">
               <Tag color="default" className="w-6 p-0 text-center">
-                0
+                {
+                  filteredTasks.filter((task: Task) => task.status === "TO_DO")
+                    .length
+                }
               </Tag>
               <Tag color="blue" className="w-6 p-0 text-center">
-                0
+                {
+                  filteredTasks.filter(
+                    (task: Task) => task.status === "IN_PROGRESS"
+                  ).length
+                }
               </Tag>
               <Tag color="green" className="w-6 p-0 text-center">
-                0
+                {
+                  filteredTasks.filter((task: Task) => task.status === "DONE")
+                    .length
+                }
               </Tag>
             </div>
             <Button type="default" className="font-semibold text-gray-600">
@@ -302,24 +346,28 @@ export default function Backlog() {
 
         {showTable && (
           <div>
-            <Table<DataType>
-              columns={columns}
-              dataSource={data}
-              pagination={false}
-              rowKey="key"
-              className="border border-t-0 border-gray-200"
-              size="small"
-            />
+            {filteredTasks && (
+              <>
+                <Table<DataType>
+                  columns={columns}
+                  dataSource={filteredTasks}
+                  pagination={false}
+                  rowKey="_id"
+                  className="border border-t-0 border-gray-200"
+                  size="small"
+                />
 
-            <Button
-              type="text"
-              className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
-            >
-              <span>
-                {" "}
-                <PlusOutlined /> Create
-              </span>
-            </Button>
+                <Button
+                  type="text"
+                  className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
+                >
+                  <span>
+                    {" "}
+                    <PlusOutlined /> Create
+                  </span>
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
