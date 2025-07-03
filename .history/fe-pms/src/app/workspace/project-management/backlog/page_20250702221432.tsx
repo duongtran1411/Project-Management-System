@@ -21,7 +21,6 @@ import {
 } from "@ant-design/icons";
 import React, { useState } from "react";
 import useSWR from "swr";
-import { Endpoints } from "@/lib/endpoints";
 
 interface DataType {
   key: string;
@@ -148,6 +147,15 @@ const overlayContent = (
   </div>
 );
 
+const overlayEpic = (
+  <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
+    <Checkbox value="Option A">No Epic</Checkbox>
+    <Checkbox value="Option B">SRS Document</Checkbox>
+    <Checkbox value="Option C">Project Tracking</Checkbox>
+    <Checkbox value="Option D">BACKEND API</Checkbox>
+  </div>
+);
+
 const handleMenuClick = ({ key }: { key: string }) => {
   if (key === "edit") {
     console.log("Edit sprint clicked");
@@ -167,38 +175,7 @@ const items = [
   },
 ];
 export default function Backlog() {
-  const projectId = "64b1e2005a1c000002222201";
   const [showTable, setShowTable] = useState<boolean>(true);
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
-  const { data: epicData } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
-
-  const { data: taskData } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
-
-  const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
-
-  const overlayEpic = (
-    <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
-      <Checkbox.Group value={selectedEpics} onChange={setSelectedEpics}>
-        {epicData?.data?.map((epic: any) => (
-          <Checkbox key={epic._id} value={epic._id}>
-            {epic.name}
-          </Checkbox>
-        ))}
-      </Checkbox.Group>
-    </div>
-  );
-
-  console.log("Epic Data:", taskData);
 
   const onChange: CheckboxProps["onChange"] = (e) => {
     console.log(`checked = ${e.target.checked}`);

@@ -167,19 +167,11 @@ const items = [
   },
 ];
 export default function Backlog() {
-  const projectId = "64b1e2005a1c000002222201";
   const [showTable, setShowTable] = useState<boolean>(true);
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
   const { data: epicData } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
-
-  const { data: taskData } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
-      projectId
+      "64b1e2005a1c000002222201"
     )}`,
     fetcher
   );
@@ -198,7 +190,7 @@ export default function Backlog() {
     </div>
   );
 
-  console.log("Epic Data:", taskData);
+  console.log("Epic Data:", selectedEpics);
 
   const onChange: CheckboxProps["onChange"] = (e) => {
     console.log(`checked = ${e.target.checked}`);
