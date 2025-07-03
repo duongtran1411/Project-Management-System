@@ -1,197 +1,174 @@
 "use client";
+import { Avatar, Button, Checkbox, Dropdown, Input, Space, Tag } from "antd";
+
+import { DownOutlined, SearchOutlined } from "@ant-design/icons";
+import React, { useState, useMemo, useEffect } from "react";
+import useSWR, { mutate } from "swr";
+import { Endpoints } from "@/lib/endpoints";
 import {
-  Avatar,
-  Button,
-  Checkbox,
-  CheckboxProps,
-  Dropdown,
-  Input,
-  Space,
-  Table,
-  TableProps,
-  Tag,
-} from "antd";
+  Contributor,
+  CreateMilestone,
+  Epic,
+  Milestone,
+  Task,
+} from "@/types/types";
+import SprintSection from "@/components/workspace/backlog/SprintSection";
+import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
+import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
+import { createMilestone } from "@/lib/services/milestone/milestone";
 
-import {
-  DownOutlined,
-  EllipsisOutlined,
-  PlusOutlined,
-  RightOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import React, { useState } from "react";
-
-interface DataType {
-  key: string;
-  name: string;
-  epic: string;
-  status: string;
-  startDate: string;
-  assignee: string;
-  checked: boolean;
-}
-
-const columns: TableProps<DataType>["columns"] = [
-  {
-    title: "",
-    dataIndex: "checkbox",
-    render: (_, record) => <Checkbox checked={record.checked} />,
-    width: 50,
-  },
-  {
-    title: "",
-    dataIndex: "key",
-    render: (key) => (
-      <span className="w-[200px] line-through whitespace-nowrap">{key}</span>
-    ),
-    className: "w-[200px]",
-  },
-  {
-    title: "",
-    dataIndex: "name",
-    className: "w-full",
-  },
-  {
-    title: "",
-    dataIndex: "epic",
-    render: (epic) => <Tag color="purple">{epic}</Tag>,
-  },
-  {
-    title: "",
-    dataIndex: "status",
-    render: (status) => {
-      const normalized = status.toLowerCase();
-      const color =
-        normalized === "done"
-          ? "green"
-          : normalized === "in progress"
-            ? "blue"
-            : "gray";
-
-      return <Tag color={color}>{status}</Tag>;
-    },
-  },
-
-  {
-    title: "",
-    dataIndex: "startDate",
-    render: (status) => <Tag>{status}</Tag>,
-  },
-  {
-    title: "",
-    dataIndex: "assignee",
-    render: (assignee) => (
-      <div className="flex items-center justify-center w-8 h-8 text-white bg-purple-600 rounded-full">
-        {assignee}
-      </div>
-    ),
-  },
-];
-
-const data: DataType[] = [
-  {
-    key: "SCRUM-101",
-    name: "Implement login API",
-    epic: "Authentication",
-    status: "TO DO",
-    startDate: "2025-06-20",
-    assignee: "Alice",
-    checked: false,
-  },
-  {
-    key: "SCRUM-102",
-    name: "Build user dashboard",
-    epic: "User Interface",
-    status: "IN PROGRESS",
-    startDate: "2025-06-18",
-    assignee: "Bob",
-    checked: true,
-  },
-  {
-    key: "SCRUM-103",
-    name: "Create project API",
-    epic: "Project Management",
-    status: "DONE",
-    startDate: "2025-06-15",
-    assignee: "Charlie",
-    checked: true,
-  },
-  {
-    key: "SCRUM-104",
-    name: "Fix bug in task filter",
-    epic: "Task Module",
-    status: "TO DO",
-    startDate: "2025-06-22",
-    assignee: "Diana",
-    checked: false,
-  },
-  {
-    key: "SCRUM-105",
-    name: "Optimize database queries",
-    epic: "Performance",
-    status: "IN PROGRESS",
-    startDate: "2025-06-19",
-    assignee: "Eve",
-    checked: false,
-  },
-];
-
-const overlayContent = (
-  <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
-    <Checkbox value="Option A">Trần Đại Dương</Checkbox>
-    <Checkbox value="Option B">Nguyễn Thái Sơn</Checkbox>
-    <Checkbox value="Option C">Hoàng Thị Hương Giang</Checkbox>
-    <Checkbox value="Option D">Lê Văn Việt</Checkbox>
-    <Checkbox value="Option D">Unassigned</Checkbox>
-  </div>
-);
-
-const overlayEpic = (
-  <div className="flex flex-col gap-2 p-4 ml-2 bg-white rounded-md shadow-lg">
-    <Checkbox value="Option A">No Epic</Checkbox>
-    <Checkbox value="Option B">SRS Document</Checkbox>
-    <Checkbox value="Option C">Project Tracking</Checkbox>
-    <Checkbox value="Option D">BACKEND API</Checkbox>
-  </div>
-);
-
-const handleMenuClick = ({ key }: { key: string }) => {
-  if (key === "edit") {
-    console.log("Edit sprint clicked");
-  } else if (key === "delete") {
-    console.log("Delete sprint clicked");
-  }
-};
-
-const items = [
-  {
-    key: "edit",
-    label: "Edit sprint",
-  },
-  {
-    key: "delete",
-    label: "Delete sprint",
-  },
-];
 export default function Backlog() {
-  const [showTable, setShowTable] = useState<boolean>(true);
-  const onChange: CheckboxProps["onChange"] = (e) => {
-    console.log(`checked = ${e.target.checked}`);
+  const projectId = "64b1e2005a1c000002222201";
+
+  // Search states
+  const [searchText, setSearchText] = useState<string>("");
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+  const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
+  const [listTask, setListTask] = useState<Task[]>([]);
+
+  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const { data: epicData } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
+      projectId
+    )}`,
+    fetcher
+  );
+
+  const { data: taskData } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
+      projectId
+    )}`,
+    fetcher
+  );
+
+  const { data: contributorData } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
+      projectId
+    )}`,
+    fetcher
+  );
+
+  console.log("user data", contributorData);
+
+  const { data: milestoneData } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.GET_BY_PROJECT(
+      projectId
+    )}`,
+    fetcher
+  );
+  const refreshData = () => {
+    mutate(
+      `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.MILESTONE}`
+    );
   };
-  const handleShowTable = () => {
-    setShowTable(!showTable);
+
+  // console.log("milestone list", milestoneData);
+
+  // Filtered tasks based on search criteria
+  const filteredTasks = useMemo(() => {
+    if (!taskData?.data) return [];
+
+    return taskData.data.filter((task: Task) => {
+      // Search by task name
+      const nameMatch =
+        !searchText ||
+        task.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        (task.description &&
+          task.description.toLowerCase().includes(searchText.toLowerCase()));
+
+      // Filter by assignee
+      const assigneeMatch =
+        selectedAssignees.length === 0 ||
+        (task.assignee?._id && selectedAssignees.includes(task.assignee._id)) ||
+        (selectedAssignees.includes("unassigned") && !task.assignee);
+
+      // Filter by epic
+      const epicMatch =
+        selectedEpics.length === 0 ||
+        (task.epic?._id && selectedEpics.includes(task.epic._id));
+
+      return nameMatch && assigneeMatch && epicMatch;
+    });
+  }, [taskData?.data, searchText, selectedAssignees, selectedEpics]);
+
+  useEffect(() => {
+    if (filteredTasks) setListTask(filteredTasks);
+  }, [filteredTasks]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchText("");
+    setSelectedAssignees([]);
+    setSelectedEpics([]);
   };
+
+  // Check if any filters are active
+  const hasActiveFilters =
+    searchText || selectedAssignees.length > 0 || selectedEpics.length > 0;
+
+  const overlayEpic = (
+    <div className="p-4 ml-2 bg-white rounded-md shadow-lg">
+      <Checkbox.Group
+        value={selectedEpics}
+        onChange={setSelectedEpics}
+        className="flex flex-col gap-2 "
+      >
+        {epicData?.data?.map((epic: Epic) => (
+          <Checkbox key={epic._id} value={epic._id}>
+            {epic.name}
+          </Checkbox>
+        ))}
+      </Checkbox.Group>
+    </div>
+  );
+  const overlayContributor = (
+    <div className=" p-4 ml-2 bg-white rounded-md shadow-lg">
+      <Checkbox.Group
+        value={selectedAssignees}
+        onChange={setSelectedAssignees}
+        className="flex flex-col  gap-2"
+      >
+        {contributorData?.data?.map((contributor: Contributor) => (
+          <Checkbox key={contributor._id} value={contributor._id}>
+            {contributor?.userId?.fullName}
+          </Checkbox>
+        ))}
+      </Checkbox.Group>
+    </div>
+  );
+
+  //Create new task
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(
+    null
+  );
+  const showModal = (milestone: Milestone) => {
+    setSelectedMilestone(milestone);
+    setIsModalOpen(true);
+  };
+
+  //Create new sprint
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const handleCreateSprint = async (data: CreateMilestone) => {
+    await createMilestone(data); // gọi API
+    mutate(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone}`);
+    setOpenCreateModal(false);
+  };
+
   return (
     <div className="min-h-screen p-6 bg-white ">
       <div className="top-0 left-0 right-0 flex items-center gap-3 mb-4">
         {/* Search */}
         <Input
-          placeholder="Search"
+          placeholder="Search tasks..."
           prefix={<SearchOutlined className="text-gray-400" />}
-          className="bg-gray-100 w-[184px] h-[32px] border-gray-400"
+          className=" w-[184px] h-[32px] border-gray-400"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
         />
+
         {/* Search by member */}
-        <Dropdown popupRender={() => overlayContent} trigger={["click"]}>
+        <Dropdown popupRender={() => overlayContributor} trigger={["click"]}>
           <div className="cursor-pointer">
             <Avatar.Group
               size={30}
@@ -201,110 +178,56 @@ export default function Backlog() {
               }}
             >
               <Avatar style={{ backgroundColor: "#f56a00" }}>K</Avatar>
-              <Avatar
-                style={{
-                  backgroundColor: "#f0f1f3",
-                  color: "black",
-                  fontSize: "12px",
-                }}
-              >
-                +2
-              </Avatar>
+              {contributorData?.data.length > 1 && (
+                <Avatar
+                  style={{
+                    backgroundColor: "#f0f1f3",
+                    color: "black",
+                    fontSize: "12px",
+                  }}
+                >
+                  +{contributorData.data.length}
+                </Avatar>
+              )}
             </Avatar.Group>
           </div>
         </Dropdown>
 
         {/* Search by epic */}
-        <div className="flex gap-2">
-          <Dropdown popupRender={()=>overlayEpic} trigger={["click"]}>
-            <Button>
-              <Space className="font-semibold text-gray-700">
-                Epic
-                <DownOutlined />
-              </Space>
-            </Button>
-          </Dropdown>
-        </div>
-        <Button type="text" className="font-semibold text-gray-600">
-          Clear filters
-        </Button>
-      </div>
+        <Dropdown popupRender={() => overlayEpic} trigger={["click"]}>
+          <Button>
+            <Space className="font-semibold text-gray-700">
+              Epic
+              <DownOutlined />
+            </Space>
+          </Button>
+        </Dropdown>
 
-      <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
-        <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
-          {/* Left */}
-          <div className="flex items-center gap-2">
-            <Checkbox onChange={onChange} />
-            {showTable ? (
-              <DownOutlined className="text-sm" onClick={handleShowTable} />
-            ) : (
-              <RightOutlined className="text-sm" onClick={handleShowTable} />
-            )}
-
-            <h3 className="font-semibold">SCRUM Sprint 2 </h3>
-            <span className="ml-2 text-sm text-gray-500">
-              13 Jun – 27 Jun (3 of 30 work items visible)
-            </span>
-          </div>
-          {/* Right */}
-          <div className="flex items-center gap-2 ">
-            <div className="flex items-center ">
-              <Tag color="default" className="w-6 p-0 text-center">
-                0
-              </Tag>
-              <Tag color="blue" className="w-6 p-0 text-center">
-                0
-              </Tag>
-              <Tag color="green" className="w-6 p-0 text-center">
-                0
-              </Tag>
-            </div>
-            <Button type="default" className="font-semibold text-gray-600">
-              Complete sprint
-            </Button>
-            <Dropdown
-              menu={{ items, onClick: handleMenuClick }}
-              placement="bottomRight"
-              trigger={["click"]}
-            >
-              <Button
-                icon={<EllipsisOutlined />}
-                className="border border-gray-300 shadow-sm"
-              />
-            </Dropdown>
-          </div>
-        </div>
-
-        {showTable && (
-          <div>
-            <Table<DataType>
-              columns={columns}
-              dataSource={data}
-              pagination={false}
-              rowKey="key"
-              className="border border-t-0 border-gray-200"
-              size="small"
-            />
-
-            <Button
-              type="text"
-              className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
-            >
-              <span>
-                {" "}
-                <PlusOutlined /> Create
-              </span>
-            </Button>
-          </div>
+        {hasActiveFilters && (
+          <Button
+            type="text"
+            className="font-semibold text-gray-600"
+            onClick={clearFilters}
+          >
+            Clear filters
+          </Button>
         )}
       </div>
+
+      {/* Sprint Section */}
+      <SprintSection
+        milestoneData={milestoneData?.data}
+        listTask={listTask}
+        taskData={taskData?.data}
+        showModal={showModal}
+        refreshData={refreshData}
+      />
 
       {/* Backlog Section */}
       <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
         <div className="flex items-center justify-between p-2 rounded-t-md ">
           {/* Left */}
           <div className="flex items-center gap-2">
-            <Checkbox onChange={onChange} disabled={true} />
             <DownOutlined className="text-sm" />
 
             <h3 className="font-semibold">Backlog </h3>
@@ -323,25 +246,19 @@ export default function Backlog() {
                 0
               </Tag>
             </div>
-            <Button type="default" className="font-semibold text-gray-600">
+            <Button
+              type="default"
+              className="font-semibold text-gray-600"
+              onClick={() => setOpenCreateModal(true)}
+            >
               Create sprint
             </Button>
-            <Dropdown
-              menu={{ items, onClick: handleMenuClick }}
-              placement="bottomRight"
-              trigger={["click"]}
-            >
-              <Button
-                icon={<EllipsisOutlined />}
-                className="border border-gray-300 shadow-sm"
-              />
-            </Dropdown>
           </div>
         </div>
         <div className="border border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
           Your backlog is empty.
         </div>
-        <Button
+        {/* <Button
           type="text"
           className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
         >
@@ -349,8 +266,23 @@ export default function Backlog() {
             {" "}
             <PlusOutlined /> Create
           </span>
-        </Button>
+        </Button> */}
       </div>
+
+      <ModalCreateTask
+        projectId={projectId}
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        setSelectedMilestone={setSelectedMilestone}
+        selectedMilestone={selectedMilestone}
+      />
+
+      <CreateSprintModal
+        open={openCreateModal}
+        onCancel={() => setOpenCreateModal(false)}
+        onCreate={handleCreateSprint}
+        projectId={projectId}
+      />
     </div>
   );
 }

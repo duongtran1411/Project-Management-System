@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Button, Avatar, Space, Dropdown, Menu } from "antd";
+import { Button, Avatar, Space, Dropdown } from "antd";
 import { Constants } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { MenuProps } from "antd";
@@ -18,7 +18,7 @@ const Header: React.FC = () => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
       const decoded = jwtDecode<TokenPayload>(access_token);
-      setUserName(decoded.fullname)
+      setUserName(decoded.fullname);
       setAvatar(decoded.avatar);
       setToken(access_token);
     }
@@ -59,14 +59,17 @@ const Header: React.FC = () => {
   ];
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
-      <div className="flex items-center">
+      <div className="flex items-center ">
         <img src="/jira_icon.png" alt="Logo" className="h-8 w-8" />
         <h1 className="ml-3 text-xl font-semibold text-gray-800">Hub</h1>
       </div>
 
       <div>
         {token ? (
-          <Dropdown menu={{ items, onClick: handleMenuClick }} trigger={["click"]}>
+          <Dropdown
+            menu={{ items, onClick: handleMenuClick }}
+            trigger={["click"]}
+          >
             <Space className="cursor-pointer">
               <Avatar src={avatar} />
               <span className="text-gray-700">{userName}</span>

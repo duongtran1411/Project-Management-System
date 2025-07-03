@@ -10,8 +10,10 @@ import {
   PlusOutlined,
 } from "@ant-design/icons";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
+  const router = useRouter();
   return (
     <header className="bg-white px-4 py-2 flex items-center justify-between w-full border-b border-gray-300">
       {/* Left */}
@@ -21,7 +23,10 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
           icon={<MenuUnfoldOutlined className="text-xl text-gray-600" />}
           onClick={onCollapse}
         />
-        <div className="flex items-center gap-x-1">
+        <div
+          className="flex items-center gap-x-1 cursor-pointer"
+          onClick={() => router.push("/")}
+        >
           <Image src="/jira_icon.png" alt="Jira Logo" width={24} height={24} />
           <Typography.Text strong className="text-xl font-semibold">
             Hub

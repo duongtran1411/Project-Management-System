@@ -14,6 +14,7 @@ import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTas
 import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumnChart";
 
 import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
+import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
 
 // Sample data (from backlog)
 const tasks = [
@@ -197,6 +198,21 @@ export default function SummaryPage() {
               size="small"
               rowKey="name"
             />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Epic Progress Bard */}
+      {/* Sprint/Report Section */}
+      <Row gutter={16} className="mb-6">
+        <Col xs={24} md={12}>
+          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
+            <div className="font-semibold mb-2">Epic progress</div>
+            <span className="text-sm text-gray-500 mb-2">
+              See how your epics are progressing at a glance.
+            </span>
+
+            <ProgressChart />
           </Card>
         </Col>
       </Row>
