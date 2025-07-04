@@ -18,7 +18,7 @@ export class ProjectContributorService {
 
     return contributor.populate([
       { path: "userId", select: "fullName email avatar" },
-      { path: "roleId", select: "name" },
+      { path: "projectRoleId", select: "name" },
     ]);
   }
 
@@ -29,7 +29,7 @@ export class ProjectContributorService {
     const contributors = await ProjectContributor.find({ projectId })
       .populate([
         { path: "userId", select: "fullName email avatar" },
-        { path: "roleId", select: "name" },
+        { path: "projectRoleId", select: "name" },
       ])
       .lean();
 
@@ -43,7 +43,7 @@ export class ProjectContributorService {
     return ProjectContributor.findById(id)
       .populate([
         { path: "userId", select: "fullName email avatar" },
-        { path: "roleId", select: "name" },
+        { path: "projectRoleId", select: "name" },
       ])
       .lean();
   }
@@ -60,7 +60,7 @@ export class ProjectContributorService {
       runValidators: true,
     }).populate([
       { path: "userId", select: "fullName email avatar" },
-      { path: "roleId", select: "name" },
+      { path: "projectRoleId", select: "name" },
     ]);
 
     return updated?.toObject() || null;
