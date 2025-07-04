@@ -21,12 +21,28 @@ export class StatisticsService {
       { $project: { status: "$_id", count: 1, _id: 0 } },
     ]);
 
+    // Tính phần trăm cho project status
+    const projectStatusWithPercentage = projectStatusStats.map((stat: any) => ({
+      ...stat,
+      percentage:
+        totalProjects > 0
+          ? ((stat.count / totalProjects) * 100).toFixed(2)
+          : "0.00",
+    }));
+
+    // Tính phần trăm cho task status
+    const taskStatusWithPercentage = taskStatusStats.map((stat: any) => ({
+      ...stat,
+      percentage:
+        totalTasks > 0 ? ((stat.count / totalTasks) * 100).toFixed(2) : "0.00",
+    }));
+
     return {
       totalProjects,
       totalTasks,
       totalUsers,
-      projectStatusStats,
-      taskStatusStats,
+      projectStatusStats: projectStatusWithPercentage,
+      taskStatusStats: taskStatusWithPercentage,
     };
   }
 }

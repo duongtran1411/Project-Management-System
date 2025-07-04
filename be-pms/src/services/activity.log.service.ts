@@ -55,6 +55,7 @@ export class ActivityLogService {
     endDate?: Date;
     limit?: number;
     page?: number;
+    requestMethod?: string;
   }): Promise<{
     logs: IActivityLog[];
     total: number;
@@ -70,6 +71,7 @@ export class ActivityLogService {
     if (filters.country) query.country = filters.country;
     if (filters.city) query.city = filters.city;
     if (filters.status) query.status = filters.status;
+    if (filters.requestMethod) query.requestMethod = filters.requestMethod;
 
     if (filters.startDate || filters.endDate) {
       query.createdAt = {};
