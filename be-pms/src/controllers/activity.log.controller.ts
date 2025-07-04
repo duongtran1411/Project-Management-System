@@ -13,6 +13,7 @@ export class ActivityLogController {
         country,
         city,
         status,
+        requestMethod,
         startDate,
         endDate,
         limit,
@@ -27,6 +28,7 @@ export class ActivityLogController {
       if (country) filters.country = country;
       if (city) filters.city = city;
       if (status) filters.status = status;
+      if (requestMethod) filters.requestMethod = requestMethod;
       if (startDate) filters.startDate = new Date(startDate as string);
       if (endDate) filters.endDate = new Date(endDate as string);
       if (limit) filters.limit = parseInt(limit as string);
@@ -181,6 +183,7 @@ export class ActivityLogController {
         country,
         city,
         status,
+        requestMethod,
         startDate,
         endDate,
       } = req.query;
@@ -193,6 +196,7 @@ export class ActivityLogController {
       if (country) filters.country = country;
       if (city) filters.city = city;
       if (status) filters.status = status;
+      if (requestMethod) filters.requestMethod = requestMethod;
       if (startDate) filters.startDate = new Date(startDate as string);
       if (endDate) filters.endDate = new Date(endDate as string);
 
