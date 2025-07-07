@@ -5,9 +5,11 @@ export interface Statistical{
     projectStatusStats: {
         count:number
         status:string
+        percentage:string
     }[]
     taskStatusStats: {
         count:number
         status:string
+        percentage:string
     }[]
 }

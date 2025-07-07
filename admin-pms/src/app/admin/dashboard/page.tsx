@@ -18,10 +18,10 @@ export default function Dashboard() {
   const getStatistics = async (url: string): Promise<Statistical> => {
     try {
       const response = await axiosService.getAxiosInstance().get(url);
-      return response.data.data;
+      return response.data;
     } catch (error: any) {
       const errorMessage =
-         error.response?.data?.message  || error.message || "đã có lỗi xảy ra";
+        error.response?.data?.message || error.message || "đã có lỗi xảy ra";
       if (errorMessage) showErrorToast(errorMessage);
     }
     return Promise.reject();
@@ -113,29 +113,32 @@ export default function Dashboard() {
     xField: "status",
     yField: "value",
     colorField: "status",
-    barWidthRatio: 0.8
+    barWidthRatio: 0.8,
   };
 
-  const taskStatus = statistical?.taskStatusStats?.map((e)=>({
+  const taskStatus = statistical?.taskStatusStats?.map((e) => ({
     status: e.status,
-    value: e.count
+    total: e.count,
+    percentage: parseFloat(e.percentage),
   }));
 
   const configTask = {
     data: taskStatus,
-    angleField: "value", 
-    colorField: "status", 
-    radius: 1, 
+    angleField: "total",
+    colorField: "status",
+    radius: 1,
     label: {
-      type: "spider",
-      labelHeight: 28,
-      content: "{status}\n{percentage}",
+      position: "outside",
+      text: (data: any) => `${data.percentage}%`,
     },
-    interactions: [
-      {
-        type: "element-active", 
+    legend: {
+      color: {
+        title: false,
+        position: "right",
+        rowPadding: 5,
       },
-    ]
+    },
+    interactions: [{ type: "element-active" }],
   };
 
   return (
@@ -197,18 +200,15 @@ export default function Dashboard() {
         ))}
       </div>
 
-      
       <div className="grid grid-cols-1 gap-6 px-10 pb-10 md:grid-cols-2">
         <div className="p-6 bg-white shadow rounded-xl">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Project Overview</h2>
-            
           </div>
-          
+
           <div className="flex items-center justify-center h-48 text-gray-400">
-            {Array.isArray(statistical?.projectStatusStats) && statistical?.projectStatusStats && (
-                <Bar {...configProject}/>
-            )}
+            {Array.isArray(statistical?.projectStatusStats) &&
+              statistical?.projectStatusStats && <Bar {...configProject} />}
           </div>
           <div className="flex justify-between mt-4">
             <div>
@@ -226,9 +226,8 @@ export default function Dashboard() {
             <h2 className="text-lg font-semibold">Status Task</h2>
           </div>
           <div className="flex items-center justify-center h-48 text-gray-400">
-             {Array.isArray(statistical?.taskStatusStats) && statistical?.taskStatusStats && (
-                <Pie {...configTask}/>
-            )}
+            {Array.isArray(statistical?.taskStatusStats) &&
+              statistical?.taskStatusStats && <Pie {...configTask} />}
           </div>
         </div>
       </div>
