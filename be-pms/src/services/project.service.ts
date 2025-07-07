@@ -3,7 +3,7 @@ import Project, { IProject } from "../models/project.model";
 import ProjectContributor, {
     IProjectContributor,
 } from "../models/project.contributor.model";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import Workspace, { IWorkspace } from "../models/workspace.model";
 
 export class ProjectService {
@@ -48,7 +48,6 @@ export class ProjectService {
         const taskProgress = await Task.countDocuments({ projectId, status: { $eq: 'IN_PROGRESS' } })
         const taskToDo = await Task.countDocuments({ projectId, status: { $eq: 'TO_DO' } })
         const taskDone = await Task.countDocuments({ projectId, status: { $eq: 'DONE' } })
-
         const percentProgress = (taskProgress / totalTask) * 100
         const percentToDo = (taskToDo / totalTask) * 100
         const percentDone = (taskDone / totalTask) * 100
@@ -71,7 +70,7 @@ export class ProjectService {
         const epicWithTask = await Task.aggregate([
             {
                 $match: {
-                    projectId: projectId
+                    projectId: new Types.ObjectId(projectId)
                 }
             },
             {
@@ -91,7 +90,7 @@ export class ProjectService {
                     _id: {
                         epic: '$epic',
                         epicName: '$epicData.name',
-                        status: '$status'
+                        status: '$epicData.status'
                     },
                     count: { $sum: 1 }
                 }
@@ -105,21 +104,23 @@ export class ProjectService {
                     total: { $sum: '$count' },
                     todo: {
                         $sum: {
-                            $cond: [{ $eq: ['_id.status', 'TO_DO'] }, "$count", 0]
+                            $cond: [{ $eq: ['$_id.status', 'TO_DO'] }, "$count", 0]
                         }
                     },
                     inprogress: {
                         $sum: {
-                            $cond: [{ $eq: ['_id.status', 'IN_PROGRESS'] }, "$count", 0]
+                            $cond: [{ $eq: ['$_id.status', 'IN_PROGRESS'] }, "$count", 0]
                         }
                     },
                     done: {
                         $sum: {
-                            $cond: [{ $eq: ['_id.status', 'DONE'] }, "$count", 0]
+                            $cond: [{ $eq: ['$_id.status', 'DONE'] }, "$count", 0]
                         }
                     }
 
-                },
+                }
+            },
+            {
                 $project: {
                     _id: 0,
                     epic: "$_id.epic",
@@ -135,7 +136,7 @@ export class ProjectService {
                         $cond: [
                             { $eq: ["$total", 0] },
                             0,
-                            { $round: [{ $multiply: [{ $divide: ["$inProgress", "$total"] }, 100] }, 2] }
+                            { $round: [{ $multiply: [{ $divide: ["$inprogress", "$total"] }, 100] }, 2] }
                         ]
                     },
                     donePercent: {
@@ -148,7 +149,6 @@ export class ProjectService {
                 }
             }
         ])
-        // lấy ra 1 mảng epic với các task (phần trăm)
         return { epicWithTask }
     }
 
@@ -156,7 +156,7 @@ export class ProjectService {
         const taskPriority = await Task.aggregate([
             {
                 $match: {
-                    projectId: projectId
+                    projectId: new Types.ObjectId(projectId)
                 }
             },
             {
@@ -173,6 +173,8 @@ export class ProjectService {
                 }
             }
         ])
+
+        console.log(taskPriority);
 
         return { taskPriority }
     }

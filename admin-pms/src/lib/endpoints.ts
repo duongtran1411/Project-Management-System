@@ -15,5 +15,9 @@ export class Endpoints {
     GET_ALL: 'activity-log'
   }
 
+  static readonly Statistical = {
+    GET_STATISTICAL : 'statistics'
+  }
+
 
 }
