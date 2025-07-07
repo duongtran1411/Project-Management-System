@@ -22,15 +22,11 @@ const router = Router();
  *         name: userId
  *         schema:
  *           type: string
- *           example: "60d21b4667d0d8992e610c85"
+ *       - in: query
+ *         name: requestMethod
+ *         schema: { type: string }
  *       - in: query
  *         name: ipAddress
- *         schema: { type: string }
- *       - in: query
- *         name: country
- *         schema: { type: string }
- *       - in: query
- *         name: city
  *         schema: { type: string }
  *       - in: query
  *         name: status
