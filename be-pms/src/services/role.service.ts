@@ -18,6 +18,17 @@ export class RoleService {
     }
     return role
   }
+
+  async getRoles():Promise<IRole[]>{
+    const roles = await Role.find({}).populate({
+      path: 'permissionIds',
+      select: '_id code'
+    });
+    if (!roles) {
+      throw new Error('No role data');
+    }
+    return roles
+  }
 }
 
 export default new RoleService();

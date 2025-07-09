@@ -39,6 +39,34 @@ class RoleController{
             })
         }
     }
+
+    getAll = async(req: AuthRequest, res:Response, next: NextFunction):Promise<void> => {
+        try {
+
+            const roles = await roleService.getRoles();
+
+            if(!roles){
+                res.status(400).json({
+                    success: false,
+                    status: 400,
+                    message: 'can not get role data'
+                })
+            }
+
+            res.status(200).json({
+                success: true,
+                status: 200,
+                data: roles
+            })
+        } catch (error) {
+            const err = error as Error;
+            res.status(400).json({
+                success: false,
+                status: 400,
+                message: err.message
+            })
+        }
+    }
 }
 
 export default new RoleController();

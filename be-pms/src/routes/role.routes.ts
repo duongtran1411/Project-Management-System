@@ -6,6 +6,20 @@ const router = Router();
 
 /**
  * @openapi
+ * /role:
+ *   get:
+ *     summary: Lấy danh sách của Role
+ *     tags: [Role]
+ *     security: [bearerAuth: []]
+ *     responses:
+ *       200: { description: lấy danh sách role thành công }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get('/',authenticate,roleController.getAll)
+
+/**
+ * @openapi
  * /role/{id}:
  *   patch:
  *     summary: Cập nhật permissionIds của Role
