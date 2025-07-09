@@ -174,8 +174,6 @@ export class ProjectService {
             }
         ])
 
-        console.log(taskPriority);
-
         return { taskPriority }
     }
 
