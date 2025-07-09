@@ -19,5 +19,15 @@ export class Endpoints {
     GET_STATISTICAL : 'statistics'
   }
 
+  static readonly Role = {
+    GET_All: 'role',
+    GET_BY_ID: (roleId:string) => `role/${roleId}`,
+    UPDATE_PERMISSION: (roleId: string) => `role/${roleId}`
+  }
+
+  static readonly Permission = {
+
+  }
+
 
 }

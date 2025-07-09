@@ -16,7 +16,27 @@ const router = Router();
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.get('/',authenticate,roleController.getAll)
+router.get('/',authenticate,roleController.getAll);
+
+/**
+ * @openapi
+ * /role/{id}:
+ *   get:
+ *     summary: Lấy Role theo Id
+ *     tags: [Role]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của role
+ *     responses:
+ *       200: { description: lấy danh sách role thành công }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get('/:id',authenticate,roleController.getById)
 
 /**
  * @openapi

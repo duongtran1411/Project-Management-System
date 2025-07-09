@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import roleService, { RoleService } from "../services/role.service";
 import { Types } from "mongoose";
+import permissionService from "../services/permission.service";
 
 class RoleController{
     updateRole = async(req: AuthRequest, res:Response, next: NextFunction):Promise<void> => {
@@ -11,15 +12,11 @@ class RoleController{
             const user = req.user
 
             if(!id){
-                res.status(400).json({
-                    message:"id is required"
-                })
+                throw new Error('id is required')
             }
 
             if(!Array.isArray(permissionData)){
-                res.status(400).json({
-                    message:"permission incorrect format"
-                })
+                throw new Error('Data incorrect format')
             }
 
             const permissionIds = permissionData.map((e: string) => new Types.ObjectId(e))
@@ -40,10 +37,41 @@ class RoleController{
         }
     }
 
+    getById = async(req: AuthRequest, res:Response, next: NextFunction):Promise<void> => {
+        try {
+            const {id} = req.params
+            console.log(id);
+            const roles = await roleService.getById(id);
+            const permissions = await permissionService.getAll();
+            if(!roles){
+                res.status(400).json({
+                    success: false,
+                    status: 400,
+                    message: 'can not get role data'
+                })
+            }
+
+            res.status(200).json({
+                success: true,
+                status: 200,
+                data: {
+                    permissionSelect: roles,
+                    allPermission: permissions
+                }
+            })
+        } catch (error) {
+            const err = error as Error;
+            res.status(400).json({
+                success: false,
+                status: 400,
+                message: err.message
+            })
+        }
+    }
+
     getAll = async(req: AuthRequest, res:Response, next: NextFunction):Promise<void> => {
         try {
-
-            const roles = await roleService.getRoles();
+            const roles = await roleService.getAll();
 
             if(!roles){
                 res.status(400).json({
