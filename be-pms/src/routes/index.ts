@@ -11,7 +11,8 @@ import workspaceRotes from "./workspace.routes";
 import milestoneRoutes from "./milestone.routes";
 import activityLogRoutes from "./activity.log.routes";
 import passwordResetRoutes from "./password-reset.routes";
-
+import permissionRoutes from './permission.routes';
+import roleRoutes from './role.routes'
 const router = Router();
 
 // Mount routes
@@ -21,12 +22,14 @@ router.use("/statistics", statisticsRoutes);
 router.use("/emailTemplate", emailTemplateRoutes);
 router.use("/epic", epicRoutes);
 router.use("/task", taskRoutes);
+router.use('/permission',permissionRoutes)
 router.use("/project", projectRoutes);
 router.use("/projectContributor", projectContributorRoutes);
 router.use("/workspace", workspaceRotes);
 router.use("/milestone", milestoneRoutes);
 router.use("/activity-log", activityLogRoutes);
 router.use("/password-reset", passwordResetRoutes);
+router.use('/role',roleRoutes)
 
 // Health check
 /**

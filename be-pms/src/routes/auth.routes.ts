@@ -56,6 +56,62 @@ router.post("/login", authController.login);
 
 /**
  * @openapi
+ * /auth/login-admin:
+ *   post:
+ *     summary: Đăng nhập admin
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@example.com
+ *               password:
+ *                 type: string
+ *                 example: secret
+ *     responses:
+ *       200:
+ *         description: Đăng nhập admin thành công
+ *       401:
+ *         description: Email hoặc mật khẩu không đúng
+ *       403:
+ *         description: Không có quyền admin
+ */
+router.post("/login-admin", authController.loginAdmin);
+
+/**
+ * @openapi
+ * /auth/check-admin-access:
+ *   post:
+ *     summary: Đăng nhập Administrator
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 example: secret
+ *     responses:
+ *       200:
+ *         description: Đăng nhập thành công
+ */
+router.post("/check-admin-access", authController.loginAdmin);
+
+/**
+ * @openapi
  * /auth/forgot-password:
  *   post:
  *     summary: Quên mật khẩu (gửi OTP xác thực)

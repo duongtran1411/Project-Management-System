@@ -55,7 +55,6 @@ const Page = () => {
         setIsModalVisible(false);
     };
 
-    // Lọc teams theo searchTerm (không phân biệt hoa thường)
     const filteredTeams = teams.filter(team =>
         team.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -120,7 +119,7 @@ const Page = () => {
                             </Card>
                         ))
                     ) : (
-                        <div className="text-gray-500 mt-4">No teams found.</div>
+                        <div className="mt-4 text-gray-500">No teams found.</div>
                     )}
                 </div>
                 {/* Placeholder graphic giữ lại phía dưới nếu chưa có team */}

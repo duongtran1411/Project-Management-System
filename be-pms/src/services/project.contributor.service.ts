@@ -18,7 +18,7 @@ export class ProjectContributorService {
 
     return contributor.populate([
       { path: "userId", select: "fullName email avatar" },
-      { path: "roleId", select: "name" },
+      { path: "projectRoleId", select: "name" },
     ]);
   }
 
@@ -27,9 +27,10 @@ export class ProjectContributorService {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
     const contributors = await ProjectContributor.find({ projectId })
+      .select("-projectId")
       .populate([
         { path: "userId", select: "fullName email avatar" },
-        { path: "roleId", select: "name" },
+        { path: "projectRoleId", select: "name" },
       ])
       .lean();
 
@@ -43,7 +44,7 @@ export class ProjectContributorService {
     return ProjectContributor.findById(id)
       .populate([
         { path: "userId", select: "fullName email avatar" },
-        { path: "roleId", select: "name" },
+        { path: "projectRoleId", select: "name" },
       ])
       .lean();
   }
@@ -60,7 +61,7 @@ export class ProjectContributorService {
       runValidators: true,
     }).populate([
       { path: "userId", select: "fullName email avatar" },
-      { path: "roleId", select: "name" },
+      { path: "projectRoleId", select: "name" },
     ]);
 
     return updated?.toObject() || null;
@@ -84,6 +85,17 @@ export class ProjectContributorService {
       projectId,
     });
     return !!result;
+  }
+
+  async getProjectsByUserId(userId: string): Promise<any[]> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) return [];
+
+    const contributors = await ProjectContributor.find({ userId })
+      .populate({ path: "projectId", select: "name icon projectType" })
+      .select("projectId") // Chỉ cần trường projectId
+      .lean();
+
+    return contributors.map((c) => c.projectId);
   }
 }
 

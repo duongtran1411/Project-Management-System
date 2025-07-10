@@ -127,4 +127,52 @@ router.put("/:id", projectContributorController.updateContributor);
  */
 router.delete("/:id", projectContributorController.deleteContributor);
 
+/**
+ * @openapi
+ * /projectContributor/project/{projectId}/users:
+ *   get:
+ *     summary: Lấy danh sách user thuộc project
+ *     tags: [Project Contributor]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Danh sách user trong project
+ *       400:
+ *         description: Lỗi không lấy được danh sách user
+ */
+router.get(
+  "/project/:projectId/users",
+  projectContributorController.getContributorsByProject
+);
+
+/**
+ * @openapi
+ * /projectContributor/user/{userId}/projects:
+ *   get:
+ *     summary: Lấy danh sách project theo userId
+ *     tags: [Project Contributor]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của user
+ *     responses:
+ *       200:
+ *         description: Danh sách project
+ *       400:
+ *         description: Lỗi không lấy được project
+ */
+router.get(
+  "/user/:userId/projects",
+  projectContributorController.getProjectsByUser
+);
+
 export default router;

@@ -31,16 +31,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoggedIn(false);
       localStorage.removeItem(Constants.API_TOKEN_KEY);
       localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+      router.replace("/authentication/login");
       return;
     }
 
     setIsLoggedIn(true);
+   
+    
     const decoded = jwtDecode<TokenPayload>(token);
-    if (decoded.role === "ADMIN") {
+    if (decoded.role !== "ADMIN") {
+      router.replace("/authentication/login");
+      return;
+    }
+
+    if (decoded.role === "ADMIN" && !currentPath.startsWith('/admin')) {
       router.replace("/admin");
       return;
     }
-    router.replace("/authentication/login");
+
   }, []);
 
   return (

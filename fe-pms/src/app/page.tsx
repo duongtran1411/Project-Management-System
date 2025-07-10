@@ -10,10 +10,12 @@ import { showSuccessToast } from "@/components/common/toast/toast";
 import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
+import { useRouter } from "next/navigation";
 const { Text } = Typography;
 export default function Page() {
   const [site, setSite] = useState("fpt-team-mdoh239h");
   const [name, setName] = useState<string>("");
+  const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
@@ -48,7 +50,8 @@ export default function Page() {
               <div className="mt-4 mb-2">
                 <label
                   htmlFor="site-input"
-                  className="text-gray-700 text-sm mb-1 block">
+                  className="text-gray-700 text-sm mb-1 block"
+                >
                   Your site
                 </label>
                 <Space.Compact className="w-[350px] h-12">
@@ -58,9 +61,7 @@ export default function Page() {
                     onChange={(e) => setSite(e.target.value)}
                     suffix={
                       <span className="flex items-center gap-2">
-                        <Text className="text-[#7a869a] text-sm">
-                          .atlassian.net
-                        </Text>
+                        <Text className="text-[#7a869a] text-sm">.com</Text>
                         <CheckCircleOutlined className="text-[#36b37e] text-lg font-semibold" />
                       </span>
                     }
@@ -72,7 +73,9 @@ export default function Page() {
                 type="primary"
                 size="large"
                 shape="round"
-                className="mt-3 px-16 font-semibold text-lg w-[350px] h-12">
+                className="mt-3 px-16 font-semibold text-lg w-[350px] h-12"
+                onClick={() => router.push("/workspace")}
+              >
                 Continue
               </Button>
             </div>

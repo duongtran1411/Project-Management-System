@@ -81,6 +81,57 @@ export class AuthController {
     }
   };
 
+  loginAdmin = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email, password } = req.body;
+
+      const result = await authService.loginWithEmailAdmin(email, password);
+
+      // Log successful admin login
+      await activityLogService.createLog(
+        req,
+        "LOGIN",
+        "User",
+        result.user._id?.toString(),
+        result.user._id?.toString(),
+        { email, loginMethod: "admin_email" },
+        "SUCCESS"
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Đăng nhập admin thành công",
+        data: result,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Admin login error:", error);
+
+      // Log failed admin login
+      await activityLogService.createLog(
+        req,
+        "LOGIN_FAILED",
+        "User",
+        undefined,
+        undefined,
+        { email: req.body.email, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
+      const response: any = {
+        success: false,
+        message: error.message || "Đăng nhập admin thất bại",
+        statusCode: 401,
+      };
+
+      if (error.suggestForgotPassword) {
+        response.suggestForgotPassword = true;
+      }
+      res.status(401).json(response);
+    }
+  };
+
   forgotPassword = async (req: Request, res: Response): Promise<void> => {
     try {
       const { email } = req.body;

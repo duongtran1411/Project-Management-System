@@ -6,10 +6,10 @@ import { User } from "@/models/user/User";
 import { useEffect, useState } from "react";
 import { FiSearch, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
 import useSWR from "swr";
-import {Spin} from "antd";
+import { Spin } from "antd";
 import { showErrorToast } from "@/components/common/toast/toast";
-import {Modal} from "antd";
-import {format} from 'date-fns';
+import { Modal } from "antd";
+import { format } from "date-fns";
 const UserAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,11 +25,11 @@ const UserAdmin = () => {
 
   const showModalStatus = () => {
     setOpen(true);
-  }
+  };
 
   const hideModalStatus = () => {
     setOpen(false);
-  }
+  };
   const getAllUser = async (url: string): Promise<User[]> => {
     const response = await getAll(url);
     return response.data;
@@ -45,8 +45,8 @@ const UserAdmin = () => {
     </div>;
   }
 
-  if(error){
-    showErrorToast(error.message)
+  if (error) {
+    showErrorToast(error.message);
   }
 
   useEffect(() => {
@@ -81,58 +81,6 @@ const UserAdmin = () => {
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
     }
   };
-
-  const User = [
-  {
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "Admin",
-    failedLogin: 0,
-    status: "Active",
-    lastLogin: "2025-06-23"
-  },
-  {
-    name: "Bob Smith",
-    email: "bob@example.com",
-    role: "User",
-    failedLogin: 2,
-    status: "Locked",
-    lastLogin: "2025-06-22"
-  },
-  {
-    name: "Charlie Nguyen",
-    email: "charlie@example.com",
-    role: "Admin",
-    failedLogin: 1,
-    status: "Active",
-    lastLogin: "2025-06-24"
-  },
-  {
-    name: "Diana Lee",
-    email: "diana@example.com",
-    role: "User",
-    failedLogin: 0,
-    status: "Inactive",
-    lastLogin: "2025-06-20"
-  },
-  {
-    name: "Nguyễn Thành Hưng",
-    email: "hungnt2003@example.com",
-    role: "User",
-    failedLogin: 0,
-    status: "Active",
-    lastLogin: "2025-06-20"
-  },
-  {
-    name: "Nguyễn Thái Sơn",
-    email: "sonnt2003@example.com",
-    role: "User",
-    failedLogin: 0,
-    status: "Active",
-    lastLogin: "2025-06-20"
-  }
-];
-
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -187,18 +135,18 @@ const UserAdmin = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {User &&
-                  Array.isArray(User) &&
-                  User.map((user,index) => (
-                    <tr key={user.email} className="hover:bg-gray-50">
+                {users &&
+                  Array.isArray(users) &&
+                  users.map((user, index) => (
+                    <tr key={user._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {index+1}
+                          {index + 1}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {user.name}
+                          {user.fullName}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -209,32 +157,39 @@ const UserAdmin = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
-                            user.role === "Admin"
+                            user.role.name === "ADMIN"
                               ? "bg-purple-100 text-purple-800"
                               : "bg-green-100 text-green-800"
-                          }`} onClick={showModal}>
-                          {user.role}
+                          }`}
+                          onClick={showModal}>
+                          {user.role.name}
                         </span>
                       </td>
-                     
+
                       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">
                         <div className="flex justify-start space-x-3 items-center">
-                          {user.failedLogin}
+                          <p className="text-red-400">number of times:  {user.failedLoginAttempts}</p>
                         </div>
                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
-                            user.status === "Active"
+                            user.status === "ACTIVE"
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
-                          }`} onClick={showModalStatus}>
-                          {user.status} 
+                          }`}
+                          onClick={showModalStatus}>
+                          {user.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                         <div className="flex space-x-3 items-center">
-                          {user.lastLogin}
+                          {user.lastLogin
+                            ? format(
+                                new Date(user.lastLogin),
+                                "dd/MM/yyyy"
+                              )
+                            : "Chưa đăng nhập"}
                         </div>
                       </td>
                     </tr>
@@ -278,25 +233,23 @@ const UserAdmin = () => {
           </div>
         </div>
         <Modal
-        title="Change Role For User"
-        open={open}
-        onOk={hideModal}
-        onCancel={hideModal}
-        okText="Confrim"
-        cancelText="Cancel"
-      >
-        <p>Do you want change role</p>
-      </Modal>
-      <Modal
-        title="Change Status For User"
-        open={open}
-        onOk={hideModalStatus}
-        onCancel={hideModalStatus}
-        okText="Confrim"
-        cancelText="Cancel"
-      >
-        <p>Do you want change role</p>
-      </Modal>
+          title="Change Role For User"
+          open={open}
+          onOk={hideModal}
+          onCancel={hideModal}
+          okText="Confrim"
+          cancelText="Cancel">
+          <p>Do you want change role</p>
+        </Modal>
+        <Modal
+          title="Change Status For User"
+          open={open}
+          onOk={hideModalStatus}
+          onCancel={hideModalStatus}
+          okText="Confrim"
+          cancelText="Cancel">
+          <p>Do you want change role</p>
+        </Modal>
       </div>
     </div>
   );

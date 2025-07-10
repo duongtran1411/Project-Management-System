@@ -47,11 +47,13 @@ export const authenticate = async (
 export const authorize = (role: string) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      res.status(401).json({ message: "Yêu cầu quyền truy cập" });
+      return res.status(401).json({ message: "Yêu cầu quyền truy cập" });
     }
 
-    if (req.user.role.name !== role) {
-      res.status(403).json({
+    // Đảm bảo role đã được populate
+    const userRole = req.user.role as any;
+    if (!userRole || userRole.name !== role) {
+      return res.status(403).json({
         message: "Bạn không có quyền thực hiện hành động này",
       });
     }
