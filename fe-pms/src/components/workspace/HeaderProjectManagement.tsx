@@ -10,10 +10,6 @@ import {
   TableOutlined,
   CalendarOutlined,
   BarsOutlined,
-  FormOutlined,
-  FlagOutlined,
-  CheckSquareOutlined,
-  CodeOutlined,
 } from "@ant-design/icons";
 
 const menuItems = [
@@ -23,17 +19,33 @@ const menuItems = [
     icon: <AppstoreOutlined />,
     url: "/workspace/project-management/summary",
   },
-  { key: "Timeline", label: "Timeline", icon: <ClockCircleOutlined />, url: '/workspace/project-management/timeline' },
+  {
+    key: "Timeline",
+    label: "Timeline",
+    icon: <ClockCircleOutlined />,
+    url: "/workspace/project-management/timeline",
+  },
 
-  { key: "Backlog", label: "Backlog", icon: <UnorderedListOutlined />, url: '/workspace/project-management/backlog' },
-  { key: "Board", label: "Board", icon: <TableOutlined />, url: '/workspace/project-management' },
-  { key: "Calendar", label: "Calendar", icon: <CalendarOutlined />, url: '/workspace/project-management/calendar' },
+  {
+    key: "Backlog",
+    label: "Backlog",
+    icon: <UnorderedListOutlined />,
+    url: "/workspace/project-management/backlog",
+  },
+  {
+    key: "Board",
+    label: "Board",
+    icon: <TableOutlined />,
+    url: "/workspace/project-management",
+  },
+  {
+    key: "Calendar",
+    label: "Calendar",
+    icon: <CalendarOutlined />,
+    url: "/workspace/project-management/calendar",
+  },
 
   { key: "List", label: "List", icon: <BarsOutlined /> },
-  { key: "Forms", label: "Forms", icon: <FormOutlined /> },
-  { key: "Goals", label: "Goals", icon: <FlagOutlined /> },
-  { key: "All work", label: "All work", icon: <CheckSquareOutlined /> },
-  { key: "Code", label: "Code", icon: <CodeOutlined /> },
 ];
 
 const HeaderProjectManagement = () => {

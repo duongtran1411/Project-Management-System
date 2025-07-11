@@ -3,7 +3,7 @@ import { Avatar, Button, Checkbox, Dropdown, Input, Space, Tag } from "antd";
 
 import { DownOutlined, SearchOutlined } from "@ant-design/icons";
 import React, { useState, useMemo, useEffect } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import {
   Contributor,
@@ -50,16 +50,14 @@ export default function Backlog() {
 
   console.log("user data", contributorData);
 
-  const { data: milestoneData } = useSWR(
+  const { data: milestoneData, mutate } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
   const refreshData = () => {
-    mutate(
-      `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.MILESTONE}`
-    );
+    mutate();
   };
 
   // console.log("milestone list", milestoneData);
