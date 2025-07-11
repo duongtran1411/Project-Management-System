@@ -15,3 +15,9 @@ export interface Permissions {
     code: string
 }
 
+export interface PermissionDetail { 
+    _id: string
+    code:string
+    description: string
+}
+

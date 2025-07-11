@@ -1,5 +1,5 @@
 import { IRole, IUser, Role } from "../models";
-import { isValidObjectId, Types } from "mongoose";
+import { Types } from "mongoose";
 export class RoleService {
   async getRoleById(roleId: Types.ObjectId): Promise<string> {
     const role = await Role.findById(roleId);
@@ -37,6 +37,16 @@ export class RoleService {
     }
 
     return roles
+  }
+
+  async addRole(roleData:IRole, user:IUser): Promise<IRole>{
+    const role = await Role.create({
+      name: roleData.name,
+      description: roleData.description,
+      createdBy: user._id
+    })
+
+    return role
   }
 
 }
