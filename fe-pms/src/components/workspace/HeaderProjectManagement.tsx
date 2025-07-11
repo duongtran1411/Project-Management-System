@@ -29,7 +29,7 @@ const menuItems = [
   { key: "Board", label: "Board", icon: <TableOutlined />, url: '/workspace/project-management' },
   { key: "Calendar", label: "Calendar", icon: <CalendarOutlined />, url: '/workspace/project-management/calendar' },
 
-  { key: "List", label: "List", icon: <BarsOutlined /> },
+  { key: "List", label: "List", icon: <BarsOutlined />, url: '/workspace/project-management/list' },
   { key: "Forms", label: "Forms", icon: <FormOutlined /> },
   { key: "Goals", label: "Goals", icon: <FlagOutlined /> },
   { key: "All work", label: "All work", icon: <CheckSquareOutlined /> },
