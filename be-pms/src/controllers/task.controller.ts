@@ -358,6 +358,37 @@ export class TaskController {
       });
     }
   };
+
+  deleteManyTasks = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { taskIds } = req.body;
+
+      if (!Array.isArray(taskIds) || taskIds.length === 0) {
+        res.status(400).json({
+          success: false,
+          message: "Danh sách task cần xóa không hợp lệ",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const result = await taskService.deleteManyTasks(taskIds);
+
+      res.status(200).json({
+        success: true,
+        message: `Đã xóa ${result.success} task thành công, ${result.failed} task thất bại`,
+        data: result,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Delete many tasks error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Xóa nhiều task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
 }
 
 export default new TaskController();

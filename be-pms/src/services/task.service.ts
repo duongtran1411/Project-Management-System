@@ -218,6 +218,28 @@ export class TaskService {
 
     return task;
   }
+
+  async deleteManyTasks(
+    taskIds: string[]
+  ): Promise<{ success: number; failed: number }> {
+    let success = 0;
+    let failed = 0;
+
+    for (const taskId of taskIds) {
+      try {
+        const result = await Task.findByIdAndDelete(taskId);
+        if (result) {
+          success++;
+        } else {
+          failed++;
+        }
+      } catch (error) {
+        failed++;
+      }
+    }
+
+    return { success, failed };
+  }
 }
 
 export default new TaskService();
