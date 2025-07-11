@@ -66,3 +66,12 @@ export interface Contributor {
   roleId: string | null;
   joinedAt: string; // hoặc Date nếu bạn muốn dùng kiểu Date
 }
+
+
+
+export type ProjectContributor = {
+  _id: string;
+  name: string;
+  icon: string;
+  projectType: string;
+};

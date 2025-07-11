@@ -22,3 +22,18 @@ export const createTask = async (task: TaskModel) => {
     }
   }
 };
+
+export const getTasksByProject = async (projectId: string): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_BY_PROJECT(projectId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Failed to fetch tasks.";
+    showErrorToast(message);
+    return null;
+  }
+};
