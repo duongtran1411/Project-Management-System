@@ -57,6 +57,66 @@ class PermissionController {
             })
         }
     }
+    getById = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const { id } = req.params
+            const permission = await permissionService.getById(id);
+            if (!permission) {
+                res.status(400).json({
+                    success: false,
+                    status: 400,
+                    message: 'can not get permission data'
+                })
+            }
+
+            res.status(200).json({
+                success: true,
+                status: 200,
+                data: permission
+            })
+
+
+        } catch (error) {
+            const err = error as Error
+            res.status(500).json({
+                status: 500,
+                success: false,
+                message: err.message
+            })
+        }
+    }
+
+    update = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const {id} = req.params
+            const permissionData = req.body
+            const user = req.user
+            const permission = await permissionService.updatePermission(id,permissionData,user)
+
+            if(!permission){
+                res.status(400).json({
+                    success: false,
+                    message: 'Can not update',
+                    status: 400
+                })
+            }
+
+            res.status(200).json({
+                status: 200,
+                success:true,
+                message: 'Update successful',
+                data: permission,
+                
+            })
+        } catch (error) {
+            const err = error as Error
+            res.status(400).json({
+                status: 400,
+                success: false,
+                message: err.message
+            })
+        }
+    }
 }
 
 export default new PermissionController();

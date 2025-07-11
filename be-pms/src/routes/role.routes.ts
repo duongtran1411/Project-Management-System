@@ -40,6 +40,30 @@ router.get('/:id',authenticate,roleController.getById)
 
 /**
  * @openapi
+ * /role:
+ *   post:
+ *     summary: Tạo role mới
+ *     tags: [Role]
+ *     security: [bearerAuth: []]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, description]
+ *             properties:
+ *               name: { type: string }
+ *               description: { type: string }
+ *     responses:
+ *       201: { description: tạo role thành công }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.post('/',authenticate,roleController.create);
+
+/**
+ * @openapi
  * /role/{id}:
  *   patch:
  *     summary: Cập nhật permissionIds của Role
