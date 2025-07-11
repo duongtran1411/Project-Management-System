@@ -25,4 +25,12 @@ export class Endpoints {
     MILESTONE: "milestone",
     GET_BY_PROJECT: (projectId: string) => `milestone/project/${projectId}`,
   };
-}
+
+  static readonly Workspace = {
+  GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
+ };
+
+static readonly ProjectContributor = {
+    GET_PROJECTS_BY_USER: (userId: string) => `projectContributor/user/${userId}/projects`,
+  };
+} 
