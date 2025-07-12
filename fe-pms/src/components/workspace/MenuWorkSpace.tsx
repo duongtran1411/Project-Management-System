@@ -3,12 +3,9 @@
 import {
   ClockCircleOutlined,
   ProfileOutlined,
-  RocketOutlined,
   FilterOutlined,
   DashboardOutlined,
   TeamOutlined,
-  PictureOutlined,
-  AimOutlined,
   UserOutlined,
   BarsOutlined,
 } from "@ant-design/icons";
@@ -18,11 +15,7 @@ import Link from "next/link";
 
 const items: MenuProps["items"] = [
   {
-    label: (
-      <Link href="/workspace/foryou" >
-        For you
-      </Link>
-    ),
+    label: <Link href="/workspace/foryou">For you</Link>,
     key: "foryou",
     icon: <UserOutlined />,
   },
@@ -37,30 +30,14 @@ const items: MenuProps["items"] = [
     key: "plans",
     icon: <ProfileOutlined />,
   },
-
   {
-    label: "Projects",
-    key: "projects",
-    icon: <RocketOutlined />,
-    children: [
-      {
-        key: "recent-projects",
-        label: (
-          <Link href="/workspace/project-management">
-            <span>📊 Project Management</span>
-          </Link>
-        ),
-      },
-      {
-        label: (
-          <Link href="/workspace/viewall" className="flex items-center gap-2">
-            View all projects
-          </Link>
-        ),
-        key: "view-all",
-        icon: <BarsOutlined />,
-      },
-    ],
+    label: (
+      <Link href="/workspace/viewall" className="flex items-center gap-2">
+        View all projects
+      </Link>
+    ),
+    key: "view-all",
+    icon: <BarsOutlined />,
   },
 
   {
@@ -82,35 +59,18 @@ const items: MenuProps["items"] = [
     key: "teams",
     icon: <TeamOutlined />,
   },
-  {
-    label: (
-      <Link href="#" className="flex items-center justify-between">
-        <span>Assets</span> <span>↗</span>
-      </Link>
-    ),
-    key: "assets",
-    icon: <PictureOutlined />,
-  },
-  {
-    label: (
-      <Link href="#" className="flex items-center justify-between">
-        <span>Goals</span> <span>↗</span>
-      </Link>
-    ),
-    key: "goals",
-    icon: <AimOutlined />,
-  },
 ];
 
 const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
   return (
     <div
-      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${colapsed ? "w-max" : "w-64"
-        } transition-all duration-300`}
+      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${
+        colapsed ? "w-max" : "w-64"
+      } transition-all duration-300`}
     >
       <Menu
         mode="inline"
-        defaultSelectedKeys={["projects"]}
+        defaultSelectedKeys={["view-all"]}
         style={{ borderRight: 0 }}
         items={items}
         inlineCollapsed={colapsed}

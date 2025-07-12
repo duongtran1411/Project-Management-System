@@ -53,15 +53,15 @@ export default function ProjectForm() {
 
       console.log("New Project Created:", newProject);
 
-      const projectContributorData: ProjectContributor = {
+      const projecContributorData: ProjectContributor = {
         userId: userId || "",
         projectId: newProject?._id || "",
         projectRoleId: "64b1e2905a1c000001000005",
       };
-      const newProjectContributor = await createProjectContributor(
-        projectContributorData
+      const newPorjectContributor = await createProjectContributor(
+        projecContributorData
       );
-      if (newProjectContributor == null) {
+      if (newPorjectContributor == null) {
         messageApi.open({
           type: "error",
           content: "Fail to create project contributor!",
@@ -69,11 +69,7 @@ export default function ProjectForm() {
         return;
       }
 
-      messageApi.open({
-        type: "success",
-        content: "Project created successfully!",
-      });
-
+      message.success("Project created successfully!");
       router.push(`/create-project/invite-page/${newProject._id}`);
     } catch (error) {
       message.error("Please fill in required fields!");
