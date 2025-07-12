@@ -96,3 +96,20 @@ export interface Role {
   updatedBy?: string;
   createdAt?: Date;
 }
+
+export interface ProjectRole {
+  _id?: string;
+  name: string;
+  projectpermissionIds?: string[];
+}
+
+export interface PriorityStat {
+  count: number;
+  priority: "HIGH" | "MEDIUM" | "LOW";
+  percentage: string;
+}
+
+export interface PriorityStatsResponse {
+  totalTasks: number;
+  priorityStats: PriorityStat[];
+}

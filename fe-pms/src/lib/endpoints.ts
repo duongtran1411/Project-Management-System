@@ -41,8 +41,20 @@ export class Endpoints {
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
   };
 
+  static readonly ProjectRole = {
+    GET_ALL: "project-role",
+  };
+
   static readonly Statistics = {
     SEARCH_BY_PROJECT: (searchTerm: string) =>
       `statistics/search/projects?searchTerm=${searchTerm}`,
+    TASK_PRIORITY: (projectId: string) =>
+      `statistics/project/${projectId}/priority`,
+    STATISTIC_TASK: (projectId: string) =>
+      `statistics/project/${projectId}/tasks`,
+    STATISTIC_EPIC: (projectId: string) =>
+      `statistics/project/${projectId}/epics`,
+    STATISTIC_CONTRIBUTOR: (projectId: string) =>
+      `statistics/project/${projectId}/contributors`,
   };
 }

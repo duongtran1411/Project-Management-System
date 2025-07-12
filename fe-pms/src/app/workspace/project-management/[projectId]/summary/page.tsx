@@ -12,7 +12,6 @@ import {
 
 import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTask";
 import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumnChart";
-
 import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
 import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
 

@@ -1,19 +1,45 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Column } from "@ant-design/charts";
+import axiosService from "@/lib/services/axios.service";
+import { Endpoints } from "@/lib/endpoints";
+import { PriorityStat, PriorityStatsResponse } from "@/types/types";
+import { useParams } from "next/navigation";
 
 const PriorityBarChart = () => {
-  const data = [
-    { priority: "High", value: 0 },
-    { priority: "Medium", value: 22 },
-    { priority: "Low", value: 0 },
-    { priority: "Urgent", value: 0 },
-  ];
+  const [data, setData] = useState<PriorityStat[]>([]);
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const getStatisticPriority = async (
+    url: string
+  ): Promise<PriorityStatsResponse> => {
+    const response = await axiosService.getAxiosInstance().get(url);
+    return response?.data;
+  };
+
+  useEffect(() => {
+    const fetchData = async (projectId: string) => {
+      try {
+        const response = await getStatisticPriority(
+          `${
+            process.env.NEXT_PUBLIC_API_URL
+          }${Endpoints.Statistics.TASK_PRIORITY(projectId)}`
+        );
+        setData(response?.priorityStats);
+        console.log("Priority data:", response?.priorityStats);
+      } catch (error) {
+        console.error("Error fetching priority data:", error);
+      }
+    };
+    if (projectId) {
+      fetchData(projectId);
+    }
+  }, [projectId]);
 
   const config = {
     data,
     xField: "priority",
-    yField: "value",
+    yField: "count",
     yAxis: {
       tickInterval: 10,
     },
@@ -30,16 +56,21 @@ const PriorityBarChart = () => {
       },
     },
     label: {
-      position: "middle",
+      position: "inside",
       style: {
         fill: "#fff",
         fontSize: 12,
         fontWeight: 500,
       },
     },
-    tooltip: {
-      showMarkers: false,
-    },
+    tooltip: false,
+    // tooltip: {
+    //   showMarkers: false,
+    //   formatter: (datum: any) => ({
+    //     name: datum.priority,
+    //     value: `${datum.value} tasks (${datum.percentage}%)`,
+    //   }),
+    // },
   };
 
   return (
