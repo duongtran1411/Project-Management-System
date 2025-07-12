@@ -4,15 +4,66 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Input, Button, Typography, Form, message, Image } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useRouter } from "next/navigation";
+import { createProject } from "@/lib/services/project/project";
+import { Project, ProjectContributor } from "@/types/types";
+import { useEffect, useState } from "react";
+import { Constants } from "@/lib/constants";
+import { jwtDecode } from "jwt-decode";
+import { TokenPayload } from "@/models/user/TokenPayload";
+import { createProjectContributor } from "@/lib/services/projectContributor/projectContributor";
 
 const { Title, Text } = Typography;
+type FormType = {
+  name: string;
+  description: string;
+};
 
 export default function ProjectForm() {
   const router = useRouter();
   const [form] = Form.useForm();
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const onFinish = () => {
-    message.success("Submit success!");
+  useEffect(() => {
+    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
+    if (access_token) {
+      const decoded = jwtDecode<TokenPayload>(access_token);
+      setUserId(decoded.userId);
+    } else {
+      console.error("User ID not found in local storage");
+    }
+  }, []);
+
+  const handleNext = async () => {
+    try {
+      const values = await form.validateFields();
+      const projectData: Project = {
+        name: values.name,
+        description: values.description,
+        projectType: "SOFTWARE",
+        projectLead: userId || "",
+      };
+
+      const newProject = await createProject(projectData);
+      if (newProject == null) {
+        message.success("Fail to create project!");
+        form.resetFields();
+        return;
+      }
+
+      console.log("New Project Created:", newProject);
+
+      const projecContributorData: ProjectContributor = {
+        userId: userId || "",
+        projectId: newProject?._id || "",
+        projectRoleId: "64b1e2905a1c000001000005",
+      };
+      await createProjectContributor(projecContributorData);
+      message.success("Project created successfully!");
+      router.push(`/create-project/invite-page/${newProject._id}`);
+    } catch (error) {
+      message.error("Please fill in required fields!");
+      console.log(error);
+    }
   };
 
   const onFinishFailed = () => {
@@ -50,11 +101,10 @@ export default function ProjectForm() {
             <Form
               form={form}
               layout="vertical"
-              onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               autoComplete="off"
             >
-              <Form.Item
+              <Form.Item<FormType>
                 name="name"
                 label="Name"
                 rules={[
@@ -64,7 +114,7 @@ export default function ProjectForm() {
                 <Input placeholder="Enter your project name" />
               </Form.Item>
 
-              <Form.Item name="description" label="Description">
+              <Form.Item<FormType> name="description" label="Description">
                 <TextArea placeholder="Enter your project description" />
               </Form.Item>
             </Form>
@@ -123,10 +173,7 @@ export default function ProjectForm() {
         </div>
         <div className="flex justify-end space-x-2 mt-4 border-t-2 border-gray-200 p-7">
           <Button onClick={handleCancel}>Cancel</Button>
-          <Button
-            type="primary"
-            onClick={() => router.push("/create-project/invite-page")}
-          >
+          <Button type="primary" onClick={handleNext}>
             Next
           </Button>
         </div>

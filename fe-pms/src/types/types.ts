@@ -64,14 +64,35 @@ export interface Contributor {
     avatar: string;
   };
   roleId: string | null;
-  joinedAt: string; // hoặc Date nếu bạn muốn dùng kiểu Date
+  joinedAt: string;
 }
 
+export interface ProjectContributor {
+  _id?: string;
+  userId: string;
+  projectId: string;
+  projectRoleId: string | null;
+  joinedAt?: Date;
+}
 
-
-export type ProjectContributor = {
-  _id: string;
+export interface Project {
+  _id?: string;
   name: string;
-  icon: string;
-  projectType: string;
-};
+  icon?: string;
+  description?: string;
+  projectType?: string;
+  projectLead?: string;
+  defaultAssign?: string;
+  workspaceId?: string;
+  status?: string;
+}
+
+export interface Role {
+  _id?: string;
+  name: string;
+  description?: string;
+  permissionIds?: string[];
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: Date;
+}

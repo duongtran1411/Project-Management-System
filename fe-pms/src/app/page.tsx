@@ -16,10 +16,12 @@ export default function Page() {
   const [site, setSite] = useState("fpt-team-mdoh239h");
   const [name, setName] = useState<string>("");
   const router = useRouter();
+  const [accessToken, setAccessToken] = useState<string>("");
   useEffect(() => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
     if (token && justLoggedIn === "true") {
+      setAccessToken(token);
       const decoded = jwtDecode<TokenPayload>(token);
       setName(decoded.fullname);
       showSuccessToast("Đăng nhập thành công!");
@@ -29,6 +31,15 @@ export default function Page() {
       setName(decoded.fullname);
     }
   }, []);
+
+  const handleContinue = () => {
+    if (accessToken) {
+      router.push("/workspace");
+    } else {
+      showSuccessToast("Vui lòng đăng nhập trước khi tiếp tục!");
+      router.push("/login");
+    }
+  };
   return (
     <div className="flex h-screen">
       <div className="flex-1 overflow-auto bg-white">
@@ -74,7 +85,7 @@ export default function Page() {
                 size="large"
                 shape="round"
                 className="mt-3 px-16 font-semibold text-lg w-[350px] h-12"
-                onClick={() => router.push("/workspace")}
+                onClick={handleContinue}
               >
                 Continue
               </Button>

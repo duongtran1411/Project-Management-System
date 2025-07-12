@@ -3,7 +3,6 @@
 import {
   ClockCircleOutlined,
   ProfileOutlined,
-  RocketOutlined,
   FilterOutlined,
   DashboardOutlined,
   TeamOutlined,
@@ -31,30 +30,14 @@ const items: MenuProps["items"] = [
     key: "plans",
     icon: <ProfileOutlined />,
   },
-
   {
-    label: "Projects",
-    key: "projects",
-    icon: <RocketOutlined />,
-    children: [
-      {
-        key: "recent-projects",
-        label: (
-          <Link href="/workspace/project-management">
-            <span>📊 Project Management</span>
-          </Link>
-        ),
-      },
-      {
-        label: (
-          <Link href="/workspace/viewall" className="flex items-center gap-2">
-            View all projects
-          </Link>
-        ),
-        key: "view-all",
-        icon: <BarsOutlined />,
-      },
-    ],
+    label: (
+      <Link href="/workspace/viewall" className="flex items-center gap-2">
+        View all projects
+      </Link>
+    ),
+    key: "view-all",
+    icon: <BarsOutlined />,
   },
 
   {
@@ -87,7 +70,7 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
     >
       <Menu
         mode="inline"
-        defaultSelectedKeys={["projects"]}
+        defaultSelectedKeys={["view-all"]}
         style={{ borderRight: 0 }}
         items={items}
         inlineCollapsed={colapsed}
