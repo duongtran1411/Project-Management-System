@@ -39,13 +39,13 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [userId, projectId, roleId]
+ *             required: [userId, projectId, projectRoleId]
  *             properties:
  *               userId:
  *                 type: string
  *               projectId:
  *                 type: string
- *               roleId:
+ *               projectRoleId:
  *                 type: string
  *     responses:
  *       201:
