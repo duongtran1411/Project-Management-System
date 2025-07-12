@@ -10,7 +10,7 @@ export class ProjectContributorController {
 
       res.status(201).json({
         success: true,
-        message: "Contributor created successfully",
+        message: "Tạo contributor thành công",
         data: contributor,
         statusCode: 201,
       });
@@ -18,7 +18,7 @@ export class ProjectContributorController {
       console.error("Create contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to create contributor",
+        message: error.message || "Lỗi tạo contributor",
         statusCode: 400,
       });
     }

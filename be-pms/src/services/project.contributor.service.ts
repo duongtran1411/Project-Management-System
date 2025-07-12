@@ -11,8 +11,7 @@ export class ProjectContributorService {
       projectId: data.projectId,
     });
 
-    if (exists)
-      throw new Error("User is already a contributor to this project.");
+    if (exists) throw new Error("Người dùng đã là contributor của dự án này.");
 
     const contributor = await ProjectContributor.create(data);
 
