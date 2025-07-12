@@ -18,11 +18,31 @@ export class Endpoints {
 
   static readonly Task = {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
-    CREATE_PROJECT: "task",
+    CREATE_TASK: "task",
   };
 
   static readonly Milestone = {
     MILESTONE: "milestone",
     GET_BY_PROJECT: (projectId: string) => `milestone/project/${projectId}`,
+  };
+
+  static readonly Workspace = {
+    GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
+  };
+
+  static readonly Project = {
+    CREATE_PROJECT: "project",
+    GET_BY_ID: (projectId: string) => `project/${projectId}`,
+  };
+
+  static readonly ProjectContributor = {
+    GET_PROJECTS_BY_USER: (userId: string) =>
+      `projectContributor/user/${userId}/projects`,
+    CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
+  };
+
+  static readonly Statistics = {
+    SEARCH_BY_PROJECT: (searchTerm: string) =>
+      `statistics/search/projects?searchTerm=${searchTerm}`,
   };
 }

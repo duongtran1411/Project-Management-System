@@ -1,5 +1,5 @@
 // app/providers.tsx
-'use client';
+"use client";
 
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <GoogleOAuthProvider clientId={clientId}>
         <Toaster position="bottom-right" />
-          {children}
+        {children}
       </GoogleOAuthProvider>
     </AuthProvider>
   );

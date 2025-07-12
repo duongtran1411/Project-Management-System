@@ -14,7 +14,7 @@ export const updateMilestone = async (milestone: Milestone) => {
 
     if (response.status === 200) {
       showSuccessToast("Edit sprint successfully!");
-      return response.data;
+      return response.data?.data;
     }
   } catch (error: any) {
     if (error) {
@@ -48,7 +48,7 @@ export const createMilestone = async (milestone: CreateMilestone) => {
 
     if (response.status === 201) {
       showSuccessToast("Create sprint successfully!");
-      return response.data;
+      return response.data?.data;
     }
   } catch (error: any) {
     if (error) {

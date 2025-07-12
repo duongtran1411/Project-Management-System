@@ -1,9 +1,19 @@
 "use client";
-import { Avatar, Button, Checkbox, Dropdown, Input, Space, Tag } from "antd";
+import {
+  Avatar,
+  Button,
+  Checkbox,
+  Dropdown,
+  Input,
+  Space,
+  Tag,
+  Spin,
+  Alert,
+} from "antd";
 
 import { DownOutlined, SearchOutlined } from "@ant-design/icons";
 import React, { useState, useMemo, useEffect } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import {
   Contributor,
@@ -16,9 +26,11 @@ import SprintSection from "@/components/workspace/backlog/SprintSection";
 import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
 import { createMilestone } from "@/lib/services/milestone/milestone";
+import { useParams } from "next/navigation";
 
 export default function Backlog() {
-  const projectId = "64b1e2005a1c000002222201";
+  const params = useParams();
+  const projectId = params.projectId as string;
 
   // Search states
   const [searchText, setSearchText] = useState<string>("");
@@ -27,42 +39,45 @@ export default function Backlog() {
   const [listTask, setListTask] = useState<Task[]>([]);
 
   const fetcher = (url: string) => fetch(url).then((res) => res.json());
-  const { data: epicData } = useSWR(
+  const { data: epicData, error: epicError } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
 
-  const { data: taskData } = useSWR(
+  const { data: taskData, error: taskError } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
 
-  const { data: contributorData } = useSWR(
+  const { data: contributorData, error: contributorError } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
 
-  console.log("user data", contributorData);
-
-  const { data: milestoneData } = useSWR(
+  const {
+    data: milestoneData,
+    error: milestoneError,
+    mutate,
+  } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
-  const refreshData = () => {
-    mutate(
-      `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.MILESTONE}`
-    );
-  };
+  // const refreshData = () => {
+  //   mutate();
+  // };
 
-  // console.log("milestone list", milestoneData);
+  // Loading and error states
+  const isLoading =
+    !epicData || !taskData || !contributorData || !milestoneData;
+  const isError = epicError || taskError || contributorError || milestoneError;
 
   // Filtered tasks based on search criteria
   const filteredTasks = useMemo(() => {
@@ -106,6 +121,45 @@ export default function Backlog() {
   const hasActiveFilters =
     searchText || selectedAssignees.length > 0 || selectedEpics.length > 0;
 
+  //Create new task
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(
+    null
+  );
+  const showModal = (milestone: Milestone) => {
+    setSelectedMilestone(milestone);
+    setIsModalOpen(true);
+  };
+
+  //Create new sprint
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const handleCreateSprint = async (data: CreateMilestone) => {
+    await createMilestone(data); // gọi API
+    mutate(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone}`);
+    setOpenCreateModal(false);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" tip="Loading..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Alert
+          message="Error"
+          description="Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau."
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
+
   const overlayEpic = (
     <div className="p-4 ml-2 bg-white rounded-md shadow-lg">
       <Checkbox.Group
@@ -136,24 +190,6 @@ export default function Backlog() {
       </Checkbox.Group>
     </div>
   );
-
-  //Create new task
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(
-    null
-  );
-  const showModal = (milestone: Milestone) => {
-    setSelectedMilestone(milestone);
-    setIsModalOpen(true);
-  };
-
-  //Create new sprint
-  const [openCreateModal, setOpenCreateModal] = useState(false);
-  const handleCreateSprint = async (data: CreateMilestone) => {
-    await createMilestone(data); // gọi API
-    mutate(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone}`);
-    setOpenCreateModal(false);
-  };
 
   return (
     <div className="min-h-screen p-6 bg-white ">
@@ -220,7 +256,7 @@ export default function Backlog() {
         listTask={listTask}
         taskData={taskData?.data}
         showModal={showModal}
-        refreshData={refreshData}
+        refreshData={mutate}
       />
 
       {/* Backlog Section */}

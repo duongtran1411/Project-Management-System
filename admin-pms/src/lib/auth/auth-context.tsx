@@ -36,17 +36,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     setIsLoggedIn(true);
-    // const decoded = jwtDecode<TokenPayload>(token);
-    // if (decoded.role === "ADMIN" && !currentPath.startsWith('/admin')) {
-    //   router.replace("/admin");
-    //   return;
-    // }
+   
+    
     const decoded = jwtDecode<TokenPayload>(token);
     if (decoded.role !== "ADMIN") {
       router.replace("/authentication/login");
       return;
     }
-    
+
+    if (decoded.role === "ADMIN" && !currentPath.startsWith('/admin')) {
+      router.replace("/admin");
+      return;
+    }
+
   }, []);
 
   return (

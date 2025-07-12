@@ -90,7 +90,10 @@ export class ProjectContributorService {
     if (!mongoose.Types.ObjectId.isValid(userId)) return [];
 
     const contributors = await ProjectContributor.find({ userId })
-      .populate({ path: "projectId", select: "name icon projectType" })
+      .populate({
+        path: "projectId",
+        select: "name icon projectType projectLead",
+      })
       .select("projectId") // Chỉ cần trường projectId
       .lean();
 

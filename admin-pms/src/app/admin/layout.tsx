@@ -1,12 +1,10 @@
 "use client";
 
+import { ClusterOutlined, MailOutlined } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  FaRegCalendarAlt,
   FaRegListAlt,
-  FaTable,
-  FaUserAlt,
-  FaWpforms,
+  FaUserAlt
 } from "react-icons/fa";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { MdDashboard } from "react-icons/md";
@@ -77,7 +75,7 @@ export default function AdminLayout({
                   className={getButtonClass("/admin/emailtemplate")}
                   onClick={() => router.push("/admin/emailtemplate")}
                   >
-                  <FaRegCalendarAlt />
+                  <MailOutlined />
                   <span className="flex-1 text-left">Email Template</span>
                 </button>
               </li>
@@ -89,6 +87,15 @@ export default function AdminLayout({
                   >
                   <FaRegListAlt />
                   <span className="flex-1 text-left">Log System</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  className={getButtonClass("/admin/permission")}
+                  onClick={() => router.push("/admin/permission")}
+                  >
+                  <ClusterOutlined />
+                  <span className="flex-1 text-left">Grant Permission</span>
                 </button>
               </li>
             </ul>

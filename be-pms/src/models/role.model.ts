@@ -4,6 +4,8 @@ export interface IRole extends Document {
   name: string;
   description?: string;
   permissionIds?: mongoose.Types.ObjectId[];
+  createdBy?: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +26,14 @@ const roleSchema = new Schema<IRole>(
         ref: "Permission",
       },
     ],
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

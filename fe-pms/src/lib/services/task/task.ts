@@ -10,7 +10,7 @@ export const createTask = async (task: TaskModel) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .post(`${Endpoints.Task.CREATE_PROJECT}`, task);
+      .post(`${Endpoints.Task.CREATE_TASK}`, task);
 
     if (response.status === 201) {
       showSuccessToast("Create new task successfully!");
@@ -20,5 +20,21 @@ export const createTask = async (task: TaskModel) => {
     if (error) {
       showErrorToast(error.response.data.message || "Fail to create new task!");
     }
+  }
+};
+
+export const getTasksByProject = async (
+  projectId: string
+): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_BY_PROJECT(projectId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Failed to fetch tasks.";
+    showErrorToast(message);
+    return null;
   }
 };
