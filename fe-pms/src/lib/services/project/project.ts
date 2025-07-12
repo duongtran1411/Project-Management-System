@@ -1,10 +1,7 @@
 import { Project } from "@/types/types";
 import axiosService from "../axios.service";
 import { Endpoints } from "@/lib/endpoints";
-import {
-  showErrorToast,
-  showSuccessToast,
-} from "@/components/common/toast/toast";
+import { showErrorToast } from "@/components/common/toast/toast";
 
 export const createProject = async (project: Project) => {
   try {
@@ -13,7 +10,7 @@ export const createProject = async (project: Project) => {
       .post(`${Endpoints.Project.CREATE_PROJECT}`, project);
 
     if (response.status === 201) {
-      showSuccessToast("Create new project successfully!");
+      // showSuccessToast("Create new project successfully!");
       return response.data?.data;
     }
   } catch (error: any) {

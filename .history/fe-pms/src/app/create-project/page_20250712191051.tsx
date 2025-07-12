@@ -22,7 +22,6 @@ export default function ProjectForm() {
   const router = useRouter();
   const [form] = Form.useForm();
   const [userId, setUserId] = useState<string | null>(null);
-  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -53,27 +52,21 @@ export default function ProjectForm() {
 
       console.log("New Project Created:", newProject);
 
-      const projectContributorData: ProjectContributor = {
+      const projecContributorData: ProjectContributor = {
         userId: userId || "",
         projectId: newProject?._id || "",
         projectRoleId: "64b1e2905a1c000001000005",
       };
-      const newProjectContributor = await createProjectContributor(
-        projectContributorData
+      const newPorjectContributor = await createProjectContributor(
+        projecContributorData
       );
-      if (newProjectContributor == null) {
-        messageApi.open({
-          type: "error",
-          content: "Fail to create project contributor!",
-        });
+      if (newPorjectContributor == null) {
+        message.error("Fail to create project contributor!");
+        form.resetFields();
         return;
       }
 
-      messageApi.open({
-        type: "success",
-        content: "Project created successfully!",
-      });
-
+      message.success("Project created successfully!");
       router.push(`/create-project/invite-page/${newProject._id}`);
     } catch (error) {
       message.error("Please fill in required fields!");
@@ -91,7 +84,6 @@ export default function ProjectForm() {
 
   return (
     <>
-      {contextHolder}
       <div
         className=" flex items-center gap-2 m-7 hover:cursor-pointer hover:bg-gray-200 p-2 rounded-md transition-all w-max"
         onClick={() => router.push("/workspace/viewall")}
