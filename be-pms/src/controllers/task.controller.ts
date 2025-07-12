@@ -213,8 +213,8 @@ export class TaskController {
 
   getTasksByAssignee = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { assigneeId } = req.params;
-      const tasks = await taskService.getTasksByAssignee(assigneeId);
+      const { assignee } = req.params;
+      const tasks = await taskService.getTasksByAssignee(assignee);
 
       res.status(200).json({
         success: true,

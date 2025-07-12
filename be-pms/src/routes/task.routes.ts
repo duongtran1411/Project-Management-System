@@ -211,13 +211,13 @@ router.get("/epic/:epicId", taskController.getTasksByEpic);
 
 /**
  * @openapi
- * /task/assignee/{assigneeId}:
+ * /task/assignee/{assignee}:
  *   get:
  *     summary: Lấy danh sách task theo người được giao
  *     tags: [Task]
  *     parameters:
  *       - in: path
- *         name: assigneeId
+ *         name: assignee
  *         required: true
  *         schema: { type: string }
  *         description: ID của người được giao
@@ -225,7 +225,7 @@ router.get("/epic/:epicId", taskController.getTasksByEpic);
  *       200: { description: Lấy danh sách task theo người được giao thành công }
  *       400: { description: Dữ liệu không hợp lệ }
  */
-router.get("/assignee/:assigneeId", taskController.getTasksByAssignee);
+router.get("/assignee/:assignee", taskController.getTasksByAssignee);
 
 /**
  * @openapi

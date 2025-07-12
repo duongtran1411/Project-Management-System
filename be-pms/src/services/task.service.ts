@@ -138,8 +138,8 @@ export class TaskService {
     return tasks;
   }
 
-  async getTasksByAssignee(assigneeId: string): Promise<ITask[]> {
-    const tasks = await Task.find({ assignee: assigneeId })
+  async getTasksByAssignee(assignee: string): Promise<ITask[]> {
+    const tasks = await Task.find({ assignee: assignee })
       .populate([
         { path: "assignee", select: "fullName email avatar" },
         { path: "reporter", select: "fullName email avatar" },
