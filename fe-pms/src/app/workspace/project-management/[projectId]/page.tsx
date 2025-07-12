@@ -26,7 +26,6 @@ const BoardPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-
   const columns: { title: string; tasks: Task[] }[] = [
     {
       title: "TO DO",
@@ -229,8 +228,9 @@ const BoardPage = () => {
                     <div className="text-sm text-gray-500">{task.dueDate}</div>
                     <div className="flex items-center justify-between">
                       <span
-                        className={`font-medium text-gray-600 ${column.title === "DONE" ? "line-through" : ""
-                          }`}
+                        className={`font-medium text-gray-600 ${
+                          column.title === "DONE" ? "line-through" : ""
+                        }`}
                       >
                         {task.id}
                       </span>
@@ -257,7 +257,6 @@ const BoardPage = () => {
           task={selectedTask}
         />
       )}
-
     </div>
   );
 };

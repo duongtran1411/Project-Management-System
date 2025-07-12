@@ -11,7 +11,6 @@ import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Endpoints } from "@/lib/endpoints";
-import { useProject } from "@/context/ProjectContext";
 
 interface Lead {
   name: string;
@@ -78,7 +77,6 @@ const ProjectTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
   const [userId, setUserId] = useState<string | null>(null);
-  const { setProjectId } = useProject();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredProjects, setFilteredProjects] = useState<DataType[]>([]);
 
@@ -158,8 +156,7 @@ const ProjectTable = () => {
         size="small"
         onRow={(record) => ({
           onClick: () => {
-            setProjectId(record._id);
-            router.push(`/workspace/project-management`);
+            router.push(`/workspace/project-management/${record._id}`);
           },
           style: { cursor: "pointer" },
         })}
