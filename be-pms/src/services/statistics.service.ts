@@ -48,13 +48,11 @@ export class StatisticsService {
   }
 
   async getUserProjectTaskStats(projectId: string, userId: string) {
+    console.log(projectId, userId);
     // Get total tasks assigned to or reported by this user in the project
     const totalTasks = await Task.countDocuments({
       projectId: new Types.ObjectId(projectId),
-      $or: [
-        { assigneeId: new Types.ObjectId(userId) },
-        { reporterId: new Types.ObjectId(userId) },
-      ],
+      $or: [{ assignee: userId }, { reporter: userId }],
     });
 
     // Get task status statistics for this user
@@ -62,10 +60,7 @@ export class StatisticsService {
       {
         $match: {
           projectId: new Types.ObjectId(projectId),
-          $or: [
-            { assigneeId: new Types.ObjectId(userId) },
-            { reporterId: new Types.ObjectId(userId) },
-          ],
+          $or: [{ assignee: userId }, { reporter: userId }],
         },
       },
       { $group: { _id: "$status", count: { $sum: 1 } } },
@@ -161,7 +156,7 @@ export class StatisticsService {
     // Get contributor statistics
     const contributorStats = await Task.aggregate([
       { $match: { projectId: new Types.ObjectId(projectId) } },
-      { $group: { _id: "$assigneeId", count: { $sum: 1 } } },
+      { $group: { _id: "$assignee", count: { $sum: 1 } } },
       {
         $lookup: {
           from: "users",
@@ -172,7 +167,7 @@ export class StatisticsService {
       },
       {
         $project: {
-          assigneeId: "$_id",
+          assignee: "$_id",
           count: 1,
           userName: { $arrayElemAt: ["$user.name", 0] },
           _id: 0,
@@ -204,7 +199,7 @@ export class StatisticsService {
     return Task.find({
       projectId: new Types.ObjectId(projectId),
       name: { $regex: searchTerm, $options: "i" },
-    }).select("name description status priority assigneeId");
+    }).select("name description status priority assignee");
   }
 }
 

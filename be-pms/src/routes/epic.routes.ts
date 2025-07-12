@@ -161,13 +161,13 @@ router.get("/project/:projectId", epicController.getEpicsByProject);
 
 /**
  * @openapi
- * /epic/assignee/{assigneeId}:
+ * /epic/assignee/{assignee}:
  *   get:
  *     summary: Lấy danh sách epic theo người được giao
  *     tags: [Epic]
  *     parameters:
  *       - in: path
- *         name: assigneeId
+ *         name: assignee
  *         required: true
  *         schema: { type: string }
  *         description: ID của người được giao
@@ -175,6 +175,6 @@ router.get("/project/:projectId", epicController.getEpicsByProject);
  *       200: { description: Lấy danh sách epic theo người được giao thành công }
  *       400: { description: Dữ liệu không hợp lệ }
  */
-router.get("/assignee/:assigneeId", epicController.getEpicsByAssignee);
+router.get("/assignee/:assignee", epicController.getEpicsByAssignee);
 
 export default router;

@@ -188,8 +188,8 @@ export class EpicController {
 
   getEpicsByAssignee = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { assigneeId } = req.params;
-      const epics = await epicService.getEpicsByAssignee(assigneeId);
+      const { assignee } = req.params;
+      const epics = await epicService.getEpicsByAssignee(assignee);
 
       res.status(200).json({
         success: true,

@@ -105,8 +105,8 @@ export class EpicService {
     return epics;
   }
 
-  async getEpicsByAssignee(assigneeId: string): Promise<IEpic[]> {
-    const epics = await Epic.find({ assignee: assigneeId })
+  async getEpicsByAssignee(assignee: string): Promise<IEpic[]> {
+    const epics = await Epic.find({ assignee: assignee })
       .populate([
         { path: "assignee", select: "fullName email avatar" },
         { path: "createdBy", select: "fullName email" },
