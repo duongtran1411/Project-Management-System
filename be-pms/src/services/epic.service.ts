@@ -119,10 +119,7 @@ export class EpicService {
     return epics;
   }
 
-  async getAllEpicName (projectId:string):Promise<IEpic[]>{
-    const epics = await Epic.find({projectId:projectId}).select('_id name');
-    return epics
-  }
+ 
 }
 
 export default new EpicService();

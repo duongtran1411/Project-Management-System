@@ -152,7 +152,7 @@ const ProjectTable = () => {
         columns={columns}
         dataSource={paginatedProjects}
         pagination={false}
-        rowKey="key"
+        rowKey="_id"
         size="small"
         onRow={(record) => ({
           onClick: () => {

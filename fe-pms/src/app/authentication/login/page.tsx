@@ -2,7 +2,7 @@
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleCredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
 import { showErrorToast } from "@/components/common/toast/toast";
 import { jwtDecode } from "jwt-decode";
@@ -64,7 +64,7 @@ export default function Page() {
   };
 
   //login with google
-  const handleLoginGoogle = async (credentialReponse: any) => {
+  const handleLoginGoogle = async (credentialReponse: GoogleCredentialResponse) => {
     setLoading(true);
     try {
       const credential = credentialReponse.credential;
