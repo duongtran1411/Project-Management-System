@@ -26,6 +26,7 @@ const PriorityBarChart = () => {
           }${Endpoints.Statistics.TASK_PRIORITY(projectId)}`
         );
         setData(response?.priorityStats);
+        console.log("Statistics", response);
       } catch (error) {
         console.error("Error fetching priority data:", error);
       }
@@ -62,14 +63,14 @@ const PriorityBarChart = () => {
         fontWeight: 500,
       },
     },
-    tooltip: false,
-    // tooltip: {
-    //   showMarkers: false,
-    //   formatter: (datum: any) => ({
-    //     name: datum.priority,
-    //     value: `${datum.value} tasks (${datum.percentage}%)`,
-    //   }),
-    // },
+    //tooltip: false,
+    tooltip: {
+      showMarkers: false,
+      // formatter: (datum: any) => ({
+      //   name: datum.priority,
+      //   value: `${datum.count} tasks (${datum.percentage}%)`,
+      // }),
+    },
   };
 
   return (

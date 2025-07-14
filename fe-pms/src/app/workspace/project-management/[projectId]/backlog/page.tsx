@@ -217,7 +217,7 @@ export default function Backlog() {
               }}
             >
               <Avatar style={{ backgroundColor: "#f56a00" }}>C</Avatar>
-              {contributorData?.data.length > 1 && (
+              {contributorData?.data?.length > 1 && (
                 <Avatar
                   style={{
                     backgroundColor: "#f0f1f3",
