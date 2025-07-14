@@ -139,13 +139,17 @@ export default function InvitePage() {
             <Button
               type="text"
               className=" text-gray-600 font-semibold"
-              onClick={() => router.push("/workspace/project-management")}
+              onClick={() =>
+                router.push(`/workspace/project-management/${projectId}`)
+              }
             >
               Skip
             </Button>
             <Button
               type="primary"
-              onClick={() => router.push("/workspace/project-management")}
+              onClick={() =>
+                router.push(`/workspace/project-management/${projectId}`)
+              }
               disabled={disabledInvite}
             >
               Invite and continue

@@ -96,3 +96,49 @@ export interface Role {
   updatedBy?: string;
   createdAt?: Date;
 }
+
+export interface ProjectRole {
+  _id?: string;
+  name: string;
+  projectpermissionIds?: string[];
+}
+
+export interface PriorityStat {
+  count: number;
+  priority: "HIGH" | "MEDIUM" | "LOW";
+  percentage: string;
+}
+
+export interface PriorityStatsResponse {
+  totalTasks: number;
+  priorityStats: PriorityStat[];
+}
+
+export interface TaskApiResponse {
+  _id: string;
+  name: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  dueDate?: string;
+  assignee?: {
+    _id: string;
+    fullName: string;
+  };
+  epic?: {
+    _id: string;
+    name: string;
+  };
+}
+
+
+export interface UITask {
+  id: string;
+  title: string;
+  assignee: string;
+  tags: string[];
+  dueDate: string;
+  status: string;
+  priority: string;
+  raw: TaskApiResponse;
+}

@@ -20,7 +20,7 @@ const EmailTemplateSchema = new Schema<IEmailTemplate>({
     header: { type: String },  // optional
     body: { type: String, required: true },
     footer: { type: String },  // optional
-    variables: [{ type: String }],
+    variables: [{name:{ type: String }}],
     status: {
         type: String,
         enum: ["ACTIVE", "INACTIVE","DELETED"],
@@ -33,8 +33,7 @@ const EmailTemplateSchema = new Schema<IEmailTemplate>({
     },
     updatedBy: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, "User create feedback"]
+        ref: 'User'
     }
 }, { timestamps: true });
 

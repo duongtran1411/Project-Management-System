@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Alert, Menu, Spin } from "antd";
 import {
   AppstoreOutlined,
@@ -11,7 +11,6 @@ import {
   CalendarOutlined,
   BarsOutlined,
 } from "@ant-design/icons";
-import { useProject } from "@/context/ProjectContext";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import { Constants } from "@/lib/constants";
@@ -29,7 +28,8 @@ const fetcherWithToken = async ([url, token]: [string, string]) => {
 const HeaderProjectManagement = () => {
   const [selectedKey, setSelectedKey] = useState("Board");
   const router = useRouter();
-  const { projectId } = useProject();
+  const params = useParams();
+  const projectId = params.projectId as string;
   const [token, setToken] = useState("");
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -61,32 +61,32 @@ const HeaderProjectManagement = () => {
       key: "Summary",
       label: "Summary",
       icon: <AppstoreOutlined />,
-      url: "/workspace/project-management/summary",
+      url: `/workspace/project-management/${projectId}/summary`,
     },
     {
       key: "Timeline",
       label: "Timeline",
       icon: <ClockCircleOutlined />,
-      url: "/workspace/project-management/timeline",
+      url: `/workspace/project-management/${projectId}/timeline`,
     },
 
     {
       key: "Backlog",
       label: "Backlog",
       icon: <UnorderedListOutlined />,
-      url: `/workspace/project-management/backlog/${projectId}`,
+      url: `/workspace/project-management/${projectId}/backlog`,
     },
     {
       key: "Board",
       label: "Board",
       icon: <TableOutlined />,
-      url: "/workspace/project-management",
+      url: `/workspace/project-management/${projectId}`,
     },
     {
       key: "Calendar",
       label: "Calendar",
       icon: <CalendarOutlined />,
-      url: "/workspace/project-management/calendar",
+      url: `/workspace/project-management/${projectId}/calendar`,
     },
 
     { key: "List", label: "List", icon: <BarsOutlined /> },
