@@ -35,6 +35,8 @@ router.get(
  *   post:
  *     summary: Gửi lời mời tham gia project
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -70,6 +72,8 @@ router.post(
  *   post:
  *     summary: Gửi nhiều lời mời cùng lúc
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -107,6 +111,8 @@ router.post(
  *   post:
  *     summary: Xác nhận lời mời tham gia project
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: token
