@@ -26,6 +26,7 @@ import { Pagination } from "@/models/pagination/Pagination";
 import { FilterOutlined } from "@ant-design/icons";
 import { Filter } from "@/models/filter/Filter";
 import dayjs, { Dayjs } from "dayjs";
+import { format, parseISO } from "date-fns";
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { Search } = Input;
@@ -76,7 +77,9 @@ const columns: ColumnsType<ActivityLog> = [
     },
   },
   { title: "Action", width: 150, dataIndex: "action", key: "action" },
-  { title: "Device", width: 700, dataIndex: "userAgent", key: "userAgent" },
+  { title: "Date", width: 200, dataIndex: "createdAt", key: "createdAt",
+     render: (value) => format(parseISO(value), "dd/MM/yyyy")
+   },
   {
     title: "Method",
     width: 150,

@@ -23,15 +23,12 @@ const StatusOverviewChart: React.FC<Props> = ({ taskStatistic }) => {
     radius: 1,
     innerRadius: 0.7,
     height: 240,
-
     legend: {
       color: {
         title: false,
         position: "right",
         rowPadding: 5,
       },
-      marginRight: 20,
-      fontSize: 16,
     },
     annotations: [
       {
@@ -60,14 +57,10 @@ const StatusOverviewChart: React.FC<Props> = ({ taskStatistic }) => {
     },
 
     label: {
-      type: "outer",
+      position: "outside",
       offset: "-30%",
-      content: "{value}%",
-      style: {
-        textAlign: "center",
-        fontSize: 16,
-        autoFit: true,
-      },
+      //content: "{value}%",
+      text: (data: any) => `${data.percentage}%`,
     },
     interactions: [{ type: "element-active" }],
   };

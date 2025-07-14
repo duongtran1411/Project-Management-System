@@ -177,4 +177,23 @@ router.get("/project/:projectId", epicController.getEpicsByProject);
  */
 router.get("/assignee/:assignee", epicController.getEpicsByAssignee);
 
+/**
+ * @openapi
+ * /epic/getName/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách tên epic
+ *     tags: [Epic]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của project
+ *     responses:
+ *       200: { description: Lấy danh sách tên epic thành công }
+ *       400: { description: Dữ liệu không hợp lệ }
+ */
+router.get('/getName/:projectId', authenticate, epicController.getEpicsName);
+
 export default router;

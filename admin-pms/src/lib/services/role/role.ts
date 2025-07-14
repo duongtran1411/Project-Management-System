@@ -22,18 +22,18 @@ export const addPermissionForRole = async (roleId: string, permissionIds: string
     }
 }
 
-export const addRole = async (name: string, description: string, token: string) => {
+export const addRole = async (name: string, description: string) => {
     try {
         const response = await axiosService.getAxiosInstance().post(`${Endpoints.Role.ADD_ROLE}`,
             {
                 name: name,
                 description: description
             },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-            }
+            // {
+            //     headers: {
+            //         Authorization: `Bearer ${token}`
+            //     },
+            // }
         )
 
         return response.data;

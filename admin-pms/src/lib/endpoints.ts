@@ -8,7 +8,8 @@ export class Endpoints {
   }
 
   static readonly User = {
-    GET_ALL: 'user'
+    GET_ALL: 'user',
+    UPDATE_STATUS: (id:string) => `user/${id}/status`
   }
 
   static readonly ActivityLog = {
@@ -30,6 +31,10 @@ export class Endpoints {
     ADD_PERMISSION: '/permission',
     GET_PERMISSION_BY_ID: (id:string)=> `permission/${id}`,
     UPDATE_PERMISSION : (id: string) => `permission/${id}`
+  }
+
+  static readonly EmailTemplate = {
+    GET_ALL: '/email-template'
   }
 
 

@@ -160,7 +160,7 @@ export default function Page() {
         showErrorToast("Unauthorized");
       }
       const role = roleName.toUpperCase();
-      const response = await addRole(role, description, token ? token : "");
+      const response = await addRole(role, description);
       if (response.success) {
         form.resetFields();
         setIsModalOpen(false);
@@ -190,17 +190,11 @@ export default function Page() {
 
   const onSubmitPer = async () => {
     try {
-      const token = localStorage.getItem(Constants.API_TOKEN_KEY);
-      debugger;
-      if (!token) {
-        showErrorToast("Unauthorized");
-      }
       const code = formPer.getFieldValue("code");
       const description = formPer.getFieldValue("description_permission");
       const response = await addPermission(
         code,
-        description,
-        token ? token : ""
+        description
       );
       if (response.success) {
         formPer.resetFields();
@@ -248,19 +242,12 @@ export default function Page() {
 
   const onUpdateSubmit = async () => {
     try {
-      debugger;
-      const token = localStorage.getItem(Constants.API_TOKEN_KEY);
-      if (!token) {
-        showErrorToast("Unauthorized");
-      }
-
       const code = formUpdate.getFieldValue("code_update");
       const description = formUpdate.getFieldValue("description_update");
       const response = await updatePermission(
         selectedPermisId ? selectedPermisId : "",
         code,
-        description,
-        token ? token : ""
+        description
       );
       if (response.success) {
         formUpdate.resetFields();
@@ -279,11 +266,7 @@ export default function Page() {
   };
   const getPermisById = async (id: string) => {
     try {
-      const token = localStorage.getItem(Constants.API_TOKEN_KEY);
-      if (!token) {
-        showErrorToast("Unauthorized");
-      }
-      const response = await getPermissionById(id, token ? token : "");
+      const response = await getPermissionById(id);
       if (response.success) {
         setPermisDetail(response.data);
       }

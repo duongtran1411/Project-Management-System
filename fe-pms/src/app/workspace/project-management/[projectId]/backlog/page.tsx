@@ -143,7 +143,9 @@ export default function Backlog() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Spin size="large" tip="Loading..." />
+        <Spin size="large" tip="Loading...">
+          <div className="p-10" />
+        </Spin>
       </div>
     );
   }

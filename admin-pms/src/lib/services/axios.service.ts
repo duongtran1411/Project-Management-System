@@ -30,7 +30,7 @@ class AxiosService {
     })
 
     this.instance.interceptors.response.use(
-      (response) => this.handleResponse(response), // Handle success responses
+      (response) => this.handleResponse(response),
       async (error) => {
         const originalRequest = error.config;
         if (
