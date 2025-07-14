@@ -4,8 +4,6 @@ import projectService from "../services/project.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 export class ProjectController {
     
-  
-
     createProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const user = req.user;
