@@ -1,18 +1,25 @@
 "use client";
 import React from "react";
 import { Pie } from "@ant-design/charts";
+import { TaskStatistic } from "@/types/types";
+import { Spin } from "antd";
 
-const StatusOverviewChart = () => {
-  const data = [
-    { type: "To Do", value: 18 },
-    { type: "In Progress", value: 7 },
-    { type: "Done", value: 24 },
-  ];
+interface Props {
+  taskStatistic?: TaskStatistic;
+}
+
+const StatusOverviewChart: React.FC<Props> = ({ taskStatistic }) => {
+  if (!taskStatistic)
+    return (
+      <Spin size="large" tip="Loading...">
+        <div className="p-10" />
+      </Spin>
+    );
 
   const config = {
-    data,
-    angleField: "value",
-    colorField: "type",
+    data: taskStatistic?.taskStatusStats,
+    angleField: "count",
+    colorField: "status",
     radius: 1,
     innerRadius: 0.7,
     height: 240,
@@ -31,7 +38,7 @@ const StatusOverviewChart = () => {
         type: "text",
         data: [],
         style: {
-          text: "Total work items: 49",
+          text: `Total work items:${taskStatistic?.totalTasks}`,
           x: "50%",
           y: "50%",
           textAlign: "center",

@@ -203,7 +203,6 @@ const SprintSection: React.FC<Props> = ({
           .filter((id): id is string => typeof id === "string");
 
         const onChange: CheckboxProps["onChange"] = (e) => {
-          console.log(`checked = ${e.target.checked}`);
           if (e.target.checked) {
             setSelectedTaskIds(allTaskIdsInMilestone);
           } else {

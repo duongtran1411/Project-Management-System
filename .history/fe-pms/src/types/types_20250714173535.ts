@@ -19,20 +19,12 @@ export interface Task {
     _id: string;
     name?: string;
   };
-  createdBy?: {
+  createBy?: {
     _id: string;
     fullName: string;
     email: string;
     avatar?: string;
   };
-  updatedBy?: {
-    _id: string;
-    fullName: string;
-    email: string;
-    avatar?: string;
-  };
-  updatedAt: string;
-  createdAt: string;
 }
 
 export interface Epic {
@@ -139,16 +131,4 @@ export interface TaskStatusStats {
 export interface TaskStatistic {
   totalTasks: number;
   taskStatusStats: TaskStatusStats[];
-}
-
-// statistic task follow contributor
-export interface ContributorStats {
-  count: number;
-  assignee: string;
-  userName: string;
-  percentage: string;
-}
-export interface TaskContributorStatistic {
-  totalTasks: number;
-  contributorStats: ContributorStats[];
 }

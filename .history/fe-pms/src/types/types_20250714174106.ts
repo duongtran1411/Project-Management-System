@@ -140,15 +140,3 @@ export interface TaskStatistic {
   totalTasks: number;
   taskStatusStats: TaskStatusStats[];
 }
-
-// statistic task follow contributor
-export interface ContributorStats {
-  count: number;
-  assignee: string;
-  userName: string;
-  percentage: string;
-}
-export interface TaskContributorStatistic {
-  totalTasks: number;
-  contributorStats: ContributorStats[];
-}

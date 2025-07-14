@@ -25,7 +25,7 @@ const ActivityRecent = () => {
     fetcher
   );
   return (
-    <div className="bg-white overflow-hidden h-[290px]">
+    <div className="bg-white overflow-hidden h-[290px] p-4">
       <h3 className="text-md font-semibold mb-1">Recent activity</h3>
       <p className="text-sm text-gray-500 mb-4">
         Stay up to date with what’s happening across the project.
@@ -55,7 +55,7 @@ const ActivityRecent = () => {
                     src={activity.createdBy.avatar}
                   />
                 ) : (
-                  <Avatar className="bg-gray-400" size="small">
+                  <Avatar className="bg-gray-600" size="small">
                     U
                   </Avatar>
                 )}
@@ -65,12 +65,7 @@ const ActivityRecent = () => {
                     <span className="font-medium">
                       {activity?.updatedBy?.fullName}
                     </span>
-                    <span>
-                      {activity.createdAt === activity.updatedAt
-                        ? " created "
-                        : " updated "}{" "}
-                      on{" "}
-                    </span>
+                    <span> updated on </span>
                     <span className="rounded-[5px] break-words">
                       <span className="text-blue-700 font-medium px-2 py-1 rounded text-xs">
                         <CheckSquareOutlined className="text-blue-700 px-1" />
@@ -92,15 +87,9 @@ const ActivityRecent = () => {
                   </p>
                   <span className="text-gray-400 text-xs">
                     <ClockCircleOutlined className="mr-1" />
-                    {activity.createdAt === activity.updatedAt
-                      ? `${activity?.createdAt.slice(
-                          0,
-                          10
-                        )} ${activity?.createdAt.slice(11, 19)}`
-                      : `${activity?.updatedAt.slice(
-                          0,
-                          10
-                        )} ${activity?.updatedAt.slice(11, 19)}`}
+                    {activity?.updatedAt.slice(0, 10) +
+                      "" +
+                      activity.updatedAt.slice(11, 19)}
                   </span>
                 </div>
               </div>

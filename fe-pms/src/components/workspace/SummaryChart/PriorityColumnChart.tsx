@@ -26,7 +26,6 @@ const PriorityBarChart = () => {
           }${Endpoints.Statistics.TASK_PRIORITY(projectId)}`
         );
         setData(response?.priorityStats);
-        console.log("Priority data:", response?.priorityStats);
       } catch (error) {
         console.error("Error fetching priority data:", error);
       }

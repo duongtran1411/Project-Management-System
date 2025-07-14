@@ -52,6 +52,7 @@ export default function Backlog() {
     )}`,
     fetcher
   );
+  console.log("task data", taskData);
 
   const { data: contributorData, error: contributorError } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
@@ -110,6 +111,8 @@ export default function Backlog() {
     if (filteredTasks) setListTask(filteredTasks);
   }, [filteredTasks]);
 
+  console.log("list task", listTask);
+
   // Clear all filters
   const clearFilters = () => {
     setSearchText("");
@@ -123,9 +126,7 @@ export default function Backlog() {
 
   //Create new task
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(
-    null
-  );
+  const [selectedMilestone, setSelectedMilestone] = useState<Milestone>();
   const showModal = (milestone: Milestone) => {
     setSelectedMilestone(milestone);
     setIsModalOpen(true);
@@ -213,7 +214,7 @@ export default function Backlog() {
                 style: { color: "#f56a00", backgroundColor: "#fde3cf" },
               }}
             >
-              <Avatar style={{ backgroundColor: "#f56a00" }}>K</Avatar>
+              <Avatar style={{ backgroundColor: "#f56a00" }}>C</Avatar>
               {contributorData?.data.length > 1 && (
                 <Avatar
                   style={{
@@ -304,14 +305,15 @@ export default function Backlog() {
           </span>
         </Button> */}
       </div>
-
-      <ModalCreateTask
-        projectId={projectId}
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-        setSelectedMilestone={setSelectedMilestone}
-        selectedMilestone={selectedMilestone}
-      />
+      {selectedMilestone && (
+        <ModalCreateTask
+          projectId={projectId}
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          //setSelectedMilestone={setSelectedMilestone}
+          selectedMilestone={selectedMilestone}
+        />
+      )}
 
       <CreateSprintModal
         open={openCreateModal}
