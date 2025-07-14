@@ -4,6 +4,8 @@ import { authenticate } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
+router.use(authenticate);
+
 /**
  * @openapi
  * /project-contributor/project/{projectId}:
@@ -25,7 +27,6 @@ const router = express.Router();
  */
 router.get(
   "/project/:projectId",
-  authenticate,
   projectContributorController.getContributorsByProject
 );
 
@@ -60,11 +61,7 @@ router.get(
  *       400:
  *         description: Lỗi gửi lời mời
  */
-router.post(
-  "/invitation",
-  authenticate,
-  projectContributorController.sendProjectInvitation
-);
+router.post("/invitation", projectContributorController.sendProjectInvitation);
 
 /**
  * @openapi
@@ -101,7 +98,6 @@ router.post(
  */
 router.post(
   "/invitation/multiple",
-  authenticate,
   projectContributorController.sendMultipleProjectInvitations
 );
 
@@ -111,8 +107,6 @@ router.post(
  *   post:
  *     summary: Xác nhận lời mời tham gia project
  *     tags: [Project Contributor]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: token
@@ -137,6 +131,8 @@ router.post(
  *   get:
  *     summary: Lấy contributor theo ID
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -150,11 +146,7 @@ router.post(
  *       404:
  *         description: Không tìm thấy contributor
  */
-router.get(
-  "/:id",
-  authenticate,
-  projectContributorController.getContributorById
-);
+router.get("/:id", projectContributorController.getContributorById);
 
 /**
  * @openapi
@@ -162,6 +154,8 @@ router.get(
  *   put:
  *     summary: Cập nhật contributor
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -184,11 +178,7 @@ router.get(
  *       404:
  *         description: Contributor không tồn tại
  */
-router.put(
-  "/:id",
-  authenticate,
-  projectContributorController.updateContributor
-);
+router.put("/:id", projectContributorController.updateContributor);
 
 /**
  * @openapi
@@ -196,6 +186,8 @@ router.put(
  *   delete:
  *     summary: Xoá contributor
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -209,11 +201,7 @@ router.put(
  *       404:
  *         description: Contributor không tồn tại
  */
-router.delete(
-  "/:id",
-  authenticate,
-  projectContributorController.deleteContributor
-);
+router.delete("/:id", projectContributorController.deleteContributor);
 
 /**
  * @openapi
@@ -221,6 +209,8 @@ router.delete(
  *   get:
  *     summary: Lấy danh sách user thuộc project
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -236,7 +226,6 @@ router.delete(
  */
 router.get(
   "/project/:projectId/users",
-  authenticate,
   projectContributorController.getContributorsByProject
 );
 
@@ -246,6 +235,8 @@ router.get(
  *   get:
  *     summary: Lấy danh sách project theo userId
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -261,7 +252,6 @@ router.get(
  */
 router.get(
   "/user/:userId/projects",
-  authenticate,
   projectContributorController.getProjectsByUser
 );
 

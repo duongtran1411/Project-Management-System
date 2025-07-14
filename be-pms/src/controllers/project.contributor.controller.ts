@@ -163,14 +163,7 @@ export class ProjectContributorController {
         return;
       }
 
-      if (!invitedBy) {
-        res.status(401).json({
-          success: false,
-          message: "Bạn cần đăng nhập để thực hiện hành động này",
-          statusCode: 401,
-        });
-        return;
-      }
+      // Đã có middleware authenticate nên không cần kiểm tra invitedBy
 
       const result = await projectContributorService.sendProjectInvitation(
         email,
@@ -181,7 +174,7 @@ export class ProjectContributorController {
 
       res.status(201).json({
         success: true,
-        message: "Đã gửi lời mời thành công",
+        message: "Gửi lời mời thành công",
         data: result,
         statusCode: 201,
       });
@@ -212,14 +205,7 @@ export class ProjectContributorController {
         return;
       }
 
-      if (!invitedBy) {
-        res.status(401).json({
-          success: false,
-          message: "Bạn cần đăng nhập để thực hiện hành động này",
-          statusCode: 401,
-        });
-        return;
-      }
+      // Đã có middleware authenticate nên không cần kiểm tra invitedBy
 
       const result =
         await projectContributorService.sendMultipleProjectInvitations(
