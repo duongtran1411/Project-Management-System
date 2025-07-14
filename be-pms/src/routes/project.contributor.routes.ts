@@ -29,9 +29,148 @@ router.get(
 
 /**
  * @openapi
+ * /project-contributor/invitation:
+ *   post:
+ *     summary: Gửi lời mời tham gia project
+ *     tags: [Project Contributor]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, projectId, projectRoleId]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Email của người dùng
+ *               projectId:
+ *                 type: string
+ *                 description: ID của project
+ *               projectRoleId:
+ *                 type: string
+ *                 description: ID của role trong project
+ *     responses:
+ *       201:
+ *         description: Gửi lời mời thành công
+ *       400:
+ *         description: Lỗi gửi lời mời
+ */
+router.post("/invitation", projectContributorController.sendProjectInvitation);
+
+/**
+ * @openapi
+ * /project-contributor/invitation/multiple:
+ *   post:
+ *     summary: Gửi nhiều lời mời cùng lúc
+ *     tags: [Project Contributor]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [emails, projectId, projectRoleId]
+ *             properties:
+ *               emails:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Danh sách email của người dùng
+ *               projectId:
+ *                 type: string
+ *                 description: ID của project
+ *               projectRoleId:
+ *                 type: string
+ *                 description: ID của role trong project
+ *     responses:
+ *       201:
+ *         description: Gửi lời mời thành công
+ *       400:
+ *         description: Lỗi gửi lời mời
+ */
+router.post(
+  "/invitation/multiple",
+  projectContributorController.sendMultipleProjectInvitations
+);
+
+/**
+ * @openapi
+ * /project-contributor/invitation/confirm/{token}:
+ *   post:
+ *     summary: Xác nhận lời mời tham gia project
+ *     tags: [Project Contributor]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token xác nhận lời mời
+ *     responses:
+ *       200:
+ *         description: Xác nhận thành công
+ *       400:
+ *         description: Lỗi xác nhận lời mời
+ */
+router.post(
+  "/invitation/confirm/:token",
+  projectContributorController.confirmProjectInvitation
+);
+
+/**
+ * @openapi
+ * /project-contributor/invitation/pending/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách lời mời đang chờ xác nhận
+ *     tags: [Project Contributor]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Danh sách lời mời đang chờ
+ *       400:
+ *         description: Lỗi lấy danh sách lời mời
+ */
+router.get(
+  "/invitation/pending/:projectId",
+  projectContributorController.getPendingInvitations
+);
+
+/**
+ * @openapi
+ * /project-contributor/invitation/{invitationId}/cancel:
+ *   delete:
+ *     summary: Hủy lời mời
+ *     tags: [Project Contributor]
+ *     parameters:
+ *       - in: path
+ *         name: invitationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của lời mời
+ *     responses:
+ *       200:
+ *         description: Hủy lời mời thành công
+ *       404:
+ *         description: Lời mời không tồn tại
+ */
+router.delete(
+  "/invitation/:invitationId/cancel",
+  projectContributorController.cancelInvitation
+);
+
+/**
+ * @openapi
  * /project-contributor/email:
  *   post:
- *     summary: Thêm contributor vào project bằng email
+ *     summary: Thêm contributor vào project bằng email (legacy)
  *     tags: [Project Contributor]
  *     requestBody:
  *       required: true
@@ -62,7 +201,7 @@ router.post("/email", projectContributorController.addContributorByEmail);
  * @openapi
  * /project-contributor/multiple:
  *   post:
- *     summary: Thêm nhiều contributors cùng lúc bằng email
+ *     summary: Thêm nhiều contributors cùng lúc bằng email (legacy)
  *     tags: [Project Contributor]
  *     requestBody:
  *       required: true
