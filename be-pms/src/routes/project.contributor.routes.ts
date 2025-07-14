@@ -1,5 +1,6 @@
 import express from "express";
 import projectContributorController from "../controllers/project.contributor.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
@@ -100,6 +101,8 @@ router.post(
  *   post:
  *     summary: Xác nhận lời mời tham gia project
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: token
@@ -115,6 +118,7 @@ router.post(
  */
 router.post(
   "/invitation/confirm/:token",
+  authenticate,
   projectContributorController.confirmProjectInvitation
 );
 
