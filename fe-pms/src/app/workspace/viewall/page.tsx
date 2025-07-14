@@ -11,6 +11,7 @@ import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 
 interface Lead {
   name: string;
@@ -84,18 +85,21 @@ const ProjectTable = () => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
       const decoded = jwtDecode<TokenPayload>(access_token);
+      console.log("decode", decoded);
       setUserId(decoded.userId);
     }
   }, []);
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const fetcher = (url: string) =>
+    axiosService
+      .getAxiosInstance()
+      .get(url)
+      .then((res) => res.data);
   const {
     data: projectList,
     error,
     isLoading,
   } = useSWR(
-    `${
-      process.env.NEXT_PUBLIC_API_URL
-    }${Endpoints.ProjectContributor.GET_PROJECTS_BY_USER(userId || "")}`,
+    `${Endpoints.ProjectContributor.GET_PROJECTS_BY_USER(userId || "")}`,
     fetcher
   );
 
