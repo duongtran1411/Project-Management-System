@@ -1,6 +1,15 @@
 "use client";
-import React from "react";
-import { Button, Input, Badge, Avatar, Typography } from "antd";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Input,
+  Badge,
+  Avatar,
+  Typography,
+  MenuProps,
+  Dropdown,
+  Space,
+} from "antd";
 import {
   BellOutlined,
   QuestionCircleOutlined,
@@ -11,9 +20,58 @@ import {
 } from "@ant-design/icons";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+import { TokenPayload } from "@/models/user/TokenPayload";
+import { Constants } from "@/lib/constants";
+
+import { logout } from "@/lib/utils";
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
+  const [token, setToken] = useState("");
+  const [avatar, setAvatar] = useState<string>("");
+  useEffect(() => {
+    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
+    if (access_token) {
+      const decoded = jwtDecode<TokenPayload>(access_token);
+      setAvatar(decoded.avatar);
+      setToken(access_token);
+    }
+  }, []);
+  const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
+    switch (key) {
+      case "workspace":
+        router.push("/workspace");
+        console.log("Go to My Workspace");
+        break;
+      case "profile":
+        router.push("/profile");
+        console.log("Go to Profile");
+        break;
+      case "logout":
+        logout();
+        console.log("Logging out...");
+        break;
+    }
+  };
+
+  const items: MenuProps["items"] = [
+    {
+      label: "My Workspace",
+      key: "workspace",
+    },
+    {
+      label: "Profile",
+      key: "profile",
+    },
+    {
+      type: "divider",
+    },
+    {
+      label: "Logout",
+      key: "logout",
+    },
+  ];
   return (
     <header className="bg-white px-4 py-2 flex items-center justify-between w-full border-b border-gray-300">
       {/* Left */}
@@ -54,7 +112,21 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         </Badge>
         <QuestionCircleOutlined className="text-lg text-gray-600" />
         <SettingOutlined className="text-lg text-gray-600" />
-        <Avatar className="bg-purple-600 cursor-pointer">NH</Avatar>
+
+        <div>
+          {token ? (
+            <Dropdown
+              menu={{ items, onClick: handleMenuClick }}
+              trigger={["click"]}
+            >
+              <Space className="cursor-pointer">
+                <Avatar src={avatar} />
+              </Space>
+            </Dropdown>
+          ) : (
+            <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
+          )}
+        </div>
       </div>
     </header>
   );

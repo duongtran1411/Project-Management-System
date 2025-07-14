@@ -64,5 +64,81 @@ export interface Contributor {
     avatar: string;
   };
   roleId: string | null;
-  joinedAt: string; // hoặc Date nếu bạn muốn dùng kiểu Date
+  joinedAt: string;
+}
+
+export interface ProjectContributor {
+  _id?: string;
+  userId: string;
+  projectId: string;
+  projectRoleId: string | null;
+  joinedAt?: Date;
+}
+
+export interface Project {
+  _id?: string;
+  name: string;
+  icon?: string;
+  description?: string;
+  projectType?: string;
+  projectLead?: string;
+  defaultAssign?: string;
+  workspaceId?: string;
+  status?: string;
+}
+
+export interface Role {
+  _id?: string;
+  name: string;
+  description?: string;
+  permissionIds?: string[];
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: Date;
+}
+
+export interface ProjectRole {
+  _id?: string;
+  name: string;
+  projectpermissionIds?: string[];
+}
+
+export interface PriorityStat {
+  count: number;
+  priority: "HIGH" | "MEDIUM" | "LOW";
+  percentage: string;
+}
+
+export interface PriorityStatsResponse {
+  totalTasks: number;
+  priorityStats: PriorityStat[];
+}
+
+export interface TaskApiResponse {
+  _id: string;
+  name: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  dueDate?: string;
+  assignee?: {
+    _id: string;
+    fullName: string;
+  };
+  epic?: {
+    _id: string;
+    name: string;
+  };
+}
+
+
+export interface UITask {
+  id: string;
+  title: string;
+  assignee: string;
+  tags: string[];
+  dueDate: string;
+  status: string;
+  priority: string;
+  raw: TaskApiResponse;
 }

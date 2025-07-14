@@ -2,7 +2,7 @@
 import { Form, Input, Flex, Button, Checkbox } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleCredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
 import { showErrorToast } from "@/components/common/toast/toast";
 import { jwtDecode } from "jwt-decode";
@@ -35,6 +35,10 @@ export default function Page() {
         }
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
+
+          //Lưu thông tin người dùng
+          localStorage.setItem("currentUser", JSON.stringify(decoded));
+
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
           router.replace(decoded.role === "ADMIN" ? "/admin" : "/");
         }
@@ -60,7 +64,7 @@ export default function Page() {
   };
 
   //login with google
-  const handleLoginGoogle = async (credentialReponse: any) => {
+  const handleLoginGoogle = async (credentialReponse: GoogleCredentialResponse) => {
     setLoading(true);
     try {
       const credential = credentialReponse.credential;
@@ -75,10 +79,14 @@ export default function Page() {
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
         localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-        
+
         if (token) {
-          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
           const decoded = jwtDecode<TokenPayload>(token);
+
+          localStorage.setItem("currentUser", JSON.stringify(decoded));
+
+          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
+
           if (decoded.role === "USER") {
             router.replace("/");
           }
@@ -113,12 +121,12 @@ export default function Page() {
     return <Spinner />;
   }
   return (
-    <div className="border-2 rounded-xl border-gray-200 shadow-xl">
+    <div className="border-2 border-gray-200 shadow-xl rounded-xl">
       <Form
         name="login"
         initialValues={{ remember: true }}
         style={{ maxWidth: 360 }}
-        onFinish={onFinish} className="pl-4 pt-6">
+        onFinish={onFinish} className="pt-6 pl-4">
         <div style={{ display: "flex", justifyContent: "center" }}>
           <Image
             width={300}
@@ -158,7 +166,7 @@ export default function Page() {
             </Form.Item>
             <Link
               href={'/authentication/forgot-password'}
-              className="text-blue-500 hover:decoration-solid hover:underline text-sm">
+              className="text-sm text-blue-500 hover:decoration-solid hover:underline">
               Forgot password?
             </Link>
           </Flex>

@@ -20,3 +20,6 @@ export const formatDate = (date: string) => {
 
   return formattedDate;
 };
+
+export const isValidEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

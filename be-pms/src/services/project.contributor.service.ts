@@ -11,8 +11,7 @@ export class ProjectContributorService {
       projectId: data.projectId,
     });
 
-    if (exists)
-      throw new Error("User is already a contributor to this project.");
+    if (exists) throw new Error("Người dùng đã là contributor của dự án này.");
 
     const contributor = await ProjectContributor.create(data);
 
@@ -91,7 +90,10 @@ export class ProjectContributorService {
     if (!mongoose.Types.ObjectId.isValid(userId)) return [];
 
     const contributors = await ProjectContributor.find({ userId })
-      .populate({ path: "projectId", select: "name icon projectType" })
+      .populate({
+        path: "projectId",
+        select: "name icon projectType projectLead",
+      })
       .select("projectId") // Chỉ cần trường projectId
       .lean();
 

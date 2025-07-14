@@ -1,31 +1,9 @@
 "use client";
 import { Card, Tabs, Badge, List, Checkbox } from "antd";
 import Link from "next/link";
-
-
-const recentProjects = [
-    {
-        title: "Project Management",
-        desc: "Team-managed software",
-        badge: 4,
-        color: "bg-blue-100",
-        icon: "https://fpt-team-zwu4t30d.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10408?size=medium",
-    },
-    {
-        title: "dsdfsd",
-        desc: "Team-managed software",
-        badge: 0,
-        color: "bg-yellow-100",
-        icon: "https://fpt-team-zwu4t30d.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10408?size=medium",
-    },
-    {
-        title: "HE172042_TranDaiDuong_L...",
-        desc: "Team-managed software",
-        badge: 0,
-        color: "bg-blue-100",
-        icon: "https://fpt-team-zwu4t30d.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10408?size=medium",
-    },
-];
+import { useEffect, useState } from "react";
+import { getProjectsContributorByUserId } from "@/lib/services/projectContributor/projectContributor";
+import { Project } from "@/types/types";
 
 const assignedTasks = [
     {
@@ -65,6 +43,30 @@ const assignedTasks = [
 ];
 
 export default function Page() {
+    const [projects, setProjects] = useState<Project[]>([]);
+
+    useEffect(() => {
+        const currentUser =
+            typeof window !== "undefined"
+                ? localStorage.getItem("currentUser")
+                : null;
+        const userId = currentUser ? JSON.parse(currentUser).userId : null;
+
+        if (!userId) return;
+
+        const fetchProjects = async () => {
+            const data = await getProjectsContributorByUserId(userId);
+            if (Array.isArray(data)) {
+                const filteredProjects = data.filter(
+                    (proj): proj is Project => proj !== null
+                );
+                setProjects(filteredProjects);
+            }
+        };
+
+        fetchProjects();
+    }, []);
+
     return (
         <div className="min-h-screen p-8 bg-white">
             <h1 className="text-2xl font-semibold mb-7">For you</h1>
@@ -81,48 +83,48 @@ export default function Page() {
                 </div>
 
                 <div className="flex gap-4 mb-6">
-                    {recentProjects.map((proj, idx) => (
+                    {projects.map((proj, idx) => (
                         <Card
                             key={idx}
                             className="p-0 shadow-sm w-72"
                             styles={{ body: { padding: 0 } }}
                         >
                             <div className="flex">
-                                <div className={`w-4 rounded-l ${proj.color}`}></div>
+                                <div className={`w-4 rounded-l bg-blue-100`}></div>
                                 <div className="flex-1 ">
                                     <div className="flex items-center p-4 space-x-3">
                                         <img
-                                            src={proj.icon}
+                                            src="https://fpt-team-zwu4t30d.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10408?size=medium"
                                             alt=""
                                             className="object-cover w-8 h-8 rounded"
                                         />
                                         <div className="flex flex-col">
-                                            <div className="text-sm font-semibold leading-5">{proj.title}</div>
-                                            <div className="text-xs text-gray-500">{proj.desc}</div>
+                                            <div className="text-sm font-semibold leading-5">
+                                                {proj.name}
+                                            </div>
+                                            <div className="text-sm font-semibold text-gray-500">
+                                                {proj.projectType}
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center justify-between px-4 mt-2 text-sm text-gray-600">
                                         <span>My open work items</span>
-                                        {proj.badge > 0 && (
-                                            <Badge count={proj.badge} color="#d1d5db" />
-                                        )}
+                                        <Badge count={0} color="#d1d5db" />
                                     </div>
-                                    <div className="pl-4 mt-1 text-sm text-gray-600">Done work items</div>
+                                    <div className="pl-4 mt-1 text-sm text-gray-600">
+                                        Done work items
+                                    </div>
 
                                     <Link
-                                        href="/workspace/project-management"
+                                        href={`/workspace/project-management/${proj._id}`}
                                         className="flex items-center justify-between block px-4 py-2 mt-4 text-xs text-gray-500 transition border-t border-gray-200 hover:bg-gray-100"
                                     >
                                         <span>Board</span>
-                                        {/* <span className="text-base leading-none">&#9662;</span> */}
                                     </Link>
-
                                 </div>
                             </div>
                         </Card>
-
-
                     ))}
                 </div>
             </div>
@@ -136,7 +138,8 @@ export default function Page() {
                         key: "assigned",
                         label: (
                             <span>
-                                Assigned to me <Badge color="#d1d5db" count={4} className="ml-1" />
+                                Assigned to me{" "}
+                                <Badge color="#d1d5db" count={4} className="ml-1" />
                             </span>
                         ),
                         children: (

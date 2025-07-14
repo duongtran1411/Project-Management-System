@@ -1,6 +1,6 @@
+"use client";
 import HeaderProjectManagement from "@/components/workspace/HeaderProjectManagement";
 import React from "react";
-
 
 const layout = ({ children }: { children: React.ReactNode }) => {
   return (
