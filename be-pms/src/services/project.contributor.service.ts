@@ -78,9 +78,7 @@ export class ProjectContributorService {
 
     // Gửi email
     const inviter = await User.findById(invitedBy);
-    const confirmUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:3000"
-    }/project-invitation/confirm?token=${token}`;
+    const confirmUrl = `${"http://localhost:3000"}`;
 
     await sendProjectInvitationEmail(
       email,
@@ -245,7 +243,7 @@ export class ProjectContributorService {
         path: "projectId",
         select: "name icon projectType projectLead",
       })
-      .select("projectId") // Chỉ cần trường projectId
+      .select("projectId")
       .lean();
 
     return contributors.map((c) => c.projectId);

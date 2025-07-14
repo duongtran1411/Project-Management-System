@@ -217,7 +217,7 @@ router.delete(
 
 /**
  * @openapi
- * /projectContributor/project/{projectId}/users:
+ * /project-contributor/project/{projectId}/users:
  *   get:
  *     summary: Lấy danh sách user thuộc project
  *     tags: [Project Contributor]
@@ -242,7 +242,7 @@ router.get(
 
 /**
  * @openapi
- * /projectContributor/user/{userId}/projects:
+ * /project-contributor/user/{userId}/projects:
  *   get:
  *     summary: Lấy danh sách project theo userId
  *     tags: [Project Contributor]
