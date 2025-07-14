@@ -93,12 +93,7 @@ export async function sendProjectInvitationEmail(
           </div>
           
           <p style="color: #666; font-size: 14px;">
-            Link này có hiệu lực trong 7 ngày. Nếu bạn không muốn tham gia, vui lòng bỏ qua email này.
-          </p>
-          
-          <p style="color: #666; font-size: 14px;">
-            Nếu bạn gặp vấn đề với link trên, hãy copy và paste link này vào trình duyệt:<br>
-            <span style="word-break: break-all;">${confirmUrl}</span>
+            Lời mời có hiệu lực trong 7 ngày. Nếu bạn không muốn tham gia, vui lòng bỏ qua email này.
           </p>
         </div>
         
