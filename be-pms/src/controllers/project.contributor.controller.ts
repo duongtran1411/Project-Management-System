@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import projectContributorService from "../services/project.contributor.service";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 export class ProjectContributorController {
   getContributorById = async (req: Request, res: Response): Promise<void> => {
@@ -12,7 +13,7 @@ export class ProjectContributorController {
       if (!contributor) {
         res.status(404).json({
           success: false,
-          message: "Contributor not found",
+          message: "Không tìm thấy contributor",
           statusCode: 404,
         });
         return;
@@ -20,7 +21,7 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributor fetched successfully",
+        message: "Lấy contributor thành công",
         data: contributor,
         statusCode: 200,
       });
@@ -28,7 +29,7 @@ export class ProjectContributorController {
       console.error("Get contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to fetch contributor",
+        message: error.message || "Lỗi lấy contributor",
         statusCode: 400,
       });
     }
@@ -45,7 +46,7 @@ export class ProjectContributorController {
       if (!contributor) {
         res.status(404).json({
           success: false,
-          message: "Contributor not found",
+          message: "Không tìm thấy contributor",
           statusCode: 404,
         });
         return;
@@ -53,7 +54,7 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributor updated successfully",
+        message: "Cập nhật contributor thành công",
         data: contributor,
         statusCode: 200,
       });
@@ -61,7 +62,7 @@ export class ProjectContributorController {
       console.error("Update contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to update contributor",
+        message: error.message || "Lỗi cập nhật contributor",
         statusCode: 400,
       });
     }
@@ -75,7 +76,7 @@ export class ProjectContributorController {
       if (!deleted) {
         res.status(404).json({
           success: false,
-          message: "Contributor not found",
+          message: "Không tìm thấy contributor",
           statusCode: 404,
         });
         return;
@@ -83,14 +84,14 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributor deleted successfully",
+        message: "Xóa contributor thành công",
         statusCode: 200,
       });
     } catch (error: any) {
       console.error("Delete contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to delete contributor",
+        message: error.message || "Lỗi xóa contributor",
         statusCode: 400,
       });
     }
@@ -107,7 +108,7 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributors by project fetched successfully",
+        message: "Lấy danh sách contributor thành công",
         data: contributors,
         statusCode: 200,
       });
@@ -115,7 +116,7 @@ export class ProjectContributorController {
       console.error("Get contributors by project error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to get contributors by project",
+        message: error.message || "Lỗi lấy danh sách contributor",
         statusCode: 400,
       });
     }
@@ -146,12 +147,12 @@ export class ProjectContributorController {
   };
 
   sendProjectInvitation = async (
-    req: Request,
+    req: AuthRequest,
     res: Response
   ): Promise<void> => {
     try {
       const { email, projectId, projectRoleId } = req.body;
-      const invitedBy = (req as any).user?.id; // Lấy từ middleware auth
+      const invitedBy = req.user?._id; // Lấy từ middleware auth
 
       if (!email || !projectId || !projectRoleId) {
         res.status(400).json({
@@ -194,14 +195,13 @@ export class ProjectContributorController {
     }
   };
 
-  // Gửi multiple invitations
   sendMultipleProjectInvitations = async (
-    req: Request,
+    req: AuthRequest,
     res: Response
   ): Promise<void> => {
     try {
       const { emails, projectId, projectRoleId } = req.body;
-      const invitedBy = (req as any).user?.id;
+      const invitedBy = req.user?._id;
 
       if (!emails || !Array.isArray(emails) || !projectId || !projectRoleId) {
         res.status(400).json({
@@ -254,7 +254,6 @@ export class ProjectContributorController {
     }
   };
 
-  // Xác nhận invitation
   confirmProjectInvitation = async (
     req: Request,
     res: Response
