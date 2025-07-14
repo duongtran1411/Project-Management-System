@@ -113,3 +113,32 @@ export interface PriorityStatsResponse {
   totalTasks: number;
   priorityStats: PriorityStat[];
 }
+
+export interface TaskApiResponse {
+  _id: string;
+  name: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  dueDate?: string;
+  assignee?: {
+    _id: string;
+    fullName: string;
+  };
+  epic?: {
+    _id: string;
+    name: string;
+  };
+}
+
+
+export interface UITask {
+  id: string;
+  title: string;
+  assignee: string;
+  tags: string[];
+  dueDate: string;
+  status: string;
+  priority: string;
+  raw: TaskApiResponse;
+}
