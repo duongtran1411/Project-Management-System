@@ -1,49 +1,29 @@
 "use client";
 
 import { Endpoints } from "@/lib/endpoints";
-import { getAll } from "@/lib/services/user/user";
+import { getAll, updateStatus } from "@/lib/services/user/user";
 import { User } from "@/models/user/User";
 import { useEffect, useState } from "react";
-import { FiSearch, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 import useSWR from "swr";
 import { Spin } from "antd";
-import { showErrorToast } from "@/components/common/toast/toast";
-import { Modal } from "antd";
+import { showErrorToast, showSuccessToast } from "@/components/common/toast/toast";
 import { format } from "date-fns";
+import Swal from "sweetalert2";
+import Spinner from "@/components/common/spinner/spin";
 const UserAdmin = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
   const [users, setUsers] = useState<User[]>([]);
-  const [open, setOpen] = useState(false);
-  const showModal = () => {
-    setOpen(true);
-  };
-  const hideModal = () => {
-    setOpen(false);
-  };
-
-  const showModalStatus = () => {
-    setOpen(true);
-  };
-
-  const hideModalStatus = () => {
-    setOpen(false);
-  };
   const getAllUser = async (url: string): Promise<User[]> => {
     const response = await getAll(url);
     return response.data;
   };
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading,mutate } = useSWR(
     `${Endpoints.User.GET_ALL}`,
     getAllUser
   );
-
-  if (isLoading) {
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <Spin size="large" />
-    </div>;
-  }
 
   if (error) {
     showErrorToast(error.message);
@@ -81,6 +61,39 @@ const UserAdmin = () => {
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
     }
   };
+  const confirmModal = (id: string, status: string) => {
+    const newStatus = status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    Swal.fire({
+      title: "CHANGE STATUS USER?",
+      text: `You want change to ${newStatus}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Confirm",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await updateStatus(id, newStatus);
+          if(response.success){
+            mutate()
+            showSuccessToast(response.message)
+          }
+        } catch (error: any) {
+          const errorMessage =
+            error?.data?.response?.messsage ||
+            error?.message ||
+            "đã có lỗi xảy ra";
+          if (errorMessage) {
+            showErrorToast(errorMessage);
+          }
+        }
+      }
+    });
+  };
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -160,15 +173,16 @@ const UserAdmin = () => {
                             user.role.name === "ADMIN"
                               ? "bg-purple-100 text-purple-800"
                               : "bg-green-100 text-green-800"
-                          }`}
-                          onClick={showModal}>
+                          }`}>
                           {user.role.name}
                         </span>
                       </td>
 
                       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">
                         <div className="flex justify-start space-x-3 items-center">
-                          <p className="text-red-400">number of times:  {user.failedLoginAttempts}</p>
+                          <p className="text-red-400">
+                            number of times: {user.failedLoginAttempts}
+                          </p>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -178,17 +192,14 @@ const UserAdmin = () => {
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
                           }`}
-                          onClick={showModalStatus}>
+                          onClick={() => confirmModal(user._id, user.status)}>
                           {user.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
                         <div className="flex space-x-3 items-center">
                           {user.lastLogin
-                            ? format(
-                                new Date(user.lastLogin),
-                                "dd/MM/yyyy"
-                              )
+                            ? format(new Date(user.lastLogin), "dd/MM/yyyy")
                             : "Chưa đăng nhập"}
                         </div>
                       </td>
@@ -232,24 +243,6 @@ const UserAdmin = () => {
             </div>
           </div>
         </div>
-        <Modal
-          title="Change Role For User"
-          open={open}
-          onOk={hideModal}
-          onCancel={hideModal}
-          okText="Confrim"
-          cancelText="Cancel">
-          <p>Do you want change role</p>
-        </Modal>
-        <Modal
-          title="Change Status For User"
-          open={open}
-          onOk={hideModalStatus}
-          onCancel={hideModalStatus}
-          okText="Confrim"
-          cancelText="Cancel">
-          <p>Do you want change role</p>
-        </Modal>
       </div>
     </div>
   );

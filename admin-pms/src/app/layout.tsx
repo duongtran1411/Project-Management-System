@@ -1,6 +1,6 @@
-// import "antd/dist/reset.css";
 import "@/styles/globals.css";
 import "quill/dist/quill.snow.css";
+import "sweetalert2/dist/sweetalert2.min.css";
 import type { Metadata } from "next";
 import { Providers } from "./providers";
 export const metadata: Metadata = {
