@@ -111,16 +111,17 @@ export class StatisticsService {
 
     const epicStats = await Promise.all(
       epics.map(async (epic) => {
+        // Sửa lại trường truy vấn: epic thay vì epicId
         const totalEpicTasks = await Task.countDocuments({
           projectId: new Types.ObjectId(projectId),
-          epicId: epic._id,
+          epic: epic._id,
         });
 
         const taskStatusStats = await Task.aggregate([
           {
             $match: {
               projectId: new Types.ObjectId(projectId),
-              epicId: epic._id,
+              epic: epic._id,
             },
           },
           { $group: { _id: "$status", count: { $sum: 1 } } },
@@ -169,7 +170,9 @@ export class StatisticsService {
         $project: {
           assignee: "$_id",
           count: 1,
-          userName: { $arrayElemAt: ["$user.name", 0] },
+          userName: { $arrayElemAt: ["$user.fullName", 0] },
+          avatar: { $arrayElemAt: ["$user.avatar", 0] },
+          fullName: { $arrayElemAt: ["$user.fullName", 0] },
           _id: 0,
         },
       },
@@ -179,6 +182,8 @@ export class StatisticsService {
     const statsWithPercentage = contributorStats.map((stat: any) => ({
       ...stat,
       userName: stat.userName || "Unassigned",
+      fullName: stat.fullName || "Unassigned",
+      avatar: stat.avatar || null,
       percentage:
         totalTasks > 0 ? ((stat.count / totalTasks) * 100).toFixed(2) : "0.00",
     }));
