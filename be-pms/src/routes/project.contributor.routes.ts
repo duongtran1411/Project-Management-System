@@ -29,9 +29,9 @@ router.get(
 
 /**
  * @openapi
- * /project-contributor:
+ * /project-contributor/email:
  *   post:
- *     summary: Thêm contributor vào project
+ *     summary: Thêm contributor vào project bằng email
  *     tags: [Project Contributor]
  *     requestBody:
  *       required: true
@@ -39,21 +39,57 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [userId, projectId, projectRoleId]
+ *             required: [email, projectId, projectRoleId]
  *             properties:
- *               userId:
+ *               email:
  *                 type: string
+ *                 description: Email của người dùng
  *               projectId:
  *                 type: string
+ *                 description: ID của project
  *               projectRoleId:
  *                 type: string
+ *                 description: ID của role trong project
  *     responses:
  *       201:
- *         description: Tạo contributor thành công
+ *         description: Thêm contributor thành công
  *       400:
- *         description: Lỗi tạo contributor
+ *         description: Lỗi thêm contributor
  */
-router.post("/", projectContributorController.createContributor);
+router.post("/email", projectContributorController.addContributorByEmail);
+
+/**
+ * @openapi
+ * /project-contributor/multiple:
+ *   post:
+ *     summary: Thêm nhiều contributors cùng lúc bằng email
+ *     tags: [Project Contributor]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [emails, projectId, projectRoleId]
+ *             properties:
+ *               emails:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Danh sách email của người dùng
+ *               projectId:
+ *                 type: string
+ *                 description: ID của project
+ *               projectRoleId:
+ *                 type: string
+ *                 description: ID của role trong project
+ *     responses:
+ *       201:
+ *         description: Thêm contributors thành công
+ *       400:
+ *         description: Lỗi thêm contributors
+ */
+router.post("/multiple", projectContributorController.addMultipleContributors);
 
 /**
  * @openapi
