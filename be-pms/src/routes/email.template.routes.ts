@@ -1,5 +1,6 @@
 import { Router } from "express";
 import emailTemplateController from "../controllers/email.template.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -9,6 +10,7 @@ const router = Router();
  *   post:
  *     summary: Tạo mẫu email mới
  *     tags: [EmailTemplate]
+ *     security: [bearerAuth: []]
  *     requestBody:
  *       required: true
  *       content:
@@ -19,7 +21,13 @@ const router = Router();
  *             properties:
  *               name: { type: string }
  *               subject: { type: string }
- *               content: { type: string }
+ *               header: {type: string}
+ *               body: {type: string}
+ *               footer : {type: string}
+ *               variables:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *               description: { type: string }
  *     responses:
  *       201:
@@ -27,7 +35,7 @@ const router = Router();
  *       400:
  *         description: Dữ liệu không hợp lệ
  */
-router.post("/", emailTemplateController.create);
+router.post("/",authenticate, emailTemplateController.create);
 
 /**
  * @openapi
@@ -35,13 +43,14 @@ router.post("/", emailTemplateController.create);
  *   get:
  *     summary: Lấy tất cả mẫu email
  *     tags: [EmailTemplate]
+ *     security: [bearerAuth: []]
  *     responses:
  *       200:
  *         description: Lấy danh sách thành công
  *       400:
  *         description: Lỗi lấy dữ liệu
  */
-router.get("/", emailTemplateController.getAll);
+router.get("/",authenticate, emailTemplateController.getAll);
 
 /**
  * @openapi
@@ -49,6 +58,7 @@ router.get("/", emailTemplateController.getAll);
  *   get:
  *     summary: Lấy mẫu email theo ID
  *     tags: [EmailTemplate]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -62,7 +72,7 @@ router.get("/", emailTemplateController.getAll);
  *       404:
  *         description: Không tìm thấy
  */
-router.get("/:id", emailTemplateController.getById);
+router.get("/:id",authenticate, emailTemplateController.getById);
 
 /**
  * @openapi
@@ -70,6 +80,7 @@ router.get("/:id", emailTemplateController.getById);
  *   put:
  *     summary: Cập nhật mẫu email
  *     tags: [EmailTemplate]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -94,7 +105,7 @@ router.get("/:id", emailTemplateController.getById);
  *       404:
  *         description: Không tìm thấy mẫu
  */
-router.put("/:id", emailTemplateController.update);
+router.put("/:id",authenticate, emailTemplateController.update);
 
 /**
  * @openapi
@@ -102,6 +113,7 @@ router.put("/:id", emailTemplateController.update);
  *   delete:
  *     summary: Xoá mẫu email
  *     tags: [EmailTemplate]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -115,6 +127,6 @@ router.put("/:id", emailTemplateController.update);
  *       404:
  *         description: Không tìm thấy mẫu
  */
-router.delete("/:id", emailTemplateController.delete);
+router.delete("/:id",authenticate, emailTemplateController.delete);
 
 export default router;

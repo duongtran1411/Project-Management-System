@@ -20,7 +20,7 @@ const router = Router();
 router.use("/auth", authRoutes);
 router.use("/user", userRoutes);
 router.use("/statistics", statisticsRoutes);
-router.use("/emailTemplate", emailTemplateRoutes);
+router.use("/email-template", emailTemplateRoutes);
 router.use("/epic", epicRoutes);
 router.use("/task", taskRoutes);
 router.use('/permission',permissionRoutes)
