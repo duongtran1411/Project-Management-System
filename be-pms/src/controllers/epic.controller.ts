@@ -207,35 +207,6 @@ export class EpicController {
       });
     }
   };
-
-  getEpicsName = async (req: AuthRequest, res: Response): Promise<void> => {
-    try {
-      const {projectId} = req.params
-      const epics = await epicService.getAllEpicName(projectId);
-      if (!epics) {
-        res.status(400).json({
-          status: 400,
-          success: true,
-          message: 'Can not get data all epic name'
-        })
-      }
-
-      res.status(200).json({
-        status: 200,
-        success: false,
-        message: 'get data successful',
-        data: epics
-      })
-    } catch (error: any) {
-      console.error("Get epics by assignee error:", error);
-      res.status(400).json({
-        success: false,
-        message:
-          error.message || "Lấy danh sách epic theo người được giao thất bại",
-        statusCode: 400,
-      });
-    }
-  }
 }
 
 export default new EpicController();

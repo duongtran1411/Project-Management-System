@@ -2,28 +2,6 @@ import { Request, Response } from "express";
 import projectContributorService from "../services/project.contributor.service";
 
 export class ProjectContributorController {
-  createContributor = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const contributor = await projectContributorService.addContributor(
-        req.body
-      );
-
-      res.status(201).json({
-        success: true,
-        message: "Tạo contributor thành công",
-        data: contributor,
-        statusCode: 201,
-      });
-    } catch (error: any) {
-      console.error("Create contributor error:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message || "Lỗi tạo contributor",
-        statusCode: 400,
-      });
-    }
-  };
-
   getContributorById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -162,6 +140,84 @@ export class ProjectContributorController {
       res.status(400).json({
         success: false,
         message: error.message || "Failed to get projects by user",
+        statusCode: 400,
+      });
+    }
+  };
+
+  // Thêm contributor bằng email
+  addContributorByEmail = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { email, projectId, projectRoleId } = req.body;
+
+      if (!email || !projectId || !projectRoleId) {
+        res.status(400).json({
+          success: false,
+          message: "Email, projectId và projectRoleId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const contributor = await projectContributorService.addContributorByEmail(
+        email,
+        projectId,
+        projectRoleId
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Thêm contributor thành công",
+        data: contributor,
+        statusCode: 201,
+      });
+    } catch (error: any) {
+      console.error("Add contributor by email error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi thêm contributor",
+        statusCode: 400,
+      });
+    }
+  };
+
+  // Thêm nhiều contributors cùng lúc
+  addMultipleContributors = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { emails, projectId, projectRoleId } = req.body;
+
+      if (!emails || !Array.isArray(emails) || !projectId || !projectRoleId) {
+        res.status(400).json({
+          success: false,
+          message: "Emails (array), projectId và projectRoleId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const result = await projectContributorService.addMultipleContributors(
+        emails,
+        projectId,
+        projectRoleId
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Thêm contributors thành công",
+        data: result,
+        statusCode: 201,
+      });
+    } catch (error: any) {
+      console.error("Add multiple contributors error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi thêm contributors",
         statusCode: 400,
       });
     }

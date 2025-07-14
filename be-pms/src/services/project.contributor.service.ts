@@ -1,19 +1,34 @@
 import ProjectContributor, {
   IProjectContributor,
 } from "../models/project.contributor.model";
+import User from "../models/user.model";
 import mongoose from "mongoose";
 
 export class ProjectContributorService {
-  // Thêm một contributor vào project
-  async addContributor(data: Partial<IProjectContributor>): Promise<any> {
+  async addContributorByEmail(
+    email: string,
+    projectId: string,
+    projectRoleId: string
+  ): Promise<any> {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error(`Email ${email} không tồn tại trong hệ thống.`);
+    }
+
     const exists = await ProjectContributor.findOne({
-      userId: data.userId,
-      projectId: data.projectId,
+      userId: user._id,
+      projectId,
     });
 
-    if (exists) throw new Error("Người dùng đã là contributor của dự án này.");
+    if (exists) {
+      throw new Error(`Người dùng ${email} đã là contributor của dự án này.`);
+    }
 
-    const contributor = await ProjectContributor.create(data);
+    const contributor = await ProjectContributor.create({
+      userId: user._id,
+      projectId,
+      projectRoleId,
+    });
 
     return contributor.populate([
       { path: "userId", select: "fullName email avatar" },
@@ -21,7 +36,49 @@ export class ProjectContributorService {
     ]);
   }
 
-  // Lấy tất cả contributors theo projectId
+  async addMultipleContributors(
+    emails: string[],
+    projectId: string,
+    projectRoleId: string
+  ): Promise<{
+    success: any[];
+    errors: Array<{ email: string; error: string }>;
+  }> {
+    const results: any[] = [];
+    const errors: Array<{ email: string; error: string }> = [];
+
+    const existingUsers = await User.find({ email: { $in: emails } });
+    const existingEmails = existingUsers.map((user) => user.email);
+    const nonExistingEmails = emails.filter(
+      (email) => !existingEmails.includes(email)
+    );
+
+    nonExistingEmails.forEach((email) => {
+      errors.push({
+        email,
+        error: `Email ${email} không tồn tại trong hệ thống.`,
+      });
+    });
+
+    for (const email of existingEmails) {
+      try {
+        const result = await this.addContributorByEmail(
+          email,
+          projectId,
+          projectRoleId
+        );
+        results.push(result);
+      } catch (error: any) {
+        errors.push({ email, error: error.message || "Unknown error" });
+      }
+    }
+
+    return {
+      success: results,
+      errors,
+    };
+  }
+
   async getContributorsByProjectId(projectId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 

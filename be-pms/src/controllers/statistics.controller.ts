@@ -38,13 +38,25 @@ export class StatisticsController {
     }
   }
 
-  async getEpicTaskStats(req: Request, res: Response) {
+  getEpicTaskStats = async (req: Request, res: Response): Promise<void> => {
     try {
       const { projectId } = req.params;
       const statistics = await statisticsService.getEpicTaskStats(projectId);
-      return res.status(200).json(statistics);
+      if (!statistics) {
+        res.status(400).json({
+          status: 400,
+          success: false,
+          message: 'get data failed'
+        })
+      }
+      res.status(200).json({
+        status: 200,
+        success: true,
+        message: 'get data success',
+        data: statistics
+      });
     } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
+      res.status(400).json({ message: "Internal server error" });
     }
   }
 
