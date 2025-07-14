@@ -78,7 +78,7 @@ export class ProjectContributorService {
 
     // Gửi email
     const inviter = await User.findById(invitedBy);
-    const confirmUrl = `${"http://localhost:3000"}`;
+    const confirmUrl = `http://localhost:3000/project-invitation/confirm/${token}`;
 
     await sendProjectInvitationEmail(
       email,
