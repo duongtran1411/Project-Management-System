@@ -1,5 +1,6 @@
 "use client";
 import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 import { Task } from "@/types/types";
 import { CheckSquareOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { Tag, Avatar, Spin } from "antd";
@@ -14,14 +15,16 @@ const statusColorMap: Record<string, string> = {
   BLOCKED: "red",
 };
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 const ActivityRecent = () => {
   const params = useParams();
   const projectId = params.projectId as string;
   const { data, error, isLoading } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
-      projectId
-    )}`,
+    `${Endpoints.Task.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
   return (

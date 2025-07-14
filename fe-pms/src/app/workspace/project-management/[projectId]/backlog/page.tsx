@@ -27,6 +27,7 @@ import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask"
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
 import { createMilestone } from "@/lib/services/milestone/milestone";
 import { useParams } from "next/navigation";
+import axiosService from "@/lib/services/axios.service";
 
 export default function Backlog() {
   const params = useParams();
@@ -38,11 +39,13 @@ export default function Backlog() {
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [listTask, setListTask] = useState<Task[]>([]);
 
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const fetcher = (url: string) =>
+    axiosService
+      .getAxiosInstance()
+      .get(url)
+      .then((res) => res.data);
   const { data: epicData, error: epicError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
-      projectId
-    )}`,
+    `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
 
