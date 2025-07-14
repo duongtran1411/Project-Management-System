@@ -213,7 +213,9 @@ export class StatisticsService {
         $project: {
           assignee: "$_id",
           count: 1,
-          userName: { $arrayElemAt: ["$user.name", 0] },
+          userName: { $arrayElemAt: ["$user.fullName", 0] },
+          avatar: { $arrayElemAt: ["$user.avatar", 0] },
+          fullName: { $arrayElemAt: ["$user.fullName", 0] },
           _id: 0,
         },
       },
@@ -223,6 +225,8 @@ export class StatisticsService {
     const statsWithPercentage = contributorStats.map((stat: any) => ({
       ...stat,
       userName: stat.userName || "Unassigned",
+      fullName: stat.fullName || "Unassigned",
+      avatar: stat.avatar || null,
       percentage:
         totalTasks > 0 ? ((stat.count / totalTasks) * 100).toFixed(2) : "0.00",
     }));
