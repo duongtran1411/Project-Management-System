@@ -118,6 +118,8 @@ export class EpicService {
 
     return epics;
   }
+
+ 
 }
 
 export default new EpicService();

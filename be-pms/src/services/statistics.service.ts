@@ -106,46 +106,90 @@ export class StatisticsService {
   }
 
   async getEpicTaskStats(projectId: string) {
-    // Get all epics in project
-    const epics = await Epic.find({ projectId: new Types.ObjectId(projectId) });
-
-    const epicStats = await Promise.all(
-      epics.map(async (epic) => {
-        const totalEpicTasks = await Task.countDocuments({
-          projectId: new Types.ObjectId(projectId),
-          epicId: epic._id,
-        });
-
-        const taskStatusStats = await Task.aggregate([
-          {
-            $match: {
-              projectId: new Types.ObjectId(projectId),
-              epicId: epic._id,
-            },
+    const epicStats = await Epic.aggregate([
+      {
+        $match: {
+          projectId: new Types.ObjectId(projectId)
+        }
+      },
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "_id",      // Epic._id
+          foreignField: "epic",   // Task.epic
+          as: "tasks"
+        }
+      },
+      {
+        $project: {
+          epic: "$_id",
+          epicName: "$name",
+          total: { $size: "$tasks" },
+          todo: {
+            $size: {
+              $filter: {
+                input: "$tasks",
+                as: "task",
+                cond: { $eq: ["$$task.status", "TO_DO"] }
+              }
+            }
           },
-          { $group: { _id: "$status", count: { $sum: 1 } } },
-          { $project: { status: "$_id", count: 1, _id: 0 } },
-        ]);
-
-        const statusWithPercentage = taskStatusStats.map((stat: any) => ({
-          ...stat,
-          percentage:
-            totalEpicTasks > 0
-              ? ((stat.count / totalEpicTasks) * 100).toFixed(2)
-              : "0.00",
-        }));
-
-        return {
-          epicId: epic._id,
-          epicName: epic.name,
-          totalTasks: totalEpicTasks,
-          taskStatusStats: statusWithPercentage,
-        };
-      })
-    );
-
-    return epicStats;
+          inProgress: {
+            $size: {
+              $filter: {
+                input: "$tasks",
+                as: "task",
+                cond: { $eq: ["$$task.status", "IN_PROGRESS"] }
+              }
+            }
+          },
+          done: {
+            $size: {
+              $filter: {
+                input: "$tasks",
+                as: "task",
+                cond: { $eq: ["$$task.status", "DONE"] }
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          epic_id: 1,
+          epicName: 1,
+          total: 1,
+          todo: 1,
+          inProgress: 1,
+          done: 1,
+          todoPercent: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ["$todo", "$total"] }, 100] }, 2] }
+            ]
+          },
+          inProgressPercent: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ["$inProgress", "$total"] }, 100] }, 2] }
+            ]
+          },
+          donePercent: {
+            $cond: [
+              { $eq: ["$total", 0] },
+              0,
+              { $round: [{ $multiply: [{ $divide: ["$done", "$total"] }, 100] }, 2] }
+            ]
+          }
+        }
+      }
+    ]);
+    return { epicStats };
   }
+
 
   async getContributorTaskStats(projectId: string) {
     // Get all tasks including unassigned
@@ -169,7 +213,9 @@ export class StatisticsService {
         $project: {
           assignee: "$_id",
           count: 1,
-          userName: { $arrayElemAt: ["$user.name", 0] },
+          userName: { $arrayElemAt: ["$user.fullName", 0] },
+          avatar: { $arrayElemAt: ["$user.avatar", 0] },
+          fullName: { $arrayElemAt: ["$user.fullName", 0] },
           _id: 0,
         },
       },
@@ -179,6 +225,8 @@ export class StatisticsService {
     const statsWithPercentage = contributorStats.map((stat: any) => ({
       ...stat,
       userName: stat.userName || "Unassigned",
+      fullName: stat.fullName || "Unassigned",
+      avatar: stat.avatar || null,
       percentage:
         totalTasks > 0 ? ((stat.count / totalTasks) * 100).toFixed(2) : "0.00",
     }));
@@ -201,6 +249,7 @@ export class StatisticsService {
       name: { $regex: searchTerm, $options: "i" },
     }).select("name description status priority assignee");
   }
+
 }
 
 export default new StatisticsService();

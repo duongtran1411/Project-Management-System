@@ -16,16 +16,18 @@ import {
   Button,
   Select,
   Input,
+  Pagination,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import type { TablePaginationConfig } from "antd/es/table";
-import { Pagination } from "@/models/pagination/Pagination";
-import { FilterOutlined } from "@ant-design/icons";
+import { Pagination as Paging } from "@/models/pagination/Pagination";
+import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
 import { Filter } from "@/models/filter/Filter";
 import dayjs, { Dayjs } from "dayjs";
+import { format, parseISO } from "date-fns";
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { Search } = Input;
@@ -76,7 +78,13 @@ const columns: ColumnsType<ActivityLog> = [
     },
   },
   { title: "Action", width: 150, dataIndex: "action", key: "action" },
-  { title: "Device", width: 700, dataIndex: "userAgent", key: "userAgent" },
+  {
+    title: "Date",
+    width: 200,
+    dataIndex: "createdAt",
+    key: "createdAt",
+    render: (value) => format(parseISO(value), "dd/MM/yyyy"),
+  },
   {
     title: "Method",
     width: 150,
@@ -145,7 +153,7 @@ export default function Page() {
   const { customTable } = useStyle;
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<Pagination>({
+  const [pagination, setPagination] = useState<Paging>({
     limit: 10,
     page: 1,
     totalPages: 4,
@@ -319,7 +327,9 @@ export default function Page() {
           </Space>
         </div>
       )}
-
+      <Button className="bg-red-500 text-white">
+        Remove Log <DeleteOutlined />
+      </Button>
       <div className="flex justify-center items-center w-50">
         <Table
           size="small"

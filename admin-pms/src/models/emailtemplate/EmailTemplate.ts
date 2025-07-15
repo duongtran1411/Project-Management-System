@@ -5,7 +5,10 @@ export interface EmailTemplate {
     header?: string;
     body: string;
     footer?: string;
-    variables?: string[];
+    variables?: {
+      name:string,
+      value?:string
+    }[]
     status: 'ACTIVE' | 'INACTIVE' | 'DELETED';
     createdBy: string;
     updatedBy: string;

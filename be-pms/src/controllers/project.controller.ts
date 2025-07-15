@@ -1,59 +1,14 @@
-
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import projectService from "../services/project.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 export class ProjectController {
-    
-  getSummary = async (req: Request<{ id: string }>, res: Response, next: NextFunction): Promise<void> => {
-        try {
-            const projectId = req.params.id
-            if (!projectId) {
-                res.status(400).json({
-                    success: false,
-                    message: "Project does not exist",
-                    status: 400,
-                })
-            }
-            const statisticalTask = await projectService.GetStatiscalTask(projectId);
-            const statisticalEpicTask = await projectService.GetStatisticalEpic(projectId);
-            const statisticalPriority = await projectService.getStatiscalPriority(projectId);
-            res.status(200).json({
-                success: true,
-                message: 'get summary success',
-                data: {
-                    statisticalTask,
-                    statisticalEpicTask,
-                    statisticalPriority
-                },
-                status: 200
-            })
-        } catch (error) {
-            const err = error as Error
-            res.status(400).json({
-                success: false,
-                message: err.message,
-                status: 400,
-            })
-
-        }
-    }
-
-    createProject = async (req: AuthRequest, res: Response): Promise<void> => {
+  createProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const user = req.user;
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Unauthorized",
-          statusCode: 401,
-        });
-      }
-
-      const project = await projectService.createProject(req.body, user);
+      const project = await projectService.createProject(req.body, req.user);
 
       res.status(201).json({
         success: true,
-        message: "Project created successfully",
+        message: "Tạo project thành công",
         data: project,
         statusCode: 201,
       });
@@ -72,7 +27,7 @@ export class ProjectController {
       const projects = await projectService.getAllProjects();
       res.status(200).json({
         success: true,
-        message: "Projects fetched successfully",
+        message: "Lấy danh sách project thành công",
         data: projects,
         statusCode: 200,
       });
@@ -94,14 +49,14 @@ export class ProjectController {
       if (!project) {
         res.status(404).json({
           success: false,
-          message: "Project not found",
+          message: "Project không tồn tại",
           statusCode: 404,
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "Project fetched successfully",
+        message: "Lấy project thành công",
         data: project,
         statusCode: 200,
       });
@@ -118,29 +73,24 @@ export class ProjectController {
   updateProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const user = req.user;
 
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Unauthorized",
-          statusCode: 401,
-        });
-      }
-
-      const project = await projectService.updateProject(id, req.body, user);
+      const project = await projectService.updateProject(
+        id,
+        req.body,
+        req.user
+      );
 
       if (!project) {
         res.status(404).json({
           success: false,
-          message: "Project not found",
+          message: "Project không tồn tại",
           statusCode: 404,
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "Project updated successfully",
+        message: "Cập nhật project thành công",
         data: project,
         statusCode: 200,
       });
@@ -162,14 +112,14 @@ export class ProjectController {
       if (!deleted) {
         res.status(404).json({
           success: false,
-          message: "Project not found",
+          message: "Project không tồn tại",
           statusCode: 404,
         });
       }
 
       res.status(200).json({
         success: true,
-        message: "Project deleted successfully",
+        message: "Xóa project thành công",
         statusCode: 200,
       });
     } catch (error: any) {
@@ -180,8 +130,7 @@ export class ProjectController {
         statusCode: 400,
       });
     }
-}
-
+  };
 
   // addMembers = async (req: AuthRequest, res: Response): Promise<void> => {
   //   try {
