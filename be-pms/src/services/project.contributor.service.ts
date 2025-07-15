@@ -93,11 +93,17 @@ export class ProjectContributorService {
       .populate({
         path: "projectId",
         select: "name icon projectType projectLead",
+        populate: {
+          path: "projectLead",
+          select: "fullName email",
+        },
       })
       .select("projectId") // Chỉ cần trường projectId
       .lean();
 
-    return contributors.map((c) => c.projectId);
+    return contributors
+      .map((c) => c.projectId)
+      .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
   }
 }
 

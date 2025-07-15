@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import EmailTemplate from "../models/email.template.model";
+import { AuthRequest } from "../middlewares/auth.middleware";
 import mongoose from "mongoose";
 
 export class EmailTemplateController {
-  create = async (req: Request, res: Response): Promise<void> => {
+  create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const user = req.user;
       const { name, subject, header, body, footer, variables } = req.body;
 
       let emailTemplate = await EmailTemplate.findOne({ name: name });
@@ -20,9 +22,12 @@ export class EmailTemplateController {
       const template = await EmailTemplate.create({
         name,
         subject,
+        header,
         body,
         footer,
         variables,
+        createdBy: user._id,
+        updatedBy: user._id,
         status: "ACTIVE",
       });
       res.status(201).json({ success: true, data: template });
