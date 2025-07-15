@@ -12,6 +12,8 @@ router.use(authenticate);
  *   get:
  *     summary: Lấy danh sách contributors theo project
  *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId
