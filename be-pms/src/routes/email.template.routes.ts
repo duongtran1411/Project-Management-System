@@ -35,7 +35,7 @@ const router = Router();
  *       400:
  *         description: Dữ liệu không hợp lệ
  */
-router.post("/",authenticate, emailTemplateController.create);
+router.post("/", authenticate, emailTemplateController.create);
 
 /**
  * @openapi
@@ -50,7 +50,7 @@ router.post("/",authenticate, emailTemplateController.create);
  *       400:
  *         description: Lỗi lấy dữ liệu
  */
-router.get("/",authenticate, emailTemplateController.getAll);
+router.get("/", authenticate, emailTemplateController.getAll);
 
 /**
  * @openapi
@@ -72,7 +72,7 @@ router.get("/",authenticate, emailTemplateController.getAll);
  *       404:
  *         description: Không tìm thấy
  */
-router.get("/:id",authenticate, emailTemplateController.getById);
+router.get("/:id", authenticate, emailTemplateController.getById);
 
 /**
  * @openapi
@@ -105,7 +105,7 @@ router.get("/:id",authenticate, emailTemplateController.getById);
  *       404:
  *         description: Không tìm thấy mẫu
  */
-router.put("/:id",authenticate, emailTemplateController.update);
+router.put("/:id", authenticate, emailTemplateController.update);
 
 /**
  * @openapi
@@ -127,6 +127,6 @@ router.put("/:id",authenticate, emailTemplateController.update);
  *       404:
  *         description: Không tìm thấy mẫu
  */
-router.delete("/:id",authenticate, emailTemplateController.delete);
+router.delete("/:id", authenticate, emailTemplateController.delete);
 
 export default router;
