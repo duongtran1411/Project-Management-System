@@ -6,7 +6,7 @@ const router = Router();
 
 /**
  * @openapi
- * /email-template:
+ * /emailTemplate:
  *   post:
  *     summary: Tạo mẫu email mới
  *     tags: [EmailTemplate]
@@ -39,7 +39,7 @@ router.post("/",authenticate, emailTemplateController.create);
 
 /**
  * @openapi
- * /email-template:
+ * /emailTemplate:
  *   get:
  *     summary: Lấy tất cả mẫu email
  *     tags: [EmailTemplate]
@@ -54,7 +54,7 @@ router.get("/",authenticate, emailTemplateController.getAll);
 
 /**
  * @openapi
- * /email-template/{id}:
+ * /emailTemplate/{id}:
  *   get:
  *     summary: Lấy mẫu email theo ID
  *     tags: [EmailTemplate]
@@ -76,7 +76,7 @@ router.get("/:id",authenticate, emailTemplateController.getById);
 
 /**
  * @openapi
- * /email-template/{id}:
+ * /emailTemplate/{id}:
  *   put:
  *     summary: Cập nhật mẫu email
  *     tags: [EmailTemplate]
@@ -109,7 +109,7 @@ router.put("/:id",authenticate, emailTemplateController.update);
 
 /**
  * @openapi
- * /email-template/{id}:
+ * /emailTemplate/{id}:
  *   delete:
  *     summary: Xoá mẫu email
  *     tags: [EmailTemplate]
