@@ -6,10 +6,6 @@ export class PasswordResetService {
       const result = await PasswordReset.deleteMany({
         $or: [{ expiresAt: { $lt: new Date() } }, { isUsed: true }],
       });
-
-      console.log(
-        `Cleaned up ${result.deletedCount} expired password reset tokens`
-      );
     } catch (error) {
       console.error("Error cleaning up expired tokens:", error);
     }

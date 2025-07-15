@@ -1,11 +1,10 @@
 "use client";
 
+import { logout } from "@/lib/utils";
 import { ClusterOutlined, MailOutlined } from "@ant-design/icons";
+import { Avatar, Dropdown, MenuProps, Space } from "antd";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  FaRegListAlt,
-  FaUserAlt
-} from "react-icons/fa";
+import { FaRegListAlt, FaUserAlt } from "react-icons/fa";
 import { HiOutlineChevronDown } from "react-icons/hi";
 import { MdDashboard } from "react-icons/md";
 
@@ -29,6 +28,37 @@ export default function AdminLayout({
     }`;
   };
 
+  const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
+    switch (key) {
+      case "workspace":
+        router.push("/workspace");
+        console.log("Go to My Workspace");
+        break;
+      case "profile":
+        router.push("/profile");
+        console.log("Go to Profile");
+        break;
+      case "logout":
+        logout();
+        console.log("Logging out...");
+        break;
+    }
+  };
+
+  const items: MenuProps["items"] = [
+    {
+      label: "Profile",
+      key: "profile",
+    },
+    {
+      type: "divider",
+    },
+    {
+      label: "Logout",
+      key: "logout",
+    },
+  ];
+
   return (
     <div className="flex h-screen">
       <div className="w-[256px] bg-gray-100">
@@ -36,9 +66,9 @@ export default function AdminLayout({
           {/* Logo */}
           <div className="flex items-center gap-2 px-6 py-8">
             <img
-              src="https://demo.nextadmin.co/_next/static/media/main.31abb9ac.svg"
+              src="/Project Hub logo.png"
               alt="Logo"
-              className="w-32 h-auto"
+              className="w-full h-auto"
             />
           </div>
           {/* Main Menu */}
@@ -51,8 +81,7 @@ export default function AdminLayout({
               <li>
                 <button
                   className={getButtonClass("/admin")}
-                  onClick={() => router.push("/admin")}
-                  >
+                  onClick={() => router.push("/admin")}>
                   <MdDashboard />
                   <span className="flex-1 text-left">Dashboard</span>
                   <HiOutlineChevronDown />
@@ -60,21 +89,19 @@ export default function AdminLayout({
               </li>
 
               {/* User */}
-              <li >
+              <li>
                 <button
                   className={getButtonClass("/admin/user")}
-                  onClick={() => router.push("/admin/user")}
-                  >
+                  onClick={() => router.push("/admin/user")}>
                   <FaUserAlt />
                   <span className="flex-1 text-left">User</span>
                 </button>
               </li>
               {/* Calendar */}
-              <li >
+              <li>
                 <button
                   className={getButtonClass("/admin/emailtemplate")}
-                  onClick={() => router.push("/admin/emailtemplate")}
-                  >
+                  onClick={() => router.push("/admin/emailtemplate")}>
                   <MailOutlined />
                   <span className="flex-1 text-left">Email Template</span>
                 </button>
@@ -83,8 +110,7 @@ export default function AdminLayout({
               <li>
                 <button
                   className={getButtonClass("/admin/logsystem")}
-                  onClick={() => router.push("/admin/logsystem")}
-                  >
+                  onClick={() => router.push("/admin/logsystem")}>
                   <FaRegListAlt />
                   <span className="flex-1 text-left">Log System</span>
                 </button>
@@ -92,8 +118,7 @@ export default function AdminLayout({
               <li>
                 <button
                   className={getButtonClass("/admin/permission")}
-                  onClick={() => router.push("/admin/permission")}
-                  >
+                  onClick={() => router.push("/admin/permission")}>
                   <ClusterOutlined />
                   <span className="flex-1 text-left">Grant Permission</span>
                 </button>
@@ -109,12 +134,18 @@ export default function AdminLayout({
             <h1 className="text-2xl font-bold">Admin</h1>
           </div>
           <div className="flex items-center gap-4 pr-8">
-            <input className="px-6 py-2 border w-[300px] rounded-3xl bg-[#F3F4F6]" placeholder="Search" />
+            <Dropdown
+              menu={{ items, onClick: handleMenuClick }}
+              trigger={["click"]}>
+              <Space className="cursor-pointer">
+                <Avatar src={'/'} />
+                <span className="text-gray-700">Admin</span>
+              </Space>
+            </Dropdown>
           </div>
         </div>
         {children}
       </div>
     </div>
-    
   );
 }

@@ -13,7 +13,8 @@ export class Endpoints {
   }
 
   static readonly ActivityLog = {
-    GET_ALL: 'activity-log'
+    GET_ALL: 'activity-log',
+    DELETED_LOG: 'activity-log/clean'
   }
 
   static readonly Statistical = {

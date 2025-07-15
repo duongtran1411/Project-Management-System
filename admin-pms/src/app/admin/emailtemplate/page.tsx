@@ -65,6 +65,18 @@ const EmailTemplatePage = () => {
     router.push(`/admin/emailtemplate/${record._id}`);
   };
 
+  const renderTemplate = (
+    template: string,
+    variables: Record<string, string>
+  ) => {
+    let result = template;
+    Object.entries(variables).forEach(([key, value]) => {
+      const regex = new RegExp(`{${key}}`, "g");
+      result = result.replace(regex, value);
+    });
+    return result;
+  };
+
   return (
     <div style={{ padding: 24 }}>
       <div
@@ -85,17 +97,45 @@ const EmailTemplatePage = () => {
         {Array.isArray(emailTemplates) &&
           emailTemplates &&
           emailTemplates.map((e) => (
+            // <Card
+            //   style={{ width: 600, height: 600 }}
+            //   className="items-center"
+            //   key={e._id}>
+            //   {/* <div dangerouslySetInnerHTML={{__html: e.body}}></div> */}
+            //   <div className="mx-1 border rounded-xl shadow-sm">
+            //     <iframe
+            //       srcDoc={e.body}
+            //       style={{ width: "100%", height: 500, border: "none" }}
+            //       sandbox=""
+            //       scrolling="no"
+            //     />
+            //   </div>
+            // </Card>
             <Card
-              style={{ width: 600, height: 500 }}
+              style={{ width: 600 }} // chỉ giới hạn chiều ngang
               className="items-center"
               key={e._id}>
-              {/* <div dangerouslySetInnerHTML={{__html: e.body}}></div> */}
-              <div className="mx-1">
+              <h2 className="mb-2 font-semibold hover:cursor-pointer">
+                {e.name}
+              </h2>
+              <div className="mx-1 border rounded-3xl shadow-xl w-full">
                 <iframe
-                  srcDoc={e.body}
-                  style={{ width: "100%", height: 400, border: "none" }}
+                  srcDoc={renderTemplate(e.body, {
+                    header: e.header ?? "",
+                    subject: e.subject ?? "",
+                    footer: e.footer ?? "",
+                    createdByName: "Admin", // hoặc e.createdBy
+                    updatedAt: format(new Date(e.updatedAt), "dd/MM/yyyy"),
+                    avatarUrl: "https://i.pravatar.cc/100",
+                    workItemLink: "#",
+                  })}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    minHeight: 400,
+                    border: "none",
+                  }}
                   sandbox=""
-                  scrolling="no"
                 />
               </div>
             </Card>
