@@ -6,6 +6,11 @@ import { enUS } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "../../../../../styles/globals.css";
 
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getTasksByProject } from "@/lib/services/task/task";
+import { TaskApiResponse } from "@/types/types";
+
 type RBCEvent = {
   title: string;
   start: Date;
@@ -16,7 +21,9 @@ type RBCEvent = {
 
 type MyEvent = RBCEvent & {
   sprint?: string;
+  status?: string;
 };
+
 
 const locales = { "en-US": enUS };
 
@@ -28,78 +35,86 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-const events: MyEvent[] = [
-  {
-    title: "SCRUM Sprint 1",
-    start: new Date(2025, 5, 1),
-    end: new Date(2025, 5, 6),
-    sprint: "Sprint 1",
-  },
-  {
-    title: "SCRUM-22 Design Sequence",
-    start: new Date(2025, 5, 4),
-    end: new Date(2025, 5, 4),
-    sprint: "Sprint 1",
-  },
-  {
-    title: "SCRUM Sprint 2",
-    start: new Date(2025, 5, 10),
-    end: new Date(2025, 5, 14),
-    sprint: "Sprint 2",
-  },
-  {
-    title: "SCRUM-45 Configure Backend",
-    start: new Date(2025, 5, 12),
-    end: new Date(2025, 5, 12),
-    sprint: "Sprint 2",
-  },
-  {
-    title: "SCRUM Sprint 3",
-    start: new Date(2025, 5, 17),
-    end: new Date(2025, 5, 21),
-    sprint: "Sprint 3",
-  },
-  {
-    title: "SCRUM-51 Final UI",
-    start: new Date(2025, 5, 19),
-    end: new Date(2025, 5, 19),
-    sprint: "Sprint 3",
-  },
-];
-
 function CustomEvent({ event }: { event: MyEvent }) {
-  let bgClass = "bg-[#E5E7EB] text-black";
+  let bgClass = "bg-gray-200 text-gray-800";
 
-  switch (event.sprint) {
-    case "Sprint 1":
-      bgClass = "bg-[#DCFFF1] text-blue-800";
+  switch (event.status) {
+    case "TO_DO":
+      bgClass = "bg-[#F0F1F2] text-blue-800";
       break;
-    case "Sprint 2":
-      bgClass = "bg-[#E9F2FE] text-green-800";
+    case "IN_PROGRESS":
+      bgClass = "bg-[#E9F2FE] text-yellow-800";
       break;
-    case "Sprint 3":
-      bgClass = "bg-yellow-100 text-yellow-800";
+    case "DONE":
+      bgClass = "bg-[#DCFFF1] text-green-800";
       break;
+    default:
+      bgClass = "bg-gray-200 text-gray-800";
   }
 
   return (
-    <div className={`px-2 py-1  text-xs font-medium truncate ${bgClass} `}>
+    <div className={`px-2 py-1 text-xs font-medium truncate ${bgClass}`}>
       {event.title}
     </div>
   );
 }
 
+
 export default function Page() {
+  const [calendarEvents, setCalendarEvents] = useState<MyEvent[]>([]);
+  const { projectId } = useParams<{ projectId: string }>();
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!projectId) return;
+
+      const data: unknown = await getTasksByProject(projectId);
+      if (Array.isArray(data)) {
+        const taskList = data as TaskApiResponse[];
+
+        const events: MyEvent[] = taskList.map((task) => {
+          const isDone = task.status === "DONE";
+          const fallbackDate = new Date();
+
+          let start: Date;
+          let end: Date;
+
+          if (isDone) {
+            const date = new Date(task.dueDate || task.startDate || fallbackDate);
+            start = date;
+            end = date;
+          } else {
+            start = new Date(task.startDate || task.dueDate || fallbackDate);
+            end = new Date(task.dueDate || task.startDate || fallbackDate);
+          }
+
+          return {
+            title: task.name || "Untitled Task",
+            start,
+            end,
+            sprint: task.epic?.name || "Unknown",
+            status: task.status || "TO_DO",
+          };
+        });
+
+
+        setCalendarEvents(events);
+      }
+    };
+
+    fetchTasks();
+  }, [projectId]);
+
   return (
     <div className="h-screen p-4">
       <Calendar
         localizer={localizer}
-        events={events}
+        events={calendarEvents}
         startAccessor="start"
         endAccessor="end"
         style={{ height: "100%" }}
         components={{ event: CustomEvent }}
-        defaultDate={new Date(2025, 5, 1)}
+        defaultDate={new Date()}
       />
     </div>
   );
