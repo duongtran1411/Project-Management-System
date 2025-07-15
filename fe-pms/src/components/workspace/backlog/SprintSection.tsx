@@ -15,6 +15,7 @@ import {
   CheckboxProps,
   Dropdown,
   Modal,
+  Select,
   Table,
   TableProps,
   Tag,
@@ -26,6 +27,22 @@ import {
   deleteMilestone,
   updateMilestone,
 } from "@/lib/services/milestone/milestone";
+
+const handleStatusChange = async (newStatus: string, record: any) => {
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${record._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    console.log(`Cập nhật ${record.name} thành ${newStatus}`);
+  } catch (error) {
+    console.error("Lỗi khi cập nhật status:", error);
+  }
+};
 
 const columns: TableProps<Task>["columns"] = [
   {
@@ -41,16 +58,29 @@ const columns: TableProps<Task>["columns"] = [
   {
     title: "",
     dataIndex: "status",
-    render: (status) => {
-      const normalized = status.toLowerCase();
-      const color =
-        normalized === "done"
-          ? "green"
-          : normalized === "in_progress"
-          ? "blue"
-          : "gray";
+    render: (status: string, record: any) => {
+      const getColor = (s: string) => {
+        const normalized = s.toLowerCase();
+        if (normalized === "done") return "green";
+        if (normalized === "in_progress") return "blue";
+        return "gray";
+      };
 
-      return <Tag color={color}>{status}</Tag>;
+      return (
+        <Select
+          value={status}
+          style={{ width: 140 }}
+          onChange={(value) => handleStatusChange(value, record)}
+        >
+          {["TO_DO", "IN_PROGRESS", "DONE"].map((statusOption) => (
+            <Select.Option key={statusOption} value={statusOption}>
+              <Tag color={getColor(statusOption)}>
+                {statusOption.replace("_", " ")}
+              </Tag>
+            </Select.Option>
+          ))}
+        </Select>
+      );
     },
   },
 
@@ -203,7 +233,6 @@ const SprintSection: React.FC<Props> = ({
           .filter((id): id is string => typeof id === "string");
 
         const onChange: CheckboxProps["onChange"] = (e) => {
-          console.log(`checked = ${e.target.checked}`);
           if (e.target.checked) {
             setSelectedTaskIds(allTaskIdsInMilestone);
           } else {

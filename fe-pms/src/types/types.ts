@@ -19,6 +19,20 @@ export interface Task {
     _id: string;
     name?: string;
   };
+  createdBy?: {
+    _id: string;
+    fullName: string;
+    email: string;
+    avatar?: string;
+  };
+  updatedBy?: {
+    _id: string;
+    fullName: string;
+    email: string;
+    avatar?: string;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 
 export interface Epic {
@@ -103,6 +117,7 @@ export interface ProjectRole {
   projectpermissionIds?: string[];
 }
 
+// priority statistic
 export interface PriorityStat {
   count: number;
   priority: "HIGH" | "MEDIUM" | "LOW";
@@ -132,7 +147,6 @@ export interface TaskApiResponse {
   };
 }
 
-
 export interface UITask {
   id: string;
   title: string;
@@ -142,4 +156,28 @@ export interface UITask {
   status: string;
   priority: string;
   raw: TaskApiResponse;
+}
+
+// Task statistic
+export interface TaskStatusStats {
+  count: number;
+  status: string;
+  percentage: string;
+}
+
+export interface TaskStatistic {
+  totalTasks: number;
+  taskStatusStats: TaskStatusStats[];
+}
+
+// statistic task follow contributor
+export interface ContributorStats {
+  count: number;
+  assignee: string;
+  userName: string;
+  percentage: string;
+}
+export interface TaskContributorStatistic {
+  totalTasks: number;
+  contributorStats: ContributorStats[];
 }

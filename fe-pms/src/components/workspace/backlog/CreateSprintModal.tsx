@@ -69,7 +69,13 @@ const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         </Form.Item>
 
         <Form.Item name="endDate" label="End Date">
-          <DatePicker className="w-full" />
+          <DatePicker
+            className="w-full"
+            disabledDate={(current) => {
+              const startDate = form.getFieldValue("startDate");
+              return startDate && current.isBefore(startDate, "day");
+            }}
+          />
         </Form.Item>
       </Form>
     </Modal>

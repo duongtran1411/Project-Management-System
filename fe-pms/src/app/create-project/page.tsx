@@ -13,13 +13,18 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 import { createProjectContributor } from "@/lib/services/projectContributor/projectContributor";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 
 const { Title, Text } = Typography;
 type FormType = {
   name: string;
   description: string;
 };
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 export default function ProjectForm() {
   const router = useRouter();
@@ -39,7 +44,7 @@ export default function ProjectForm() {
   }, []);
 
   const { data: projectRoleData, error: projectRoleError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.ProjectRole.GET_ALL}`,
+    `${Endpoints.ProjectRole.GET_ALL}`,
     fetcher
   );
   useEffect(() => {

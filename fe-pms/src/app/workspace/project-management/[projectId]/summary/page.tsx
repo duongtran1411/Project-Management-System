@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Table, Tag, Avatar, Row, Col } from "antd";
 import {
   CalendarOutlined,
@@ -14,6 +14,9 @@ import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTas
 import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumnChart";
 import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
 import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
+import { useParams } from "next/navigation";
+import { TaskStatistic } from "@/types/types";
+import { getTaskStatistic } from "@/lib/services/statistics/statistics";
 
 // Sample data (from backlog)
 const tasks = [
@@ -56,12 +59,6 @@ const tasks = [
   },
 ];
 
-// Statistics
-const totalTasks = tasks.length;
-const doneTasks = tasks.filter((t) => t.status === "DONE").length;
-const inProgressTasks = tasks.filter((t) => t.status === "IN PROGRESS").length;
-const todoTasks = tasks.filter((t) => t.status === "TO DO").length;
-
 // Assignee breakdown
 const assigneeMap: Record<string, number> = {};
 tasks.forEach((t) => {
@@ -92,42 +89,80 @@ const assigneeColumns = [
   },
 ];
 
-const summaryCards = [
-  {
-    title: "Total Tasks",
-    value: totalTasks,
-    icon: (
-      <SnippetsOutlined className="text-blue-500 p-1 text-xl mt-[4px] rounded-md p-2" />
-    ),
-    bgColor: "bg-blue-100",
-  },
-  {
-    title: "Done",
-    value: doneTasks,
-    icon: (
-      <CheckCircleOutlined className="text-green-500 p-1 text-xl mt-[4px] rounded-md p-2" />
-    ),
-    bgColor: "bg-green-100",
-  },
-  {
-    title: "In Progress",
-    value: inProgressTasks,
-    icon: (
-      <CalendarOutlined className="text-red-500 p-1 text-xl mt-[4px] rounded-md p-2" />
-    ),
-    bgColor: "bg-red-100",
-  },
-  {
-    title: "To do",
-    value: todoTasks,
-    icon: (
-      <FileSyncOutlined className="text-orange-500 p-1 text-xl mt-[4px] rounded-md p-2" />
-    ),
-    bgColor: "bg-orange-100",
-  },
-];
-
 export default function SummaryPage() {
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const [taskStatistic, setTaskStatistic] = useState<TaskStatistic>();
+  const [totalTasks, setTotalTasks] = useState<number>();
+  const [doneTasks, setDoneTasks] = useState<number>();
+  const [inProgressTasks, setInProgressTasks] = useState<number>();
+  const [todoTasks, setTodoTasks] = useState<number>();
+
+  useEffect(() => {
+    const fetch = async (projectId: string) => {
+      try {
+        const response = await getTaskStatistic(projectId);
+        if (response) {
+          // Statistics
+          const total = response.totalTasks;
+          const done =
+            response.taskStatusStats.find((t) => t.status === "DONE")?.count ||
+            0;
+          const inProgress =
+            response.taskStatusStats.find((t) => t.status === "IN_PROGRESS")
+              ?.count || 0;
+          const todo =
+            response.taskStatusStats.find((t) => t.status === "TO_DO")?.count ||
+            0;
+          setTotalTasks(total);
+          setDoneTasks(done);
+          setInProgressTasks(inProgress);
+          setTodoTasks(todo);
+          setTaskStatistic(response);
+          return;
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (projectId) fetch(projectId);
+  }, [projectId]);
+
+  const summaryCards = [
+    {
+      title: "Total Tasks",
+      value: totalTasks,
+      icon: (
+        <SnippetsOutlined className="text-blue-500 p-1 text-xl mt-[4px] rounded-md p-2" />
+      ),
+      bgColor: "bg-blue-100",
+    },
+    {
+      title: "Done",
+      value: doneTasks,
+      icon: (
+        <CheckCircleOutlined className="text-green-500 p-1 text-xl mt-[4px] rounded-md p-2" />
+      ),
+      bgColor: "bg-green-100",
+    },
+    {
+      title: "In Progress",
+      value: inProgressTasks,
+      icon: (
+        <CalendarOutlined className="text-red-500 p-1 text-xl mt-[4px] rounded-md p-2" />
+      ),
+      bgColor: "bg-red-100",
+    },
+    {
+      title: "To do",
+      value: todoTasks,
+      icon: (
+        <FileSyncOutlined className="text-orange-500 p-1 text-xl mt-[4px] rounded-md p-2" />
+      ),
+      bgColor: "bg-orange-100",
+    },
+  ];
+
   return (
     <div className="min-h-screen p-4 bg-gray-50">
       {/* Statistics Cards */}
@@ -162,7 +197,7 @@ export default function SummaryPage() {
               Get a snapshot of the status of your work items.{" "}
             </span>
 
-            <StatusOverviewChart />
+            <StatusOverviewChart taskStatistic={taskStatistic} />
           </Card>
         </Col>
         <Col xs={24} md={12}>

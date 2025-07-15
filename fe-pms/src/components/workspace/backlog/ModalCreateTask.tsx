@@ -8,8 +8,8 @@ import { mutate } from "swr";
 
 interface Props {
   projectId: string;
-  selectedMilestone: Milestone | null;
-  setSelectedMilestone: React.Dispatch<React.SetStateAction<Milestone | null>>;
+  selectedMilestone: Milestone;
+  //setSelectedMilestone: React.Dispatch<React.SetStateAction<Milestone>>;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -18,7 +18,7 @@ export const ModalCreateTask: React.FC<Props> = ({
   projectId,
   isModalOpen,
   setIsModalOpen,
-  setSelectedMilestone,
+  //setSelectedMilestone,
   selectedMilestone,
 }) => {
   const [form] = Form.useForm<FieldType>();
@@ -32,15 +32,15 @@ export const ModalCreateTask: React.FC<Props> = ({
   };
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-    console.log("Success:", values);
     const data = {
       name: values.taskName!,
       description: values.taskDescription!,
       projectId,
-      milestones: selectedMilestone?._id,
+      milestones: selectedMilestone._id,
     };
 
     await createTask(data);
+
     // gọi mutate để refresh lại task list
     mutate(
       `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
@@ -48,7 +48,7 @@ export const ModalCreateTask: React.FC<Props> = ({
       )}`
     );
     setIsModalOpen(false);
-    setSelectedMilestone(null);
+    // setSelectedMilestone(null);
     form.resetFields();
   };
 
