@@ -39,7 +39,7 @@ export class Endpoints {
 
   static readonly ProjectContributor = {
     GET_PROJECTS_BY_USER: (userId: string) =>
-      `projectContributor/user/${userId}/projects`,
+      `project-contributor/user/${userId}/projects`,
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
   };
 

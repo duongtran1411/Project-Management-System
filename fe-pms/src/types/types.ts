@@ -120,6 +120,7 @@ export interface TaskApiResponse {
   description?: string;
   status?: string;
   priority?: string;
+  startDate?: string;
   dueDate?: string;
   assignee?: {
     _id: string;
