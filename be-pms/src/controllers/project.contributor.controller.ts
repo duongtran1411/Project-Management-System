@@ -1,29 +1,8 @@
 import { Request, Response } from "express";
 import projectContributorService from "../services/project.contributor.service";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 export class ProjectContributorController {
-  createContributor = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const contributor = await projectContributorService.addContributor(
-        req.body
-      );
-
-      res.status(201).json({
-        success: true,
-        message: "Tạo contributor thành công",
-        data: contributor,
-        statusCode: 201,
-      });
-    } catch (error: any) {
-      console.error("Create contributor error:", error);
-      res.status(400).json({
-        success: false,
-        message: error.message || "Lỗi tạo contributor",
-        statusCode: 400,
-      });
-    }
-  };
-
   getContributorById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -34,7 +13,7 @@ export class ProjectContributorController {
       if (!contributor) {
         res.status(404).json({
           success: false,
-          message: "Contributor not found",
+          message: "Không tìm thấy contributor",
           statusCode: 404,
         });
         return;
@@ -42,7 +21,7 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributor fetched successfully",
+        message: "Lấy contributor thành công",
         data: contributor,
         statusCode: 200,
       });
@@ -50,7 +29,7 @@ export class ProjectContributorController {
       console.error("Get contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to fetch contributor",
+        message: error.message || "Lỗi lấy contributor",
         statusCode: 400,
       });
     }
@@ -67,7 +46,7 @@ export class ProjectContributorController {
       if (!contributor) {
         res.status(404).json({
           success: false,
-          message: "Contributor not found",
+          message: "Không tìm thấy contributor",
           statusCode: 404,
         });
         return;
@@ -75,7 +54,7 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributor updated successfully",
+        message: "Cập nhật contributor thành công",
         data: contributor,
         statusCode: 200,
       });
@@ -83,7 +62,7 @@ export class ProjectContributorController {
       console.error("Update contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to update contributor",
+        message: error.message || "Lỗi cập nhật contributor",
         statusCode: 400,
       });
     }
@@ -97,7 +76,7 @@ export class ProjectContributorController {
       if (!deleted) {
         res.status(404).json({
           success: false,
-          message: "Contributor not found",
+          message: "Không tìm thấy contributor",
           statusCode: 404,
         });
         return;
@@ -105,14 +84,14 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributor deleted successfully",
+        message: "Xóa contributor thành công",
         statusCode: 200,
       });
     } catch (error: any) {
       console.error("Delete contributor error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to delete contributor",
+        message: error.message || "Lỗi xóa contributor",
         statusCode: 400,
       });
     }
@@ -129,7 +108,7 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Contributors by project fetched successfully",
+        message: "Lấy danh sách contributor thành công",
         data: contributors,
         statusCode: 200,
       });
@@ -137,7 +116,7 @@ export class ProjectContributorController {
       console.error("Get contributors by project error:", error);
       res.status(400).json({
         success: false,
-        message: error.message || "Failed to get contributors by project",
+        message: error.message || "Lỗi lấy danh sách contributor",
         statusCode: 400,
       });
     }
@@ -162,6 +141,135 @@ export class ProjectContributorController {
       res.status(400).json({
         success: false,
         message: error.message || "Failed to get projects by user",
+        statusCode: 400,
+      });
+    }
+  };
+
+  sendProjectInvitation = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { email, projectId, projectRoleId } = req.body;
+      const invitedBy = req.user?._id; // Lấy từ middleware auth
+
+      if (!email || !projectId || !projectRoleId) {
+        res.status(400).json({
+          success: false,
+          message: "Email, projectId và projectRoleId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      // Đã có middleware authenticate nên không cần kiểm tra invitedBy
+
+      const result = await projectContributorService.sendProjectInvitation(
+        email,
+        projectId,
+        projectRoleId,
+        invitedBy
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Gửi lời mời thành công",
+        data: result,
+        statusCode: 201,
+      });
+    } catch (error: any) {
+      console.error("Send project invitation error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi gửi lời mời",
+        statusCode: 400,
+      });
+    }
+  };
+
+  sendMultipleProjectInvitations = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { emails, projectId, projectRoleId } = req.body;
+      const invitedBy = req.user?._id;
+
+      if (!emails || !Array.isArray(emails) || !projectId || !projectRoleId) {
+        res.status(400).json({
+          success: false,
+          message: "Emails (array), projectId và projectRoleId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      // Đã có middleware authenticate nên không cần kiểm tra invitedBy
+
+      const result =
+        await projectContributorService.sendMultipleProjectInvitations(
+          emails,
+          projectId,
+          projectRoleId,
+          invitedBy
+        );
+
+      if (result.success.length === 0) {
+        res.status(400).json({
+          success: false,
+          message: "Không có lời mời nào được gửi thành công",
+          data: result,
+          statusCode: 400,
+        });
+      } else {
+        res.status(201).json({
+          success: true,
+          message: "Gửi lời mời thành công",
+          data: result,
+          statusCode: 201,
+        });
+      }
+    } catch (error: any) {
+      console.error("Send multiple project invitations error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi gửi lời mời",
+        statusCode: 400,
+      });
+    }
+  };
+
+  confirmProjectInvitation = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { token } = req.params;
+
+      if (!token) {
+        res.status(400).json({
+          success: false,
+          message: "Token là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const contributor =
+        await projectContributorService.confirmProjectInvitation(token);
+
+      res.status(200).json({
+        success: true,
+        message: "Xác nhận tham gia dự án thành công",
+        data: contributor,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Confirm project invitation error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi xác nhận lời mời",
         statusCode: 400,
       });
     }
