@@ -12,6 +12,8 @@ import {
   startCleanupScheduler,
   runInitialCleanup,
 } from "./utils/cleanup-scheduler";
+import { createServer } from "http";
+import initSocket from "./utils/socket";
 
 dotenv.config();
 
@@ -69,6 +71,9 @@ app.use((_req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+const httpServer = createServer(app);
+export const io = initSocket(httpServer)
+
 const startServer = async () => {
   try {
     // Skip MongoDB connection if SKIP_DB is set
@@ -82,7 +87,7 @@ const startServer = async () => {
       console.log("⚠️  Skipping MongoDB connection (SKIP_DB=true)");
     }
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
       console.log(
         `📝 API Documentation (SwaggerUI): http://localhost:${PORT}/api-docs`
