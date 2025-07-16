@@ -1,19 +1,30 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, Avatar, Button, Input, Dropdown, Checkbox } from "antd";
+import {
+  Card,
+  Avatar,
+  Button,
+  Input,
+  Dropdown,
+  Checkbox,
+  Spin,
+  Alert,
+} from "antd";
 import { PlusOutlined, DownOutlined } from "@ant-design/icons";
-import DetailTaskModal from "./board/detail-task/page";
-import { getTasksByProject, updateTaskStatus } from "@/lib/services/task/task";
+import DetailTaskModal from "./detail-task/page";
+import { updateTaskStatus } from "@/lib/services/task/task";
 import { UITask, TaskApiResponse } from "@/types/types";
 import { useParams } from "next/navigation";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+import useSWR, { mutate } from "swr";
 
-const epicOptions = [
-  { label: "SDS Document", value: "SDS DOCUMENT", id: "SCRUM-16" },
-  { label: "BACKEND-API", value: "BACKEND-API", id: "SCRUM-43" },
-  { label: "CLIENT", value: "CLIENT", id: "SCRUM-44" },
-];
+
+
+const fetcher = (url: string) =>
+  axiosService.getAxiosInstance().get(url).then((res) => res.data);
 
 const reorderTasks = (tasks: UITask[], sourceIdx: number, destIdx: number) => {
   const result = Array.from(tasks);
@@ -41,7 +52,27 @@ const BoardPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<UITask[]>([]);
 
-  // Format ngày
+
+  const { data: taskData, error: taskError, isLoading } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(projectId)}`,
+    fetcher
+  );
+
+  const { data: epicData, error: epicError } = useSWR(
+    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
+    fetcher
+  );
+
+  const epicOptions = (epicData?.data || []).map((epic: any) => ({
+    label: epic.name,
+    value: epic.name,
+    id: epic._id,
+  })) as { label: string; value: string; id: string }[];
+
+
+
+
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -52,7 +83,6 @@ const BoardPage = () => {
     });
   };
 
-  // Chuyển đổi dữ liệu từ API thành dữ liệu hiển thị
   const mapTaskData = (data: TaskApiResponse[]): UITask[] => {
     return data.map((item) => ({
       id: item._id || "",
@@ -66,23 +96,15 @@ const BoardPage = () => {
     }));
   };
 
-  // Gọi API lấy task
   useEffect(() => {
-    if (!projectId) return;
-    const fetchTasks = async () => {
-      const data: unknown = await getTasksByProject(projectId);
-      if (Array.isArray(data)) {
-        setTasks(mapTaskData(data as TaskApiResponse[]));
-      }
-    };
-    fetchTasks();
-  }, [projectId]);
+    if (taskData?.data) {
+      setTasks(mapTaskData(taskData.data));
+    }
+  }, [taskData]);
 
-  // Filter task theo status
   const getTasksByStatus = (status: string) =>
     tasks.filter((task) => task.status === status);
 
-  // Lọc theo search + epic
   const filterTasks = (tasks: UITask[]) =>
     tasks.filter((task) => {
       const matchSearch =
@@ -101,14 +123,7 @@ const BoardPage = () => {
     { title: "DONE", status: "DONE" },
   ];
 
-  const getTagColor = (tag: string) => {
-    const colors: Record<string, string> = {
-      CLIENT: "bg-purple-100 text-purple-600",
-      "SDS DOCUMENT": "bg-purple-100 text-purple-600",
-      "BACKEND-API": "bg-purple-100 text-purple-600",
-    };
-    return colors[tag] || "bg-gray-100 text-gray-600";
-  };
+
 
   const epicDropdown = (
     <div className="bg-white rounded-lg shadow-lg p-2 min-w-[220px]">
@@ -128,14 +143,12 @@ const BoardPage = () => {
             }
           >
             <span className="font-medium">{epic.label}</span>
-            <div className="ml-2 text-xs text-gray-500">{epic.id}</div>
           </Checkbox>
         </div>
       ))}
     </div>
   );
 
-  // Xử lý kéo thả
   const onDragEnd = async (result: DropResult) => {
     const { source, destination, draggableId } = result;
     if (!destination) return;
@@ -143,15 +156,10 @@ const BoardPage = () => {
     const sourceStatus = source.droppableId;
     const destStatus = destination.droppableId;
 
-    if (
-      sourceStatus === destStatus &&
-      source.index === destination.index
-    ) {
-      return; // Không thay đổi
-    }
+    if (sourceStatus === destStatus && source.index === destination.index)
+      return;
 
     if (sourceStatus === destStatus) {
-      // Cùng 1 cột → chỉ reorder
       const filtered = getTasksByStatus(sourceStatus);
       const reordered = reorderTasks(filtered, source.index, destination.index);
       const newTasks = [
@@ -160,25 +168,56 @@ const BoardPage = () => {
       ];
       setTasks(newTasks);
     } else {
-      // Khác cột → thay đổi status + gọi API
       const taskId = draggableId;
       const updatedTasks = moveTaskToStatus(tasks, taskId, destStatus);
       setTasks(updatedTasks);
-
       try {
         await updateTaskStatus(taskId, destStatus);
+        mutate(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(projectId)}`);
       } catch (error) {
-        // Nếu lỗi → rollback UI
         console.error("Failed to update task status:", error);
-        setTasks(tasks); // rollback lại state cũ
       }
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spin size="large" tip="Loading..." fullscreen />
+
+      </div>
+    );
+  }
+
+  if (epicError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Alert
+          message="Error"
+          description="Không thể tải danh sách Epic."
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
+
+
+  if (taskError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Alert
+          message="Error"
+          description="Không thể tải danh sách công việc."
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
-      {/* Header Filter */}
       <div className="flex items-center gap-3 mb-6">
         <Input.Search
           placeholder="Search board"
@@ -209,13 +248,19 @@ const BoardPage = () => {
         </Button>
       </div>
 
-      {/* Task Columns */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-4">
           {columnDefs.map((col) => {
             const filtered = filterTasks(getTasksByStatus(col.status));
             return (
-              <Droppable droppableId={col.status} key={col.status}>
+              <Droppable
+                droppableId={col.status}
+                key={col.status}
+                isDropDisabled={false}
+                isCombineEnabled={false}
+                ignoreContainerClipping={false}
+              >
+
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
@@ -254,20 +299,21 @@ const BoardPage = () => {
                               }}
                             >
                               <div className="space-y-2">
-                                <p
-                                  className={`text-gray-700 ${col.status === "DONE" ? "line-through" : ""}`}
-                                >
+                                <p className={`text-gray-700 ${col.status === "DONE" ? "line-through" : ""}`}>
                                   {task.title}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                  {task.tags.map((tag, i) => (
-                                    <span
-                                      key={i}
-                                      className={`px-2 py-0.5 rounded text-xs font-medium ${getTagColor(tag)}`}
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
+                                  {task.tags
+                                    .filter((tag) => tag !== "No Epic")
+                                    .map((tag, i) => (
+                                      <span
+                                        key={i}
+                                        className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+
                                 </div>
                                 <div className="text-sm text-gray-500">{task.dueDate}</div>
                                 <div className="flex items-center justify-between">
@@ -275,11 +321,13 @@ const BoardPage = () => {
                                     {task.priority}
                                   </span>
                                   <Avatar
-                                    className="text-white bg-purple-600"
+                                    className={`text-white ${task.assignee === "Unassigned" ? "bg-gray-400" : "bg-purple-600"
+                                      }`}
                                     size="small"
                                   >
                                     {task.assignee?.[0] || "?"}
                                   </Avatar>
+
                                 </div>
                               </div>
                             </Card>
@@ -295,7 +343,8 @@ const BoardPage = () => {
           })}
         </div>
       </DragDropContext>
-      {/* Detail Modal */}
+
+      {/* Modal chi tiết task */}
       {selectedTask && (
         <DetailTaskModal
           open={isModalOpen}
@@ -303,7 +352,6 @@ const BoardPage = () => {
           task={selectedTask}
         />
       )}
-
     </div>
   );
 };

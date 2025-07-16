@@ -15,7 +15,6 @@ import {
   CheckboxProps,
   Dropdown,
   Modal,
-  Select,
   Table,
   TableProps,
   Tag,
@@ -27,91 +26,7 @@ import {
   deleteMilestone,
   updateMilestone,
 } from "@/lib/services/milestone/milestone";
-
-const handleStatusChange = async (newStatus: string, record: any) => {
-  try {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks/${record._id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status: newStatus }),
-    });
-
-    console.log(`Cập nhật ${record.name} thành ${newStatus}`);
-  } catch (error) {
-    console.error("Lỗi khi cập nhật status:", error);
-  }
-};
-
-const columns: TableProps<Task>["columns"] = [
-  {
-    title: "",
-    dataIndex: "name",
-    className: "w-full",
-  },
-  {
-    title: "",
-    dataIndex: "epic",
-    render: (epic) => (epic ? <Tag color="purple">{epic?.name}</Tag> : <></>),
-  },
-  {
-    title: "",
-    dataIndex: "status",
-    render: (status: string, record: any) => {
-      const getColor = (s: string) => {
-        const normalized = s.toLowerCase();
-        if (normalized === "done") return "green";
-        if (normalized === "in_progress") return "blue";
-        return "gray";
-      };
-
-      return (
-        <Select
-          value={status}
-          style={{ width: 140 }}
-          onChange={(value) => handleStatusChange(value, record)}
-        >
-          {["TO_DO", "IN_PROGRESS", "DONE"].map((statusOption) => (
-            <Select.Option key={statusOption} value={statusOption}>
-              <Tag color={getColor(statusOption)}>
-                {statusOption.replace("_", " ")}
-              </Tag>
-            </Select.Option>
-          ))}
-        </Select>
-      );
-    },
-  },
-
-  {
-    title: "",
-    dataIndex: "dueDate",
-    render: (dueDate) => (
-      <div className="mx-3">
-        <Tag color="default">{dueDate?.slice(0, 10)}</Tag>
-      </div>
-    ),
-  },
-  {
-    title: "",
-    dataIndex: "priority",
-    render: (priority) => <Tag color="orange">{priority}</Tag>,
-  },
-  {
-    title: "",
-    dataIndex: "assignee",
-    render: (assignee) => (
-      <div className="flex rounded-full mx-3">
-        {assignee?.avatar ? (
-          <Avatar src={assignee?.avatar} />
-        ) : (
-          <Avatar>U</Avatar>
-        )}
-      </div>
-    ),
-  },
-];
+import ChangeTask from "./ChangeTask";
 
 const items = [
   {
@@ -130,6 +45,7 @@ interface Props {
   taskData: Task[];
   showModal: (milestone: Milestone) => void;
   refreshData: () => void;
+  mutateTask: () => void;
 }
 
 const SprintSection: React.FC<Props> = ({
@@ -138,7 +54,61 @@ const SprintSection: React.FC<Props> = ({
   taskData,
   showModal,
   refreshData,
+  mutateTask,
 }) => {
+  const columns: TableProps<Task>["columns"] = [
+    {
+      title: "",
+      dataIndex: "name",
+      className: "w-full",
+    },
+    {
+      title: "",
+      dataIndex: "epic",
+      render: (epic) => (epic ? <Tag color="purple">{epic?.name}</Tag> : <></>),
+    },
+    {
+      title: "",
+      dataIndex: "status",
+      render: (status: string, record: Task) => {
+        return (
+          <ChangeTask
+            taskId={record._id}
+            status={status}
+            mutateTask={mutateTask}
+          />
+        );
+      },
+    },
+
+    {
+      title: "",
+      dataIndex: "dueDate",
+      render: (dueDate) => (
+        <div className="mx-3">
+          <Tag color="default">{dueDate?.slice(0, 10)}</Tag>
+        </div>
+      ),
+    },
+    {
+      title: "",
+      dataIndex: "priority",
+      render: (priority) => <Tag color="orange">{priority}</Tag>,
+    },
+    {
+      title: "",
+      dataIndex: "assignee",
+      render: (assignee) => (
+        <div className="flex rounded-full mx-3">
+          {assignee?.avatar ? (
+            <Avatar src={assignee?.avatar} />
+          ) : (
+            <Avatar>U</Avatar>
+          )}
+        </div>
+      ),
+    },
+  ];
   const [expandedMilestones, setExpandedMilestones] = useState<
     Record<string, boolean>
   >({});
@@ -185,7 +155,6 @@ const SprintSection: React.FC<Props> = ({
   };
 
   const handleMenuClick = (key: string, milestone: Milestone) => {
-    console.log("key: ", key);
     if (key === "edit") {
       setEditingMilestone(milestone);
       setEditModalOpen(true);
@@ -194,8 +163,6 @@ const SprintSection: React.FC<Props> = ({
       setIsModalOpen(true);
     }
   };
-
-  console.log("edit milestone", editingMilestone);
 
   const handleUpdate = async (milestone: Milestone) => {
     if (!milestone || !milestone._id) {
@@ -250,30 +217,7 @@ const SprintSection: React.FC<Props> = ({
               {/* Left */}
               <div className="flex items-center gap-2">
                 <Checkbox onChange={onChange}></Checkbox>
-                {/* <Checkbox
-                  checked={isAllSelected}
-                  indeterminate={isIndeterminate}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      // Chọn tất cả task trong milestone
-                      setSelectedTaskIds((prev) =>
-                        Array.from(
-                          new Set([
-                            ...prev,
-                            ...allTaskIdsInMilestone.filter(
-                              (id): id is string => typeof id === "string"
-                            ),
-                          ])
-                        )
-                      );
-                    } else {
-                      // Bỏ chọn tất cả task trong milestone
-                      setSelectedTaskIds((prev) =>
-                        prev.filter((id) => !allTaskIdsInMilestone.includes(id))
-                      );
-                    }
-                  }}
-                /> */}
+
                 {expandedMilestones[milestone._id] ? (
                   <DownOutlined
                     className="text-sm"

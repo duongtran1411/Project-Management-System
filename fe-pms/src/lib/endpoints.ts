@@ -9,7 +9,7 @@ export class Endpoints {
   static readonly User = {
     GET_ALL: "user",
     GET_BY_PROJECT: (projectId: string) =>
-      `projectContributor/project/${projectId}`,
+      `project-contributor/project/${projectId}`,
   };
 
   static readonly Epic = {
@@ -20,6 +20,7 @@ export class Endpoints {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
+    GET_BY_ID: (taskId: string) => `task/${taskId}`,
   };
 
   static readonly Milestone = {
@@ -40,7 +41,10 @@ export class Endpoints {
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
-    GET_USER_BY_PROJECT: (projectId: string) => `project-contributor/project/${projectId}/users`
+    GET_USER_BY_PROJECT: (projectId: string) => `project-contributor/project/${projectId}/users`,
+    INVITE_MULTIPLE: "project-contributor/invitation/multiple",
+    CONFIRM_INVITE: (token: string) =>
+      `project-contributor/invitation/confirm/${token}`,
   };
 
   static readonly ProjectRole = {
@@ -61,7 +65,7 @@ export class Endpoints {
   };
 
   static readonly Comment = {
-    GET_COMMENT_BY_TASK : (taskId: string) => `comment/${taskId}`,
+    GET_COMMENT_BY_TASK: (taskId: string) => `comment/${taskId}`,
     CREATE_COMMENT: 'comment'
   }
 }
