@@ -41,6 +41,8 @@ export class Endpoints {
   static readonly ProjectContributor = {
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
+    CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
+    GET_USER_BY_PROJECT: (projectId: string) => `project-contributor/project/${projectId}/users`,
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
@@ -62,4 +64,9 @@ export class Endpoints {
     STATISTIC_CONTRIBUTOR: (projectId: string) =>
       `statistics/project/${projectId}/contributors`,
   };
+
+  static readonly Comment = {
+    GET_COMMENT_BY_TASK: (taskId: string) => `comment/${taskId}`,
+    CREATE_COMMENT: 'comment'
+  }
 }

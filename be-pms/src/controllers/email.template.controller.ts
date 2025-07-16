@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import EmailTemplate from "../models/email.template.model";
-import { AuthRequest } from "../middlewares/auth.middleware";
 import mongoose from "mongoose";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 export class EmailTemplateController {
   create = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -27,7 +27,7 @@ export class EmailTemplateController {
         variables,
         createdBy: user._id,
         updatedBy: user._id,
-        status: "ACTIVE",
+        status: "ACTIVE"
       });
       res.status(201).json({ success: true, data: template });
     } catch (error: any) {
