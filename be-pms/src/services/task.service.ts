@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import Task, { ITask } from "../models/task.model";
+import NotificationService from "./notification.service";
 
 export class TaskService {
   private io: Server | null = null;
@@ -28,6 +29,55 @@ export class TaskService {
       { path: "epic", select: "name description" },
       { path: "milestones", select: "name description" },
     ]);
+
+    // Create notifications for assignee and reporter
+    try {
+      if (
+        taskData.assignee &&
+        taskData.assignee.toString() !== user._id.toString()
+      ) {
+        await NotificationService.createNotification({
+          recipientId: taskData.assignee.toString(),
+          senderId: user._id.toString(),
+          type: "TASK_ASSIGNED",
+          entityType: "Task",
+          entityId: (task._id as any).toString(),
+          metadata: {
+            taskName: taskData.name,
+            projectName:
+              typeof populatedTask.projectId === "object" &&
+              populatedTask.projectId !== null &&
+              "name" in populatedTask.projectId
+                ? (populatedTask.projectId as { name?: string }).name
+                : undefined,
+          },
+        });
+      }
+
+      if (
+        taskData.reporter &&
+        taskData.reporter.toString() !== user._id.toString()
+      ) {
+        await NotificationService.createNotification({
+          recipientId: taskData.reporter.toString(),
+          senderId: user._id.toString(),
+          type: "TASK_CREATED",
+          entityType: "Task",
+          entityId: (task._id as any).toString(),
+          metadata: {
+            taskName: taskData.name,
+            projectName:
+              typeof populatedTask.projectId === "object" &&
+              populatedTask.projectId !== null &&
+              "name" in populatedTask.projectId
+                ? (populatedTask.projectId as { name?: string }).name
+                : undefined,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create task notifications:", error);
+    }
 
     // Emit real-time event
     if (this.io) {
@@ -119,6 +169,107 @@ export class TaskService {
       { path: "epic", select: "name description" },
       { path: "milestones", select: "name description" },
     ]);
+
+    // Create notifications for task updates
+    if (task && oldTask) {
+      try {
+        // Notify assignee about status changes
+        if (
+          updateData.status &&
+          oldTask.status !== updateData.status &&
+          task.assignee
+        ) {
+          await NotificationService.createNotification({
+            recipientId: task.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_STATUS_CHANGED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+              taskStatus: updateData.status,
+            },
+          });
+        }
+
+        // Notify new assignee about assignment
+        if (
+          updateData.assignee &&
+          oldTask.assignee?.toString() !== updateData.assignee?.toString() &&
+          updateData.assignee.toString() !== user._id.toString()
+        ) {
+          await NotificationService.createNotification({
+            recipientId: updateData.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_ASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+        }
+
+        // Notify old assignee about unassignment
+        if (
+          oldTask.assignee &&
+          updateData.assignee &&
+          oldTask.assignee.toString() !== updateData.assignee?.toString() &&
+          oldTask.assignee.toString() !== user._id.toString()
+        ) {
+          await NotificationService.createNotification({
+            recipientId: oldTask.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UNASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+        }
+
+        // Notify reporter about general updates
+        if (task.reporter && task.reporter.toString() !== user._id.toString()) {
+          await NotificationService.createNotification({
+            recipientId: task.reporter.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UPDATE",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+        }
+      } catch (error) {
+        console.error("Failed to create task update notifications:", error);
+      }
+    }
 
     // Emit real-time events for specific changes
     if (this.io && task && oldTask) {

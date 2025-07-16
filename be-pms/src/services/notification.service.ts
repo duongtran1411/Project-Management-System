@@ -77,6 +77,36 @@ class NotificationService {
           message: `${senderName} updated ${taskName}`,
         };
 
+      case "TASK_ASSIGNED":
+        const assignedTaskName = metadata?.taskName || "a task";
+        return {
+          title: `Task assigned to you`,
+          message: `${senderName} assigned ${assignedTaskName} to you`,
+        };
+
+      case "TASK_UNASSIGNED":
+        const unassignedTaskName = metadata?.taskName || "a task";
+        return {
+          title: `Task unassigned`,
+          message: `${senderName} unassigned ${unassignedTaskName} from you`,
+        };
+
+      case "TASK_STATUS_CHANGED":
+        const statusTaskName = metadata?.taskName || "a task";
+        const oldStatus = metadata?.oldStatus || "unknown";
+        const newStatus = metadata?.newStatus || "unknown";
+        return {
+          title: `Task status changed`,
+          message: `${statusTaskName} status changed from ${oldStatus} to ${newStatus}`,
+        };
+
+      case "TASK_CREATED":
+        const createdTaskName = metadata?.taskName || "a task";
+        return {
+          title: `New task created`,
+          message: `${senderName} created ${createdTaskName}`,
+        };
+
       case "COMMENT":
         return {
           title: `${senderName} commented`,

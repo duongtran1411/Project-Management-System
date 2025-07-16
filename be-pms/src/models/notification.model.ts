@@ -6,6 +6,10 @@ export interface INotification extends Document {
   type:
     | "MENTION"
     | "TASK_UPDATE"
+    | "TASK_ASSIGNED"
+    | "TASK_UNASSIGNED"
+    | "TASK_STATUS_CHANGED"
+    | "TASK_CREATED"
     | "COMMENT"
     | "ASSIGNEE_UPDATE"
     | "PROJECT_UPDATE"
@@ -55,6 +59,10 @@ const notificationSchema = new Schema<INotification>(
       enum: [
         "MENTION",
         "TASK_UPDATE",
+        "TASK_ASSIGNED",
+        "TASK_UNASSIGNED",
+        "TASK_STATUS_CHANGED",
+        "TASK_CREATED",
         "COMMENT",
         "ASSIGNEE_UPDATE",
         "PROJECT_UPDATE",
@@ -164,6 +172,10 @@ export interface CreateNotificationData {
   type:
     | "MENTION"
     | "TASK_UPDATE"
+    | "TASK_ASSIGNED"
+    | "TASK_UNASSIGNED"
+    | "TASK_STATUS_CHANGED"
+    | "TASK_CREATED"
     | "COMMENT"
     | "ASSIGNEE_UPDATE"
     | "PROJECT_UPDATE"
