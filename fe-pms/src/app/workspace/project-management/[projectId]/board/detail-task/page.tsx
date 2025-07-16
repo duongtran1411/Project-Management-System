@@ -8,19 +8,17 @@ import {
   ArrowDownOutlined,
   FlagOutlined,
 } from "@ant-design/icons";
+import { useParams } from "next/navigation";
+import axiosService from "@/lib/services/axios.service";
+import { showErrorToast } from "@/components/common/toast/toast";
+import { Endpoints } from "@/lib/endpoints";
+import useSWR from "swr";
+import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
+import { Comment } from "@/models/comment/comment";
+import Spinner from "@/components/common/spinner/spin";
+import { Task } from "@/types/types";
 
-interface Task {
-  id: string;
-  title: string;
-  subtitle?: string;
-  priority?: string;
-  assignee?: string;
-  parent?: string;
-  dueDate?: string;
-  sprint?: string;
-  tags?: string[];
-  storyPoints?: string | number;
-}
+
 
 interface DetailTaskModalProps {
   open: boolean;
@@ -37,9 +35,65 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [newComment, setNewComment] = useState("");
+  const [comments, setComments] = useState<Comment[]>();
   const [commentMap, setCommentMap] = useState<
     Record<string, { author: string; content: string; time: string }[]>
   >({});
+  const [contributor, setContributors] = useState<ProjectContributorTag[]>();
+  const { projectId } = useParams<{ projectId: string }>();
+
+  const getMemberProject = async (
+    url: string
+  ): Promise<ProjectContributorTag[]> => {
+    try {
+      const response = await axiosService.getAxiosInstance().get(url);
+      return response.data.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "đã có lỗi xảy ra";
+      if (errorMessage) showErrorToast(errorMessage);
+    }
+    return Promise.reject();
+  };
+
+  const { data, error, isLoading } = useSWR(
+    projectId
+      ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
+      : "",
+    getMemberProject
+  );
+
+  const getCommentTask = async (url: string): Promise<Comment[]> => {
+    try {
+      const response = await axiosService.getAxiosInstance().get(url);
+      return response.data.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "đã có lỗi xảy ra";
+      if (errorMessage) showErrorToast(errorMessage);
+    }
+    return Promise.reject();
+  };
+  const {
+    data: dataComment,
+    error: errorComment,
+    isLoading: loadingComment,
+  } = useSWR(
+    task.id ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(task.id)}` : "",
+    getCommentTask
+  );
+
+  useEffect(() => {
+    if (dataComment) {
+      setComments(dataComment);
+    }
+  }, [dataComment]);
+
+  useEffect(() => {
+    if (data) {
+      setContributors(data);
+    }
+  }, [data]);
 
   useEffect(() => {
     if (task) {
@@ -49,8 +103,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   }, [task]);
 
   if (!task) return null;
-
-  const currentTaskComments = commentMap[task.id] || [];
 
   const handleSaveDescription = () => {
     setIsEditingDescription(false);
@@ -80,12 +132,26 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const priorityOptions = [
-    { value: "Highest", icon: <ArrowUpOutlined className="text-red-500 rotate-45" /> },
+    {
+      value: "Highest",
+      icon: <ArrowUpOutlined className="text-red-500 rotate-45" />,
+    },
     { value: "High", icon: <ArrowUpOutlined className="text-red-500" /> },
     { value: "Medium", icon: <FlagOutlined className="text-yellow-500" /> },
     { value: "Low", icon: <ArrowDownOutlined className="text-blue-500" /> },
-    { value: "Lowest", icon: <ArrowDownOutlined className="text-blue-500 rotate-45" /> },
+    {
+      value: "Lowest",
+      icon: <ArrowDownOutlined className="text-blue-500 rotate-45" />,
+    },
   ];
+
+  if (error || errorComment) {
+    showErrorToast(error ? error : errorComment);
+  }
+
+  if (isLoading || loadingComment) {
+    return <Spinner />;
+  }
 
   return (
     <Modal
@@ -93,11 +159,10 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={1200}
-      styles={{ body: { padding: 0 } }}
-    >
+      styles={{ body: { padding: 0 } }}>
       <div className="flex">
         {/* Left section */}
-        <div className="w-3/5 p-6 ">
+        <div className="w-3/5 p-6 overflow-y-auto max-h-[500px]">
           {/* ID */}
           <div className="flex items-center mb-8 text-sm text-gray-500">
             <span>{task.id}</span>
@@ -117,7 +182,10 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   autoSize={{ minRows: 3, maxRows: 10 }}
                 />
                 <div className="flex mt-2 space-x-2">
-                  <Button type="primary" size="small" onClick={handleSaveDescription}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={handleSaveDescription}>
                     Save
                   </Button>
                   <Button size="small" onClick={handleCancelDescription}>
@@ -128,8 +196,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             ) : (
               <div
                 onClick={() => setIsEditingDescription(true)}
-                className="cursor-pointer min-h-[50px]"
-              >
+                className="cursor-pointer min-h-[50px]">
                 {description ? (
                   <p className="text-gray-500">{description}</p>
                 ) : (
@@ -175,19 +242,43 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
             {/* Comment Input */}
             <div className="mt-4">
+              {/* Add mentions quick select */}
+              {Array.isArray(contributor) && contributor.length > 0 && (
+                <div className="mb-2 flex flex-wrap items-center">
+                  <span className="mr-2">Add mentions:</span>
+                  {contributor.map((e) => (
+                    <Button
+                      key={e._id}
+                      size="small"
+                      className="mr-2 mb-2 flex items-center"
+                      icon={
+                        <Avatar src={e.userId.avatar} size="small">
+                          {e.userId.fullName[0]}
+                        </Avatar>
+                      }
+                      onClick={() => {
+                        const mention = `@${e.userId.fullName} `;
+                        setNewComment((prev) => prev + mention);
+                      }}>
+                      {e.userId.fullName}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
               <Input.TextArea
-                placeholder="Add a comment..."
+                placeholder="Add comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 autoSize={{ minRows: 2, maxRows: 5 }}
               />
+
               <div className="flex mt-2 space-x-2">
                 <Button
                   type="primary"
                   size="small"
                   onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                >
+                  disabled={!newComment.trim()}>
                   Save
                 </Button>
                 <Button size="small" onClick={() => setNewComment("")}>
@@ -197,36 +288,48 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             </div>
 
             {/* Render Comments */}
-            <div className="mt-6 space-y-4">
-              {currentTaskComments.map((c, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <Avatar size="large">G</Avatar>
-                  <div>
-                    <div className="text-sm font-semibold">{c.author}</div>
-                    <div className="mb-1 text-xs text-gray-500">{c.time}</div>
-                    <div className="text-sm">{c.content}</div>
+            <div className="mt-4 space-y-3">
+              {Array.isArray(comments) &&
+                comments.map((c, idx) => (
+                  <div key={idx} className="flex gap-3">
+                    <img
+                      src={c.author.avatar}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <div>
+                      <p className="font-semibold">{c.author.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {c.attachments?.filename}
+                      </p>
+                      <div
+                        className="mt-1"
+                        dangerouslySetInnerHTML={{ __html: c.content }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
 
         {/* Right section */}
 
-        <div className="w-2/5 p-6 ">
+        <div className="w-2/5 p-6 overflow-y-auto max-h-[500px]">
           <div className="px-5 space-y-5 text-sm border border-gray-200 rounded-md py-7">
             <h3 className="mb-2 text-lg font-semibold">Details</h3>
 
-            <div className="grid grid-cols-2 gap-y-6">
+            <div className="grid grid-cols-2 gap-y-5">
               <span className="font-semibold text-gray-600">Assignee:</span>
               <div className="flex items-center space-x-2">
                 <Avatar icon={<UserOutlined />} />
                 <span>{task.assignee || "Unassigned"}</span>
               </div>
+              <span className="font-semibold text-gray-600">Labels:</span>
+              <span>{task.title || "None"}</span>
 
               <span className="font-semibold text-gray-600">Parent:</span>
               <Tag color="purple">{task.parent || "None"}</Tag>
+              <span className="font-semibold text-gray-600">Start Date:</span>
 
               <span className="font-semibold text-gray-600">Due Date:</span>
               <span>{task.dueDate || "None"}</span>
@@ -236,14 +339,13 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
               <span className="font-semibold text-gray-600">Tags:</span>
               <div className="flex flex-wrap gap-1">
-                {task.tags && Array.isArray(task.tags) && (
-                  (task.tags || []).length > 0 ? (
+                {task.tags &&
+                  Array.isArray(task.tags) &&
+                  ((task.tags || []).length > 0 ? (
                     task.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
                   ) : (
                     <span>None</span>
-                  )
-                )}
-
+                  ))}
               </div>
 
               <span className="font-semibold text-gray-600">Story Points:</span>
@@ -251,7 +353,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             </div>
           </div>
         </div>
-
       </div>
     </Modal>
   );
