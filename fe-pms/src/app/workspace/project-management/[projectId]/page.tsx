@@ -317,9 +317,14 @@ const BoardPage = () => {
                                   <span className="font-medium text-gray-600">
                                     {task.priority}
                                   </span>
-                                  <Avatar className="text-white bg-purple-600" size="small">
+                                  <Avatar
+                                    className={`text-white ${task.assignee === "Unassigned" ? "bg-gray-400" : "bg-purple-600"
+                                      }`}
+                                    size="small"
+                                  >
                                     {task.assignee?.[0] || "?"}
                                   </Avatar>
+
                                 </div>
                               </div>
                             </Card>
