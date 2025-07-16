@@ -14,10 +14,20 @@ import { useParams, useRouter } from "next/navigation";
 import type { NotificationArgsProps } from "antd";
 import React, { useEffect, useMemo, useState } from "react";
 import { isValidEmail } from "@/lib/utils";
+import axiosService from "@/lib/services/axios.service";
+import { InviteMultiple, ProjectRole } from "@/types/types";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
+import { inviteMemberMultiple } from "@/lib/services/projectContributor/projectContributor";
 type NotificationPlacement = NotificationArgsProps["placement"];
 const { Title, Text } = Typography;
 
 const Context = React.createContext({ name: "Default" });
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 export default function InvitePage() {
   const [api, notificationHolder] = notification.useNotification();
@@ -28,8 +38,24 @@ export default function InvitePage() {
   const [disabledInvite, setDisabledInvite] = useState<boolean>(true);
   const params = useParams();
   const projectId = params.projectId as string;
+  const [projectRoleId, setProjectRoleId] = useState<string>();
 
-  console.log("projectId in invite page", projectId);
+  const { data: projectRoleData, error: projectRoleError } = useSWR(
+    `${Endpoints.ProjectRole.GET_ALL}`,
+    fetcher
+  );
+  useEffect(() => {
+    if (projectRoleData && !projectRoleError) {
+      const projectContributor = projectRoleData?.data.find(
+        (role: ProjectRole) => role.name === "CONTRIBUTOR"
+      );
+      if (projectContributor) {
+        setProjectRoleId(projectContributor._id);
+      } else {
+        console.error("Project role 'CONTRIBUTOR' not found");
+      }
+    }
+  }, [projectRoleData, projectRoleError]);
 
   const openNotification = (placement: NotificationPlacement) => {
     api.success({
@@ -64,6 +90,25 @@ export default function InvitePage() {
     });
 
     setInvites(validEmails);
+  };
+
+  const handleInvite = async () => {
+    try {
+      if (!projectId || !projectRoleId) {
+        messageApi.error("Missing project ID or role ID");
+        return;
+      }
+      const data: InviteMultiple = {
+        emails: invites,
+        projectId,
+        projectRoleId,
+      };
+      await inviteMemberMultiple(data);
+      router.push(`/workspace/project-management/${projectId}`);
+    } catch (e) {
+      console.log(e);
+      messageApi.error("Failed to invite members");
+    }
   };
 
   return (
@@ -147,9 +192,7 @@ export default function InvitePage() {
             </Button>
             <Button
               type="primary"
-              onClick={() =>
-                router.push(`/workspace/project-management/${projectId}`)
-              }
+              onClick={handleInvite}
               disabled={disabledInvite}
             >
               Invite and continue

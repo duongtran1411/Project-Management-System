@@ -49,18 +49,15 @@ export default function Backlog() {
     fetcher
   );
 
-  const { data: taskData, error: taskError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
+  const {
+    data: taskData,
+    error: taskError,
+    mutate: mutateTask,
+  } = useSWR(`${Endpoints.Task.GET_BY_PROJECT(projectId)}`, fetcher);
   console.log("task data", taskData);
 
   const { data: contributorData, error: contributorError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
-      projectId
-    )}`,
+    `${Endpoints.User.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
 
@@ -68,15 +65,7 @@ export default function Backlog() {
     data: milestoneData,
     error: milestoneError,
     mutate,
-  } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
-  // const refreshData = () => {
-  //   mutate();
-  // };
+  } = useSWR(`${Endpoints.Milestone.GET_BY_PROJECT(projectId)}`, fetcher);
 
   // Loading and error states
   const isLoading =
@@ -91,7 +80,7 @@ export default function Backlog() {
       // Search by task name
       const nameMatch =
         !searchText ||
-        task.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        task.name?.toLowerCase().includes(searchText.toLowerCase()) ||
         (task.description &&
           task.description.toLowerCase().includes(searchText.toLowerCase()));
 
@@ -140,6 +129,7 @@ export default function Backlog() {
   const handleCreateSprint = async (data: CreateMilestone) => {
     await createMilestone(data); // gọi API
     mutate(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone}`);
+
     setOpenCreateModal(false);
   };
 
@@ -263,6 +253,7 @@ export default function Backlog() {
         taskData={taskData?.data}
         showModal={showModal}
         refreshData={mutate}
+        mutateTask={mutateTask}
       />
 
       {/* Backlog Section */}
@@ -317,6 +308,7 @@ export default function Backlog() {
           setIsModalOpen={setIsModalOpen}
           //setSelectedMilestone={setSelectedMilestone}
           selectedMilestone={selectedMilestone}
+          mutateTask={mutateTask}
         />
       )}
 

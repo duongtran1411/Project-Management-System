@@ -1,10 +1,9 @@
 "use client";
-import { Endpoints } from "@/lib/endpoints";
+
 import { createTask } from "@/lib/services/task/task";
 import { FieldType, Milestone } from "@/types/types";
 import { Form, FormProps, Input, Modal } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { mutate } from "swr";
 
 interface Props {
   projectId: string;
@@ -12,6 +11,7 @@ interface Props {
   //setSelectedMilestone: React.Dispatch<React.SetStateAction<Milestone>>;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  mutateTask: () => void;
 }
 
 export const ModalCreateTask: React.FC<Props> = ({
@@ -20,6 +20,7 @@ export const ModalCreateTask: React.FC<Props> = ({
   setIsModalOpen,
   //setSelectedMilestone,
   selectedMilestone,
+  mutateTask,
 }) => {
   const [form] = Form.useForm<FieldType>();
 
@@ -42,11 +43,7 @@ export const ModalCreateTask: React.FC<Props> = ({
     await createTask(data);
 
     // gọi mutate để refresh lại task list
-    mutate(
-      `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
-        projectId
-      )}`
-    );
+    await mutateTask();
     setIsModalOpen(false);
     // setSelectedMilestone(null);
     form.resetFields();

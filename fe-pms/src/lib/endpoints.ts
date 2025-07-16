@@ -9,7 +9,7 @@ export class Endpoints {
   static readonly User = {
     GET_ALL: "user",
     GET_BY_PROJECT: (projectId: string) =>
-      `projectContributor/project/${projectId}`,
+      `project-contributor/project/${projectId}`,
   };
 
   static readonly Epic = {
@@ -20,6 +20,7 @@ export class Endpoints {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
+    GET_BY_ID: (taskId: string) => `task/${taskId}`,
   };
 
   static readonly Milestone = {
@@ -39,7 +40,9 @@ export class Endpoints {
   static readonly ProjectContributor = {
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
-    CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
+    INVITE_MULTIPLE: "project-contributor/invitation/multiple",
+    CONFIRM_INVITE: (token: string) =>
+      `project-contributor/invitation/confirm/${token}`,
   };
 
   static readonly ProjectRole = {
