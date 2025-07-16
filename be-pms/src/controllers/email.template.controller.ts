@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import EmailTemplate from "../models/email.template.model";
 import mongoose from "mongoose";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 export class EmailTemplateController {
   create = async (req: AuthRequest, res: Response): Promise<void> => {
