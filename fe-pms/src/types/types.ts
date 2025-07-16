@@ -181,3 +181,14 @@ export interface TaskContributorStatistic {
   totalTasks: number;
   contributorStats: ContributorStats[];
 }
+
+export interface AssignedTaskItem {
+   _id: string;
+  name: string;
+  status: "TO DO" | "IN PROGRESS" | "DONE";
+  projectId: {
+    _id: string;
+    name: string;
+  };
+}
+
