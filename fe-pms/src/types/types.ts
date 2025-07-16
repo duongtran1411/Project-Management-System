@@ -182,9 +182,21 @@ export interface TaskContributorStatistic {
   contributorStats: ContributorStats[];
 }
 
+
+export interface AssignedTaskItem {
+   _id: string;
+  name: string;
+  status: "TO DO" | "IN PROGRESS" | "DONE";
+  projectId: {
+    _id: string;
+    name: string;
+  };
+}
+
 // project invite multiple member
 export interface InviteMultiple {
   emails: string[];
   projectId: string;
   projectRoleId: string;
 }
+

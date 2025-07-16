@@ -45,11 +45,11 @@ const HeaderProjectManagement = () => {
   } = useSWR(
     token
       ? [
-          `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Project.GET_BY_ID(
-            projectId || ""
-          )}`,
-          token,
-        ]
+        `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Project.GET_BY_ID(
+          projectId || ""
+        )}`,
+        token,
+      ]
       : null,
     fetcherWithToken
   );
@@ -89,7 +89,12 @@ const HeaderProjectManagement = () => {
       url: `/workspace/project-management/${projectId}/calendar`,
     },
 
-    { key: "List", label: "List", icon: <BarsOutlined /> },
+    {
+      key: "List",
+      label: "List",
+      icon: <BarsOutlined />,
+      url: `/workspace/project-management/${projectId}/list`
+    },
   ];
 
   return (
@@ -120,7 +125,7 @@ const HeaderProjectManagement = () => {
             <img
               src="/project.png"
               alt="logo"
-              className="w-7 h-7 rounded-sm ml-3"
+              className="ml-3 rounded-sm w-7 h-7"
             />
             <span className="text-base font-bold text-gray-800">
               {projectData?.data?.name || "Project Management"}

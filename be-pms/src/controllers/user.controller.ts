@@ -175,6 +175,70 @@ class UserController {
       });
     }
   };
+
+  getUserProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.isValidObjectId(id)) {
+        res.status(400).json({ success: false, message: "Invalid user ID" });
+      }
+
+      const user = await User.findById(id).select(
+        "fullname email avatar phone "
+      );
+      if (!user || user.status === "DELETED") {
+        res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.json({ success: true, data: user });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
+
+  udpateProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.isValidObjectId(id)) {
+        res.status(400).json({ success: false, message: "Invalid user ID" });
+      }
+
+      const allowedFields = [
+        "fullName",
+        "email",
+        "password",
+        "avatar",
+        "phone",
+      ];
+
+      const updateData: any = {};
+
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        res
+          .status(400)
+          .json({ success: false, message: "No valid fields to update" });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+      }).select("-password");
+
+      if (!updatedUser) {
+        res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.json({ success: true, data: updatedUser });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
 }
 
 export default new UserController();

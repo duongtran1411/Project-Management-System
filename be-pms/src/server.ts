@@ -72,7 +72,7 @@ app.use((_req, res) => {
 const PORT = process.env.PORT || 5000;
 
 const httpServer = createServer(app);
-export const io = initSocket(httpServer)
+export const io = initSocket(httpServer);
 
 const startServer = async () => {
   try {
