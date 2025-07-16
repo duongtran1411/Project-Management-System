@@ -33,12 +33,34 @@ router.post("/", authenticate, userController.create);
  * @openapi
  * /user:
  *   get:
- *     summary: Lấy danh sách tất cả người dùng
- *     security: [bearerAuth: []]
- *     tags: [User]
+ *     summary: Lấy danh sách tất cả người dùng (có phân trang và tìm kiếm)
+ *     security:
+ *       - bearerAuth: []
+ *     tags:
+ *       - User
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Số lượng bản ghi mỗi trang
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Trang hiện tại
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Tìm kiếm theo tên người dùng (fullName)
  *     responses:
- *       200: { description: Lấy danh sách người dùng thành công }
- *       400: { description: Lỗi khi lấy dữ liệu }
+ *       200:
+ *         description: Lấy danh sách người dùng thành công
+ *       400:
+ *         description: Lỗi khi lấy dữ liệu
  */
 router.get("/", authenticate, userController.findAll);
 
