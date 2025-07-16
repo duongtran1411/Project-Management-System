@@ -1,22 +1,16 @@
+import mongoose from "mongoose";
+import Comment from "../models/comment.model";
 import Notification, {
-  INotification,
   CreateNotificationData,
+  INotification,
   NotificationQuery,
   NotificationStats,
-  NotificationResponse,
 } from "../models/notification.model";
-import User from "../models/user.model";
-import Task from "../models/task.model";
 import Project from "../models/project.model";
-import Epic from "../models/epic.model";
-import Milestone from "../models/milestone.model";
-import Comment from "../models/comment.model";
-import mongoose from "mongoose";
+import Task from "../models/task.model";
+import User from "../models/user.model";
 
 class NotificationService {
-  /**
-   * Create a new notification
-   */
   async createNotification(
     data: CreateNotificationData
   ): Promise<INotification> {
@@ -29,6 +23,7 @@ class NotificationService {
         type,
         entityType,
         entityId,
+        senderId,
         metadata
       );
 
@@ -49,18 +44,14 @@ class NotificationService {
     }
   }
 
-  /**
-   * Generate notification title and message based on type
-   */
   private async generateNotificationContent(
     type: string,
     entityType: string,
     entityId: string,
+    senderId: string,
     metadata?: any
   ): Promise<{ title: string; message: string }> {
-    const sender = await User.findById(metadata?.senderId || entityId).select(
-      "fullName"
-    );
+    const sender = await User.findById(senderId).select("fullName");
     const senderName = sender?.fullName || "Unknown User";
 
     switch (type) {
@@ -156,9 +147,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Get notifications for a user with pagination
-   */
   async getNotifications(query: NotificationQuery): Promise<{
     notifications: INotification[];
     total: number;
@@ -219,10 +207,6 @@ class NotificationService {
       throw new Error(`Failed to get notifications: ${error.message}`);
     }
   }
-
-  /**
-   * Get notification statistics for a user
-   */
   async getNotificationStats(recipientId: string): Promise<NotificationStats> {
     try {
       const [total, unread, archived] = await Promise.all([
@@ -246,9 +230,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Mark notification as read
-   */
   async markAsRead(
     notificationId: string,
     userId: string
@@ -273,9 +254,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Mark all notifications as read for a user
-   */
   async markAllAsRead(userId: string): Promise<{ modifiedCount: number }> {
     try {
       const result = await Notification.updateMany(
@@ -294,9 +272,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Archive a notification
-   */
   async archiveNotification(
     notificationId: string,
     userId: string
@@ -321,9 +296,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Delete a notification
-   */
   async deleteNotification(
     notificationId: string,
     userId: string
@@ -342,9 +314,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Create mention notifications for users mentioned in comments
-   */
   async createMentionNotifications(
     commentId: string,
     senderId: string,
@@ -406,9 +375,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Create task update notifications
-   */
   async createTaskUpdateNotification(
     taskId: string,
     senderId: string,
