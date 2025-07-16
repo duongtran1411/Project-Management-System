@@ -6,7 +6,8 @@ export interface EmailTemplate {
     body: string;
     footer?: string;
     variables?: {
-      name:string
+      name:string,
+      value?:string
     }[]
     status: 'ACTIVE' | 'INACTIVE' | 'DELETED';
     createdBy: string;
