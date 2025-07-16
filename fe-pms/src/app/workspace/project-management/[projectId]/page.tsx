@@ -303,14 +303,17 @@ const BoardPage = () => {
                                   {task.title}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                  {task.tags.map((tag, i) => (
-                                    <span
-                                      key={i}
-                                      className={`px-2 py-0.5 rounded text-xs font-medium bg-purple-100`}
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
+                                  {task.tags
+                                    .filter((tag) => tag !== "No Epic")
+                                    .map((tag, i) => (
+                                      <span
+                                        key={i}
+                                        className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+
                                 </div>
                                 <div className="text-sm text-gray-500">{task.dueDate}</div>
                                 <div className="flex items-center justify-between">
