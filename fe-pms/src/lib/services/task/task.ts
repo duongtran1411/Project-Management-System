@@ -4,7 +4,7 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
-import { TaskModel } from "@/types/types";
+import { Task, TaskModel } from "@/types/types";
 
 export const createTask = async (task: TaskModel) => {
   try {
@@ -39,16 +39,15 @@ export const getTasksByProject = async (
   }
 };
 
-
-export const updateTaskStatus = async (taskId: string, status: string) => {
+export const updateTask = async (taskId: string, task: Task) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .put(Endpoints.Task.UPDATE_TASK(taskId), { status }); 
+      .put(Endpoints.Task.UPDATE_TASK(taskId), task);
 
     if (response.data?.success) {
-      showSuccessToast("Cập nhật trạng thái status thành công!");
-      return response.data.data;
+      showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
+      return response?.data.data;
     } else {
       throw new Error(response.data?.message || "Cập nhật thất bại");
     }
