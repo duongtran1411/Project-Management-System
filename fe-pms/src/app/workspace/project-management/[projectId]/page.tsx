@@ -12,7 +12,7 @@ import {
   Alert,
 } from "antd";
 import { PlusOutlined, DownOutlined } from "@ant-design/icons";
-import DetailTaskModal from "./board/detail-task/page";
+import DetailTaskModal from "./detail-task/page";
 import { updateTaskStatus } from "@/lib/services/task/task";
 import { UITask, TaskApiResponse } from "@/types/types";
 import { useParams } from "next/navigation";
