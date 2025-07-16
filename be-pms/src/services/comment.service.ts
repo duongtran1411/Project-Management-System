@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Comment, IComment, IUser } from "../models";
 import cloudinary from "../utils/cloudinary";
 
@@ -28,8 +29,39 @@ class CommentService {
         return comment
     }
 
-    async getCommentByTask(taskId: string):Promise<IComment[]>{
-        const comments = await Comment.find({task: taskId})
+    async getCommentByTask(taskId: string): Promise<IComment[]> {
+        const comments = await Comment.aggregate([
+            {
+                $match: {
+                    task: new Types.ObjectId(taskId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'author',
+                    foreignField: '_id',
+                    as: 'users'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$users',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    content: 1,
+                    author: {
+                        name: '$users.fullName',
+                        avatar: '$users.avatar'
+                    },
+                    task: 1
+                }
+            }
+        ])
+
         return comments
     }
 }

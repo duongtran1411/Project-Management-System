@@ -1,13 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Modal, Tag, Avatar, Button, Input, Select } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Modal, Tag, Avatar, Button, Input, Select, Mentions } from "antd";
 import {
   UserOutlined,
   ArrowUpOutlined,
   ArrowDownOutlined,
   FlagOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
+import { ProjectContributor } from "@/models/projectcontributor/projectcontributor";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
+import { showErrorToast } from "@/components/common/toast/toast";
+import axiosService from "@/lib/services/axios.service";
+import { useParams } from "next/navigation";
+import Spinner from "@/components/common/spinner/spin";
+import { Option } from "antd/es/mentions";
+import { createComment } from "@/lib/services/comment/comment.service";
 
 interface Task {
   id: string;
@@ -40,6 +50,33 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [commentMap, setCommentMap] = useState<
     Record<string, { author: string; content: string; time: string }[]>
   >({});
+  const [contributor, setContributors] = useState<ProjectContributor[]>();
+  const { projectId } = useParams<{ projectId: string }>();
+  const getMemberProject = async (
+    url: string
+  ): Promise<ProjectContributor[]> => {
+    try {
+      const response = await axiosService.getAxiosInstance().get(url);
+      return response.data.data;
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message || error.message || "đã có lỗi xảy ra";
+      if (errorMessage) showErrorToast(errorMessage);
+    }
+    return Promise.reject();
+  };
+  const { data, error, isLoading } = useSWR(
+    projectId
+      ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
+      : "",
+    getMemberProject
+  );
+
+  useEffect(() => {
+    if (data) {
+      setContributors(data);
+    }
+  }, [data]);
 
   useEffect(() => {
     if (task) {
@@ -49,8 +86,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   }, [task]);
 
   if (!task) return null;
-
-  const currentTaskComments = commentMap[task.id] || [];
 
   const handleSaveDescription = () => {
     setIsEditingDescription(false);
@@ -80,12 +115,41 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const priorityOptions = [
-    { value: "Highest", icon: <ArrowUpOutlined className="text-red-500 rotate-45" /> },
+    {
+      value: "Highest",
+      icon: <ArrowUpOutlined className="text-red-500 rotate-45" />,
+    },
     { value: "High", icon: <ArrowUpOutlined className="text-red-500" /> },
     { value: "Medium", icon: <FlagOutlined className="text-yellow-500" /> },
     { value: "Low", icon: <ArrowDownOutlined className="text-blue-500" /> },
-    { value: "Lowest", icon: <ArrowDownOutlined className="text-blue-500 rotate-45" /> },
+    {
+      value: "Lowest",
+      icon: <ArrowDownOutlined className="text-blue-500 rotate-45" />,
+    },
   ];
+
+  const handleComment = async () => {
+    try {
+      const response = await createComment(task.id,newComment);
+      if(response.success){
+        
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
+      if (errorMessage) {
+        showErrorToast(errorMessage);
+      }
+    }
+  };
+
+  if (error) {
+    showErrorToast(error.message);
+  }
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <Modal
@@ -93,11 +157,10 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={1200}
-      styles={{ body: { padding: 0 } }}
-    >
+      styles={{ body: { padding: 0 } }}>
       <div className="flex">
         {/* Left section */}
-        <div className="w-3/5 p-6 ">
+        <div className="w-3/5 p-6 overflow-auto">
           {/* ID */}
           <div className="flex items-center mb-8 text-sm text-gray-500">
             <span>{task.id}</span>
@@ -117,7 +180,10 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   autoSize={{ minRows: 3, maxRows: 10 }}
                 />
                 <div className="flex mt-2 space-x-2">
-                  <Button type="primary" size="small" onClick={handleSaveDescription}>
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={handleSaveDescription}>
                     Save
                   </Button>
                   <Button size="small" onClick={handleCancelDescription}>
@@ -128,8 +194,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             ) : (
               <div
                 onClick={() => setIsEditingDescription(true)}
-                className="cursor-pointer min-h-[50px]"
-              >
+                className="cursor-pointer min-h-[50px]">
                 {description ? (
                   <p className="text-gray-500">{description}</p>
                 ) : (
@@ -175,39 +240,49 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
             {/* Comment Input */}
             <div className="mt-4">
+              {/* Add mentions quick select */}
+              {Array.isArray(contributor) && contributor.length > 0 && (
+                <div className="mb-2 flex flex-wrap items-center">
+                  <span className="mr-2">Add mentions:</span>
+                  {contributor.map((e) => (
+                    <Button
+                      key={e._id}
+                      size="small"
+                      className="mr-2 mb-2 flex items-center"
+                      icon={
+                        <Avatar src={e.userId.avatar} size="small">
+                          {e.userId.fullName[0]}
+                        </Avatar>
+                      }
+                      onClick={() => {
+                        const mention = `@${e.userId.fullName} `;
+                        setNewComment((prev) => prev + mention);
+                      }}>
+                      {e.userId.fullName}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
               <Input.TextArea
-                placeholder="Add a comment..."
+                placeholder="Add comment..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 autoSize={{ minRows: 2, maxRows: 5 }}
               />
+
               <div className="flex mt-2 space-x-2">
                 <Button
                   type="primary"
                   size="small"
                   onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                >
+                  disabled={!newComment.trim()}>
                   Save
                 </Button>
                 <Button size="small" onClick={() => setNewComment("")}>
                   Cancel
                 </Button>
               </div>
-            </div>
-
-            {/* Render Comments */}
-            <div className="mt-6 space-y-4">
-              {currentTaskComments.map((c, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <Avatar size="large">G</Avatar>
-                  <div>
-                    <div className="text-sm font-semibold">{c.author}</div>
-                    <div className="mb-1 text-xs text-gray-500">{c.time}</div>
-                    <div className="text-sm">{c.content}</div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -236,14 +311,13 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
               <span className="font-semibold text-gray-600">Tags:</span>
               <div className="flex flex-wrap gap-1">
-                {task.tags && Array.isArray(task.tags) && (
-                  (task.tags || []).length > 0 ? (
+                {task.tags &&
+                  Array.isArray(task.tags) &&
+                  ((task.tags || []).length > 0 ? (
                     task.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
                   ) : (
                     <span>None</span>
-                  )
-                )}
-
+                  ))}
               </div>
 
               <span className="font-semibold text-gray-600">Story Points:</span>
@@ -251,7 +325,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             </div>
           </div>
         </div>
-
       </div>
     </Modal>
   );

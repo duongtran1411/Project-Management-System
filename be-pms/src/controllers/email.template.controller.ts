@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import EmailTemplate from "../models/email.template.model";
-import { AuthRequest } from "../middlewares/auth.middleware";
 import mongoose from "mongoose";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
@@ -9,7 +8,6 @@ export class EmailTemplateController {
     try {
       const user = req.user;
       const { name, subject, header, body, footer, variables } = req.body;
-      const user = req.user
       let emailTemplate = await EmailTemplate.findOne({ name: name });
 
       if (emailTemplate) {
@@ -29,8 +27,7 @@ export class EmailTemplateController {
         variables,
         createdBy: user._id,
         updatedBy: user._id,
-        status: "ACTIVE",
-        createdBy:user._id
+        status: "ACTIVE"
       });
       res.status(201).json({ success: true, data: template });
     } catch (error: any) {
