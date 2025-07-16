@@ -1,7 +1,7 @@
 export interface Task {
   _id?: string;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   status?: string;
   priority?: string;
   assignee?: {
@@ -31,8 +31,8 @@ export interface Task {
     email: string;
     avatar?: string;
   };
-  updatedAt: string;
-  createdAt: string;
+  updatedAt?: string;
+  createdAt?: string;
 }
 
 export interface Epic {
@@ -180,4 +180,11 @@ export interface ContributorStats {
 export interface TaskContributorStatistic {
   totalTasks: number;
   contributorStats: ContributorStats[];
+}
+
+// project invite multiple member
+export interface InviteMultiple {
+  emails: string[];
+  projectId: string;
+  projectRoleId: string;
 }

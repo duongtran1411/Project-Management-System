@@ -1,8 +1,12 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "../axios.service";
-import { showErrorToast } from "@/components/common/toast/toast";
-import { Project, ProjectContributor } from "@/types/types";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "@/components/common/toast/toast";
+import { InviteMultiple, Project } from "@/types/types";
 
+//get list project by userId
 export const getProjectsContributorByUserId = async (
   userId: string
 ): Promise<Project[] | null> => {
@@ -20,25 +24,42 @@ export const getProjectsContributorByUserId = async (
   }
 };
 
-export const createProjectContributor = async (
-  projectContributor: ProjectContributor
-) => {
+//invite many people to come in project
+export const inviteMemberMultiple = async (members: InviteMultiple) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .post(
-        Endpoints.ProjectContributor.CREATE_PROJECT_CONTRIBUTOR,
-        projectContributor
-      );
+      .post(Endpoints.ProjectContributor.INVITE_MULTIPLE, members);
 
     if (response.status === 201) {
+      showSuccessToast("Invite members successfully!");
       return response.data?.data;
     }
   } catch (error: any) {
     const message =
-      error?.response?.data?.message || "Failed to create project contributor.";
-    // showErrorToast(message);
-    console.log("Create Project Contributor Error:", message);
+      error?.response?.data?.message || "Failed to invite member.";
+    showErrorToast(message);
+    console.log("Inviting Member Error:", message);
+  }
+  return null;
+};
+
+//Confirm invitation
+export const confirmInvite = async (token: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(Endpoints.ProjectContributor.CONFIRM_INVITE(token), token);
+
+    if (response.status === 201) {
+      showSuccessToast("Confirm invitation members successfully!");
+      return response;
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Failed to confirm invitation member.";
+    showErrorToast(message);
+    console.log("Confirming Invitation Member Error:", message);
   }
   return null;
 };
