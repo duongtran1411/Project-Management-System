@@ -117,7 +117,7 @@ export default function Page() {
                                     </div>
 
                                     <Link
-                                        href={`/workspace/project-management/${proj._id}`}
+                                        href={`/workspace/project-management/${proj._id}/board`}
                                         className="flex items-center justify-between block px-4 py-2 mt-4 text-xs text-gray-500 transition border-t border-gray-200 hover:bg-gray-100"
                                     >
                                         <span>Board</span>

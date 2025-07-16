@@ -1,13 +1,13 @@
 import { User } from "../user/User"
 
-export interface ProjectContributor {
+export interface ProjectContributorTag {
     _id: string
     userId: User
     joinedAt: string
-    projectRoleId: ProjectRole
+    projectRoleId: ProjectRoleTag
 }
 
-export interface ProjectRole {
+export interface ProjectRoleTag {
     _id: string
     name: string
 }
