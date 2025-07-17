@@ -359,7 +359,7 @@ const NotificationPopup: React.FC = () => {
       overlayClassName="notification-dropdown"
       open={dropdownOpen}
       onOpenChange={setDropdownOpen}
-      destroyPopupOnHide={false}
+      destroyOnHidden={false}
       getPopupContainer={(triggerNode) =>
         triggerNode.parentElement || document.body
       }

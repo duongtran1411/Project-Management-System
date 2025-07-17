@@ -11,28 +11,25 @@ import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/auth-context";
 const { Text } = Typography;
 export default function Page() {
   const [name, setName] = useState<string>("");
   const router = useRouter();
-  const [accessToken, setAccessToken] = useState<string>("");
+  const {userInfo} = useAuth();
   useEffect(() => {
-    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
-    if (token && justLoggedIn === "true") {
-      setAccessToken(token);
-      const decoded = jwtDecode<TokenPayload>(token);
-      setName(decoded.fullname);
-      showSuccessToast("Đăng nhập thành công!");
-      localStorage.removeItem("justLoggedIn");
-    } else if (token) {
-      const decoded = jwtDecode<TokenPayload>(token);
-      setName(decoded.fullname);
+    if (userInfo && justLoggedIn === "true") {
+      setName(userInfo?.fullname);
+      showSuccessToast("Welcom Project Hub!");
+      localStorage.removeItem(Constants.API_FIRST_LOGIN);
+    } else if ( userInfo) {
+      setName(userInfo.fullname);
     }
   }, []);
 
   const handleContinue = () => {
-    if (accessToken) {
+    if (userInfo) {
       router.push("/workspace");
     } else {
       showSuccessToast("Vui lòng đăng nhập trước khi tiếp tục!");
@@ -52,7 +49,7 @@ export default function Page() {
               <br />
               together with Project Hub
             </p>
-            {accessToken && (
+            {userInfo && (
               <div className="mt-8">
                 <Text className="text-4xl font-medium mb-2 inline-block relative text-center">
                   Welcome back, {name}

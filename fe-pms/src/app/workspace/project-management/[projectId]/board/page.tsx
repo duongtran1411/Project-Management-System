@@ -11,10 +11,19 @@ import {
   Spin,
   Alert,
 } from "antd";
-import { PlusOutlined, DownOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  DownOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  ArrowUpOutlined,
+  FlagOutlined,
+  ArrowDownOutlined,
+} from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
 import { updateTaskStatus } from "@/lib/services/task/task";
-import { UITask, TaskApiResponse, Task } from "@/types/types";
+import { Task } from "@/types/types";
 import { useParams } from "next/navigation";
 import {
   DragDropContext,
@@ -25,6 +34,9 @@ import {
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import useSWR, { mutate } from "swr";
+import { format } from "date-fns";
+import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
+import { showErrorToast } from "@/components/common/toast/toast";
 
 const fetcher = (url: string) =>
   axiosService
@@ -57,7 +69,7 @@ const BoardPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
-
+  const [contributor, setContributor] = useState<ProjectContributorTag[]>([]);
   const {
     data: taskData,
     error: taskError,
@@ -76,27 +88,30 @@ const BoardPage = () => {
     fetcher
   );
 
+  const { data: contributorData, error: contributorError } = useSWR(
+    projectId
+      ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
+      : "",
+    fetcher
+  );
+
   const epicOptions = (epicData?.data || []).map((epic: any) => ({
     label: epic.name,
     value: epic.name,
     id: epic._id,
   })) as { label: string; value: string; id: string }[];
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-    });
-  };
-
   useEffect(() => {
     if (taskData) {
       setTasks(taskData);
     }
   }, [taskData]);
+  
+  useEffect(() => {
+    if (contributorData) {
+      setContributor(contributorData);
+    }
+  }, [contributorData]);
 
   const getTasksByStatus = (status: string) =>
     Array.isArray(tasks) ? tasks.filter((task) => task.status === status) : [];
@@ -178,6 +193,24 @@ const BoardPage = () => {
       } catch (error) {
         console.error("Failed to update task status:", error);
       }
+    }
+  };
+
+  const renderPriority = (priority: string) => {
+    switch (priority) {
+      case "HIGH":
+        return <ArrowUpOutlined className="text-red-500" />;
+      case "MEDIUM":
+        return <FlagOutlined className="text-yellow-500" />;
+      case "LOW":
+        return <ArrowDownOutlined className="text-blue-500" />;
+      case "HIGHEST":
+        return <ArrowUpOutlined className="text-red-500 rotate-45" />;
+      case "LOWEST":
+        return <ArrowDownOutlined className="text-blue-500 rotate-45" />;
+
+      default:
+        break;
     }
   };
 
@@ -303,7 +336,7 @@ const BoardPage = () => {
                               }}>
                               <div className="space-y-2">
                                 <p
-                                  className={`text-gray-700 ${
+                                  className={`text-gray-700 font-medium ${
                                     col.status === "DONE" ? "line-through" : ""
                                   }`}>
                                   {task.name}
@@ -318,22 +351,80 @@ const BoardPage = () => {
                                     {task.epic?.name}
                                   </span>
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                  {task.dueDate}
-                                </div>
-                                <div className="flex items-center justify-between">
+                                {task.dueDate && (
+                                  <div className="inline-flex items-center text-sm text-gray-500 border-2 border-gray-300 rounded px-2 py-1 gap-x-2 font-semibold">
+                                    <CalendarOutlined />
+                                    {format(
+                                      new Date(task.dueDate),
+                                      "dd/MM/yyyy"
+                                    )}
+                                  </div>
+                                )}
+
+                                {task.dueDate &&
+                                  new Date(task.dueDate).getTime() >
+                                    Date.now() && (
+                                    <div className="inline-flex items-center text-sm text-orange-300 border-2 border-orange-300 rounded px-2 py-1 gap-x-2">
+                                      <ClockCircleOutlined />
+                                      {format(
+                                        new Date(task.dueDate),
+                                        "dd/MM/yyyy"
+                                      )}
+                                    </div>
+                                  )}
+
+                                <div className="flex items-start justify-end gap-x-2">
                                   <span className="font-medium text-gray-600">
-                                    {task.priority}
+                                    {task.priority
+                                      ? renderPriority(task.priority)
+                                      : ""}
                                   </span>
-                                  <Avatar
-                                    className={`text-white ${
-                                      task.assignee?.fullName === "Unassigned"
-                                        ? "bg-gray-400"
-                                        : ""
-                                    }`}
-                                    size="small" src={task.assignee?.avatar}>
-                                    {task.assignee?.fullName || "U"}
-                                  </Avatar>
+                                  <Dropdown
+                                    menu={{
+                                      items: [
+                                        {
+                                          key: "unassigned",
+                                          label: "Unassigned",
+                                        },
+                                        ...contributor.map((e) => ({
+                                          key: e.userId._id,
+                                          label: (
+                                            <div className="flex items-center gap-2">
+                                              <Avatar
+                                                src={e.userId.avatar}
+                                                size="small">
+                                                {e.userId.fullName[0]}
+                                              </Avatar>
+                                              <div>
+                                                <p className="font-medium">
+                                                  {e.userId.fullName}
+                                                </p>
+                                                <p className="text-xs text-gray-400">
+                                                  {e.userId.email}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ),
+                                        })),
+                                      ],
+                                      onClick: ({ key }) => {
+                                        setIsModalOpen(false);
+                                      },
+                                    }}
+                                    trigger={["click"]}>
+                                    <Avatar
+                                      className={`cursor-pointer text-white ${
+                                        task.assignee?.fullName === "Unassigned"
+                                          ? "bg-gray-400"
+                                          : ""
+                                      }`}
+                                      size="small"
+                                      src={task.assignee?.avatar} onClick={(e) => e?.stopPropagation()}>
+                                      {task.assignee?.fullName?.[0] || (
+                                        <UserOutlined />
+                                      )}
+                                    </Avatar>
+                                  </Dropdown>
                                 </div>
                               </div>
                             </Card>
