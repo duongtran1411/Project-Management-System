@@ -8,6 +8,7 @@ import { AssignedTaskItem, Project } from "@/types/types";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
+import { useAuth } from "@/lib/auth/auth-context";
 
 
 
@@ -32,19 +33,14 @@ const useTasksByAssignee = (userId?: string) => {
 export default function Page() {
     const [projects, setProjects] = useState<Project[]>([]);
     const [userId, setUserId] = useState<string | null>(null);
-
+    const {userInfo} = useAuth();
     useEffect(() => {
-        const currentUser =
-            typeof window !== "undefined"
-                ? localStorage.getItem("currentUser")
-                : null;
-        const parsed = currentUser ? JSON.parse(currentUser) : null;
-        setUserId(parsed?.userId || null);
+        setUserId(userInfo?.userId || null);
 
-        if (!parsed?.userId) return;
+        if (!userInfo?.userId) return;
 
         const fetchProjects = async () => {
-            const data = await getProjectsContributorByUserId(parsed.userId);
+            const data = await getProjectsContributorByUserId(userInfo?.userId);
             if (Array.isArray(data)) {
                 const filteredProjects = data.filter(
                     (proj): proj is Project => proj !== null

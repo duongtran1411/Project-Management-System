@@ -12,13 +12,14 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/auth-context";
 
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorLogin, setErrorLogin] = useState<string>("");
   const router = useRouter();
+  const { loginSuccess } = useAuth();
   //login
   const onFinish = async () => {
     setLoading(true);
@@ -27,26 +28,19 @@ export default function Page() {
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
-        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (!response || typeof response.success === "undefined") {
           throw new Error("Lỗi không xác định từ máy chủ");
         }
-        if (token) {
-          const decoded = jwtDecode<TokenPayload>(token);
+        loginSuccess(token);
+        const decoded = jwtDecode<TokenPayload>(token);
 
-          //Lưu thông tin người dùng
-          localStorage.setItem("currentUser", JSON.stringify(decoded));
-
-          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
-          router.replace(decoded.role === "ADMIN" ? "/admin" : "/");
-        }
+        localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
+        router.replace(decoded.role === "USER" ? "/" : "/authentication/login");
         return;
       }
 
       localStorage.removeItem(Constants.API_TOKEN_KEY);
-      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
       const message =
         typeof response?.data?.message === "string"
           ? response.data.message
@@ -64,7 +58,9 @@ export default function Page() {
   };
 
   //login with google
-  const handleLoginGoogle = async (credentialReponse: GoogleCredentialResponse) => {
+  const handleLoginGoogle = async (
+    credentialReponse: GoogleCredentialResponse
+  ) => {
     setLoading(true);
     try {
       const credential = credentialReponse.credential;
@@ -76,23 +72,17 @@ export default function Page() {
       const response = await loginGoogle(credential);
       if (response.success) {
         const token = response.data.access_token;
-        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-
+        loginSuccess(token)
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
 
-          localStorage.setItem("currentUser", JSON.stringify(decoded));
-
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
 
-          if (decoded.role === "USER") {
-            router.replace("/");
-          }
+          router.replace(decoded.role === "USER" ? "/" : "/authentication/login");
+          return;
         }
       } else {
-        // Xóa token cũ khi login thất bại
         localStorage.removeItem(Constants.API_TOKEN_KEY);
         localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
@@ -105,7 +95,6 @@ export default function Page() {
     } catch (error: any) {
       // Xóa token cũ khi có lỗi
       localStorage.removeItem(Constants.API_TOKEN_KEY);
-      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
@@ -126,7 +115,8 @@ export default function Page() {
         name="login"
         initialValues={{ remember: true }}
         style={{ maxWidth: 360 }}
-        onFinish={onFinish} className="pt-6 pl-4">
+        onFinish={onFinish}
+        className="pt-6 pl-4">
         <div style={{ display: "flex", justifyContent: "center" }}>
           <Image
             width={300}
@@ -165,7 +155,7 @@ export default function Page() {
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
             <Link
-              href={'/authentication/forgot-password'}
+              href={"/authentication/forgot-password"}
               className="text-sm text-blue-500 hover:decoration-solid hover:underline">
               Forgot password?
             </Link>
