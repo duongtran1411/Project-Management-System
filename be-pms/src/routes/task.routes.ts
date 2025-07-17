@@ -160,6 +160,49 @@ router.put("/:id", authenticate, taskController.updateTask);
 
 /**
  * @openapi
+ * /task/bulk-delete:
+ *   delete:
+ *     summary: Xóa nhiều task cùng lúc
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [taskIds]
+ *             properties:
+ *               taskIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Danh sách ID của các task cần xóa
+ *                 example: ["60d21b4667d0d8992e610c85", "60d21b4667d0d8992e610c86"]
+ *     responses:
+ *       200:
+ *         description: Xóa task thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     success: { type: number }
+ *                     failed: { type: number }
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ *       401:
+ *         description: Không có quyền truy cập
+ */
+router.delete("/bulk-delete", authenticate, taskController.deleteManyTasks);
+
+/**
+ * @openapi
  * /task/{id}:
  *   delete:
  *     summary: Xóa task
@@ -580,48 +623,5 @@ router.patch("/:id/dates", authenticate, taskController.updateTaskDates);
  *       401: { description: Không có quyền truy cập }
  */
 router.patch("/:id/labels", authenticate, taskController.updateTaskLabels);
-
-/**
- * @openapi
- * /task/bulk-delete:
- *   delete:
- *     summary: Xóa nhiều task cùng lúc
- *     tags: [Task]
- *     security: [bearerAuth: []]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [taskIds]
- *             properties:
- *               taskIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: Danh sách ID của các task cần xóa
- *                 example: ["60d21b4667d0d8992e610c85", "60d21b4667d0d8992e610c86"]
- *     responses:
- *       200:
- *         description: Xóa task thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 message: { type: string }
- *                 data:
- *                   type: object
- *                   properties:
- *                     success: { type: number }
- *                     failed: { type: number }
- *       400:
- *         description: Dữ liệu không hợp lệ
- *       401:
- *         description: Không có quyền truy cập
- */
-router.delete("/bulk-delete", authenticate, taskController.deleteManyTasks);
 
 export default router;
