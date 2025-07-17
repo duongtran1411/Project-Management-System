@@ -19,6 +19,7 @@ import Spinner from "@/components/common/spinner/spin";
 import { Task } from "@/types/types";
 import { createComment } from "@/lib/services/comment/comment.service";
 import { DatePicker } from "antd";
+import dayjs from "dayjs";
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
@@ -382,12 +383,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
               <span className="font-semibold text-gray-600">Start Date:</span>
               <Space direction="vertical">
-                <DatePicker value={task.startDate} />
+                <DatePicker value={task.startDate ? dayjs(task.startDate) : undefined} />
               </Space>
 
               <span className="font-semibold text-gray-600">Due Date:</span>
               <Space direction="vertical">
-                <DatePicker value={task.dueDate} />
+                <DatePicker value={task.dueDate ? dayjs(task.dueDate) : undefined} />
               </Space>
 
               <span className="font-semibold text-gray-600">Sprint:</span>
