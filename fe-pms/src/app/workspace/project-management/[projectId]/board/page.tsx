@@ -30,7 +30,7 @@ const fetcher = (url: string) =>
   axiosService
     .getAxiosInstance()
     .get(url)
-    .then((res) => res.data);
+    .then((res) => res.data.data);
 
 const reorderTasks = (tasks: Task[], sourceIdx: number, destIdx: number) => {
   const result = Array.from(tasks);
@@ -54,7 +54,7 @@ const BoardPage = () => {
   const [search, setSearch] = useState("");
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [epicOpen, setEpicOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<UITask | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -99,24 +99,25 @@ const BoardPage = () => {
   }, [taskData]);
 
   const getTasksByStatus = (status: string) =>
-    tasks.filter((task) => task.status === status);
+    Array.isArray(tasks) ? tasks.filter((task) => task.status === status) : [];
 
-  const filterTasks = tasks.filter((task) => {
-    if (!task) return false;
+  const filterTasks = (inputTasks: Task[]) => {
+    return inputTasks.filter((task) => {
+      if (!task) return false;
 
-    const matchSearch =
-      search.trim() === "" ||
-      task.name?.toLowerCase().includes(search.toLowerCase()) ||
-      task._id?.toLowerCase().includes(search.toLowerCase());
+      const matchSearch =
+        search.trim() === "" ||
+        task.name?.toLowerCase().includes(search.toLowerCase()) ||
+        task._id?.toLowerCase().includes(search.toLowerCase());
 
-    const matchEpic =
-      selectedEpics.length === 0 ||
-      (Array.isArray(task.tags) &&
-        task.tags.some((tag) => selectedEpics.includes(tag)));
+      const matchEpic =
+        selectedEpics.length === 0 ||
+        (Array.isArray(task.epic) &&
+          task.epic.some((tag) => selectedEpics.includes(tag)));
 
-    return matchSearch && matchEpic;
-  });
-
+      return matchSearch && matchEpic;
+    });
+  };
   const columnDefs = [
     { title: "TO DO", status: "TO_DO" },
     { title: "IN PROGRESS", status: "IN_PROGRESS" },
@@ -281,15 +282,15 @@ const BoardPage = () => {
                     <div className="space-y-3">
                       {filtered.map((task, idx) => (
                         <Draggable
-                          draggableId={task.id}
+                          draggableId={task._id ?? `${idx}`}
                           index={idx}
-                          key={task.id}>
+                          key={task._id}>
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              key={task.id}
+                              key={task._id}
                               className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${
                                 snapshot.isDragging
                                   ? "ring-2 ring-blue-400"
@@ -305,18 +306,17 @@ const BoardPage = () => {
                                   className={`text-gray-700 ${
                                     col.status === "DONE" ? "line-through" : ""
                                   }`}>
-                                  {task.title}
+                                  {task.name}
                                 </p>
                                 <div className="flex flex-wrap gap-2">
-                                  {task.tags
-                                    .filter((tag) => tag !== "No Epic")
-                                    .map((tag, i) => (
-                                      <span
-                                        key={i}
-                                        className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100">
-                                        {tag}
-                                      </span>
-                                    ))}
+                                  <span
+                                    className={
+                                      task.epic?.name
+                                        ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
+                                        : ""
+                                    }>
+                                    {task.epic?.name}
+                                  </span>
                                 </div>
                                 <div className="text-sm text-gray-500">
                                   {task.dueDate}
@@ -327,12 +327,12 @@ const BoardPage = () => {
                                   </span>
                                   <Avatar
                                     className={`text-white ${
-                                      task.assignee === "Unassigned"
+                                      task.assignee?.fullName === "Unassigned"
                                         ? "bg-gray-400"
-                                        : "bg-purple-600"
+                                        : ""
                                     }`}
-                                    size="small">
-                                    {task.assignee?.[0] || "?"}
+                                    size="small" src={task.assignee?.avatar}>
+                                    {task.assignee?.fullName || "U"}
                                   </Avatar>
                                 </div>
                               </div>
