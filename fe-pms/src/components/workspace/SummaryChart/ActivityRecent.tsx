@@ -55,7 +55,7 @@ const ActivityRecent = () => {
                   <Avatar
                     className="bg-purple-700"
                     size="small"
-                    src={activity.createdBy.avatar}
+                    src={activity?.createdBy?.avatar}
                   />
                 ) : (
                   <Avatar className="bg-gray-400" size="small">
@@ -96,14 +96,14 @@ const ActivityRecent = () => {
                   <span className="text-gray-400 text-xs">
                     <ClockCircleOutlined className="mr-1" />
                     {activity.createdAt === activity.updatedAt
-                      ? `${activity?.createdAt.slice(
+                      ? `${activity?.createdAt?.slice(
                           0,
                           10
-                        )} ${activity?.createdAt.slice(11, 19)}`
-                      : `${activity?.updatedAt.slice(
+                        )} ${activity?.createdAt?.slice(11, 19)}`
+                      : `${activity?.updatedAt?.slice(
                           0,
                           10
-                        )} ${activity?.updatedAt.slice(11, 19)}`}
+                        )} ${activity?.updatedAt?.slice(11, 19)}`}
                   </span>
                 </div>
               </div>

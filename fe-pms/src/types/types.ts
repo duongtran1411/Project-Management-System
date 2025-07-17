@@ -5,10 +5,17 @@ export interface Task {
   status?: string;
   priority?: string;
   assignee?: {
-    _id: string
-    fullName?: string
-    email?: string
-    avatar:string
+    _id: string;
+    name?: string;
+    email?: string;
+    avatar?: string;
+    fullName?: string;
+  };
+  reporter?: {
+    _id: string;
+    email?: string;
+    avatar?: string;
+    fullName?: string;
   };
   epic?: {
     _id: string;
@@ -112,6 +119,21 @@ export interface Role {
   createdAt?: Date;
 }
 
+export interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+  status: "ACTIVE" | "INACTIVE" | string;
+  failedLoginAttempts: number;
+  verified: boolean;
+  role: Role;
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export interface ProjectRole {
   _id?: string;
   name: string;
@@ -183,9 +205,8 @@ export interface TaskContributorStatistic {
   contributorStats: ContributorStats[];
 }
 
-
 export interface AssignedTaskItem {
-   _id: string;
+  _id: string;
   name: string;
   status: "TO DO" | "IN PROGRESS" | "DONE";
   projectId: {
@@ -200,4 +221,3 @@ export interface InviteMultiple {
   projectId: string;
   projectRoleId: string;
 }
-
