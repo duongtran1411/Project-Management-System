@@ -1,15 +1,15 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { updateTaskAssignee } from "@/lib/services/task/task";
-import { User } from "@/types/types";
+import { updateTaskReporter } from "@/lib/services/task/task";
 import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 
 interface Props {
   taskId: string | undefined;
-  assignee: User;
+  reporter: any;
   mutateTask: () => void;
+  setReporter: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const fetcher = (url: string) =>
@@ -18,7 +18,12 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
+const ChangeReporter: React.FC<Props> = ({
+  taskId,
+  reporter,
+  mutateTask,
+  setReporter,
+}) => {
   const params = useParams();
   const projectId = params.projectId as string;
   const { data: contributorData } = useSWR(
@@ -50,7 +55,8 @@ const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
-        await updateTaskAssignee(taskId, key);
+        const response = await updateTaskReporter(taskId, key);
+        if (response) setReporter(response.reporter);
         await mutateTask();
       }
     } catch (e) {
@@ -63,14 +69,20 @@ const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
     >
-      <div className="flex rounded-full mx-3 cursor-pointer">
-        {assignee?.avatar ? (
-          <Avatar src={assignee?.avatar} />
+      <div className="flex items-center gap-2 rounded-full mx-3 cursor-pointer">
+        {reporter?.avatar ? (
+          <>
+            <Avatar src={reporter?.avatar} />
+            <span>{reporter?.fullName}</span>
+          </>
         ) : (
-          <Avatar>U</Avatar>
+          <>
+            <Avatar>U</Avatar>
+            <span>Unassignee</span>
+          </>
         )}
       </div>
     </Dropdown>
   );
 };
-export default ChangeTask;
+export default ChangeReporter;

@@ -1,7 +1,6 @@
 "use client";
 import { Milestone, Task, User } from "@/types/types";
 import {
-  CloseOutlined,
   DeleteOutlined,
   DownOutlined,
   EllipsisOutlined,
@@ -28,6 +27,7 @@ import {
 import ChangeTask from "./ChangeTask";
 import ChangePriority from "./ChangePriority";
 import ChangeAssignee from "./ChangeAssignee";
+import { deleteTaskMultiple } from "@/lib/services/task/task";
 
 const items = [
   {
@@ -204,6 +204,13 @@ const SprintSection: React.FC<Props> = ({
       setSelectedTaskIds(selectedRowKeys as string[]);
     },
   };
+  const handleDeleteTask = async () => {
+    try {
+      if (selectedTaskIds) await deleteTaskMultiple(selectedTaskIds);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div>
@@ -365,12 +372,12 @@ const SprintSection: React.FC<Props> = ({
       {/* show when checkbop is checked */}
       {selectedTaskIds.length > 0 && (
         <div className="fixed bottom-4 left-4 right-4 bg-gray-700 border shadow-md rounded-md p-3 flex items-center justify-between z-50 w-max m-auto text-white">
-          <div className="flex gap-3">
+          <div
+            className="flex gap-3 hover:bg-gray-900 p-1 rounded-md cursor-pointer"
+            onClick={handleDeleteTask}
+          >
             <DeleteOutlined />
-            <p className="hover:bg-gray-900 p-1 rounded-md cursor-pointer">
-              Delete task
-            </p>
-            <CloseOutlined className="hover:bg-gray-900 p-1 rounded-md cursor-pointer" />
+            <p>Delete task</p>
           </div>
         </div>
       )}

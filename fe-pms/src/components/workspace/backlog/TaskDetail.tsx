@@ -4,8 +4,13 @@ import { CloseOutlined } from "@ant-design/icons";
 import { Avatar, Button, Input, DatePicker, Tag } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { updateTask } from "@/lib/services/task/task";
+import {
+  updateTaskDate,
+  updateTaskDescription,
+  updateTaskName,
+} from "@/lib/services/task/task";
 import { Task } from "@/types/types";
+import ChangeReporter from "./ChangeReporter";
 
 interface TaskDetailProps {
   task: Task | null;
@@ -31,6 +36,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   );
   const [isPickingStartDate, setIsPickingStartDate] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [reporter, setReporter] = useState(task?.reporter || null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [name, setName] = useState<string>(task?.name || "");
 
   useEffect(() => {
     if (task) {
@@ -40,6 +48,8 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
       setIsPickingStartDate(false);
       setIsPickingDueDate(false);
       setDateError(null);
+      setReporter(task.reporter || null);
+      setName(task.name || "");
     }
   }, [task]);
 
@@ -51,7 +61,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
     try {
       if (!task._id) return;
       if (description) {
-        const response = await updateTask(task._id, { description });
+        const response = await updateTaskDescription(task._id, description);
         if (response) setDescription(response.description);
         mutateTask();
       }
@@ -63,7 +73,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   const handleStartDateUpdate = async (date: string) => {
     try {
       if (!task._id) return;
-      const response = await updateTask(task._id, { startDate: date });
+      const response = await updateTaskDate(task._id, { startDate: date });
       if (response?.startDate) {
         setStartDate(response.startDate);
       }
@@ -76,7 +86,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   const handleDueDateUpdate = async (date: string) => {
     try {
       if (!task._id) return;
-      const response = await updateTask(task._id, { dueDate: date });
+      const response = await updateTaskDate(task._id, { dueDate: date });
       if (response?.dueDate) {
         setDueDate(response.dueDate);
       }
@@ -91,13 +101,71 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
     setIsEditingDescription(false);
   };
 
+  console.log("task detail", task);
+  console.log("task detail reporter", task.reporter);
+
   return (
     <div className=" mx-4 ">
       <div className="w-full">
         {/* ID */}
         <div className="flex items-center justify-between mb-8 text-sm text-gray-500">
           {/* Title */}
-          <h2 className="mb-2 text-2xl font-semibold">{task.name}</h2>
+          {isEditingName ? (
+            <div className="flex flex-col items-center gap-2 mb-2">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                size="large"
+                className="text-2xl font-semibold"
+                onPressEnter={async () => {
+                  if (!task._id) return;
+                  try {
+                    const response = await updateTaskName(task._id, name);
+                    if (response?.name) setName(response.name);
+                    setIsEditingName(false);
+                    mutateTask();
+                  } catch (error) {
+                    console.error(error);
+                  }
+                }}
+              />
+              <div className="flex mt-2 space-x-2">
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={async () => {
+                    if (!task._id) return;
+                    try {
+                      const response = await updateTaskName(task._id, name);
+                      if (response?.name) setName(response.name);
+                      setIsEditingName(false);
+                      mutateTask();
+                    } catch (error) {
+                      console.error(error);
+                    }
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setName(task.name || "");
+                    setIsEditingName(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <h2
+              className="mb-2 text-2xl font-semibold cursor-pointer hover:bg-gray-100 px-1 rounded"
+              onClick={() => setIsEditingName(true)}
+            >
+              {name}
+            </h2>
+          )}
           <CloseOutlined onClick={onClose} />
         </div>
 
@@ -282,17 +350,12 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               {/* Reporter */}
               <span className="font-semibold text-gray-600">Reporter</span>
               <div className="flex items-center space-x-2 ">
-                {task.reporter?.avatar ? (
-                  <div className="flex items-center gap-1 p-2">
-                    <Avatar src={task.reporter?.avatar} size="small" />
-                    <p className="text-sm">{task.reporter?.fullName}</p>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 p-2">
-                    <Avatar>U</Avatar>
-                    <p>Unassignee</p>
-                  </div>
-                )}
+                <ChangeReporter
+                  taskId={task._id}
+                  reporter={reporter}
+                  mutateTask={mutateTask}
+                  setReporter={setReporter}
+                />
               </div>
             </div>
           </div>

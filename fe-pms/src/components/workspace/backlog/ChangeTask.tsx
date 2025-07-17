@@ -1,4 +1,4 @@
-import { updateTask } from "@/lib/services/task/task";
+import { updateTaskStatus } from "@/lib/services/task/task";
 
 import { Dropdown, MenuProps, Tag } from "antd";
 
@@ -27,7 +27,7 @@ const ChangeTask: React.FC<Props> = ({ taskId, status, mutateTask }) => {
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
-        await updateTask(taskId, { status: key });
+        await updateTaskStatus(taskId, key);
         await mutateTask();
       }
     } catch (e) {

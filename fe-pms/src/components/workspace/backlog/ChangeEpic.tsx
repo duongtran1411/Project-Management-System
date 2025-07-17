@@ -1,6 +1,7 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { updateTask } from "@/lib/services/task/task";
+import { updateTaskEpic } from "@/lib/services/task/task";
+
 import { Dropdown, MenuProps, Tag } from "antd";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
@@ -32,11 +33,8 @@ const ChangeEpic: React.FC<Props> = ({ taskId, epic, mutateTask }) => {
 
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
-      const data: any = {
-        epic: key,
-      };
       if (taskId) {
-        await updateTask(taskId, data);
+        await updateTaskEpic(taskId, key);
         await mutateTask();
       }
     } catch (e) {
