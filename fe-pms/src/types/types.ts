@@ -5,9 +5,10 @@ export interface Task {
   status?: string;
   priority?: string;
   assignee?: {
-    _id: string;
-    name?: string;
-    email?: string;
+    _id: string
+    fullName?: string
+    email?: string
+    avatar:string
   };
   epic?: {
     _id: string;
