@@ -15,6 +15,7 @@ import passwordResetRoutes from "./password-reset.routes";
 import permissionRoutes from "./permission.routes";
 import roleRoutes from "./role.routes";
 import commentRoutes from './comment.routes';
+import peopleYouWorkWithRoutes from "./people-you-work-with.routes";
 const router = Router();
 
 // Mount routes
@@ -34,5 +35,6 @@ router.use("/activity-log", activityLogRoutes);
 router.use("/password-reset", passwordResetRoutes);
 router.use("/role", roleRoutes);
 router.use('/comment',commentRoutes)
+router.use("/people-you-work-with", peopleYouWorkWithRoutes);
 
 export default router;

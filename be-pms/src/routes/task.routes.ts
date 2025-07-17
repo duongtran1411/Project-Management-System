@@ -54,6 +54,7 @@ router.post("/", authenticate, taskController.createTask);
  *   get:
  *     summary: Lấy danh sách task
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: query
  *         name: projectId
@@ -82,8 +83,9 @@ router.post("/", authenticate, taskController.createTask);
  *     responses:
  *       200: { description: Lấy danh sách task thành công }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.get("/", taskController.getAllTasks);
+router.get("/", authenticate, taskController.getAllTasks);
 
 /**
  * @openapi
@@ -91,6 +93,7 @@ router.get("/", taskController.getAllTasks);
  *   get:
  *     summary: Lấy thông tin task theo ID
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -101,8 +104,9 @@ router.get("/", taskController.getAllTasks);
  *       200: { description: Lấy thông tin task thành công }
  *       404: { description: Không tìm thấy task }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.get("/:id", taskController.getTaskById);
+router.get("/:id", authenticate, taskController.getTaskById);
 
 /**
  * @openapi
@@ -160,6 +164,7 @@ router.put("/:id", authenticate, taskController.updateTask);
  *   delete:
  *     summary: Xóa task
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -170,8 +175,9 @@ router.put("/:id", authenticate, taskController.updateTask);
  *       200: { description: Xóa task thành công }
  *       404: { description: Không tìm thấy task }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.delete("/:id", taskController.deleteTask);
+router.delete("/:id", authenticate, taskController.deleteTask);
 
 /**
  * @openapi
@@ -179,6 +185,7 @@ router.delete("/:id", taskController.deleteTask);
  *   get:
  *     summary: Lấy danh sách task theo dự án
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -188,8 +195,13 @@ router.delete("/:id", taskController.deleteTask);
  *     responses:
  *       200: { description: Lấy danh sách task theo dự án thành công }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.get("/project/:projectId", taskController.getTasksByProject);
+router.get(
+  "/project/:projectId",
+  authenticate,
+  taskController.getTasksByProject
+);
 
 /**
  * @openapi
@@ -197,6 +209,7 @@ router.get("/project/:projectId", taskController.getTasksByProject);
  *   get:
  *     summary: Lấy danh sách task theo epic
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: epicId
@@ -206,8 +219,9 @@ router.get("/project/:projectId", taskController.getTasksByProject);
  *     responses:
  *       200: { description: Lấy danh sách task theo epic thành công }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.get("/epic/:epicId", taskController.getTasksByEpic);
+router.get("/epic/:epicId", authenticate, taskController.getTasksByEpic);
 
 /**
  * @openapi
@@ -215,6 +229,7 @@ router.get("/epic/:epicId", taskController.getTasksByEpic);
  *   get:
  *     summary: Lấy danh sách task theo người được giao
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: assignee
@@ -224,8 +239,13 @@ router.get("/epic/:epicId", taskController.getTasksByEpic);
  *     responses:
  *       200: { description: Lấy danh sách task theo người được giao thành công }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.get("/assignee/:assignee", taskController.getTasksByAssignee);
+router.get(
+  "/assignee/:assignee",
+  authenticate,
+  taskController.getTasksByAssignee
+);
 
 /**
  * @openapi
@@ -233,6 +253,7 @@ router.get("/assignee/:assignee", taskController.getTasksByAssignee);
  *   get:
  *     summary: Lấy danh sách task theo milestone
  *     tags: [Task]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: milestoneId
@@ -242,8 +263,13 @@ router.get("/assignee/:assignee", taskController.getTasksByAssignee);
  *     responses:
  *       200: { description: Lấy danh sách task theo milestone thành công }
  *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
  */
-router.get("/milestone/:milestoneId", taskController.getTasksByMilestone);
+router.get(
+  "/milestone/:milestoneId",
+  authenticate,
+  taskController.getTasksByMilestone
+);
 
 /**
  * @openapi
