@@ -10,6 +10,7 @@ import {
   Checkbox,
   Spin,
   Alert,
+  Tooltip,
 } from "antd";
 import {
   PlusOutlined,
@@ -20,9 +21,10 @@ import {
   ArrowUpOutlined,
   FlagOutlined,
   ArrowDownOutlined,
+  FileDoneOutlined,
 } from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
-import { updateTaskStatus } from "@/lib/services/task/task";
+import { updateAssigneeTask, updateTaskStatus } from "@/lib/services/task/task";
 import { Task } from "@/types/types";
 import { useParams } from "next/navigation";
 import {
@@ -36,7 +38,10 @@ import axiosService from "@/lib/services/axios.service";
 import useSWR, { mutate } from "swr";
 import { format } from "date-fns";
 import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
-import { showErrorToast } from "@/components/common/toast/toast";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "@/components/common/toast/toast";
 
 const fetcher = (url: string) =>
   axiosService
@@ -74,6 +79,7 @@ const BoardPage = () => {
     data: taskData,
     error: taskError,
     isLoading,
+    mutate: taskMutate,
   } = useSWR(
     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
       projectId
@@ -106,7 +112,7 @@ const BoardPage = () => {
       setTasks(taskData);
     }
   }, [taskData]);
-  
+
   useEffect(() => {
     if (contributorData) {
       setContributor(contributorData);
@@ -136,7 +142,14 @@ const BoardPage = () => {
   const columnDefs = [
     { title: "TO DO", status: "TO_DO" },
     { title: "IN PROGRESS", status: "IN_PROGRESS" },
-    { title: "DONE", status: "DONE" },
+    {
+      title: (
+        <span className="flex items-center gap-2">
+          DONE <FileDoneOutlined className="text-green-500" />
+        </span>
+      ),
+      status: "DONE",
+    },
   ];
 
   const epicDropdown = (
@@ -211,6 +224,21 @@ const BoardPage = () => {
 
       default:
         break;
+    }
+  };
+
+  const updateAssignee = async (taskId: string, assignee: string) => {
+    try {
+      const response = await updateAssigneeTask(taskId, assignee);
+      if (response.success) {
+        showSuccessToast("Update assignee success");
+        taskMutate();
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
     }
   };
 
@@ -293,7 +321,7 @@ const BoardPage = () => {
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex-1 min-w-[300px] bg-white border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
+                    className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
                       snapshot.isDraggingOver ? "bg-blue-50" : ""
                     }`}>
                     <div className="flex items-center justify-between mb-4">
@@ -351,19 +379,9 @@ const BoardPage = () => {
                                     {task.epic?.name}
                                   </span>
                                 </div>
-                                {task.dueDate && (
-                                  <div className="inline-flex items-center text-sm text-gray-500 border-2 border-gray-300 rounded px-2 py-1 gap-x-2 font-semibold">
-                                    <CalendarOutlined />
-                                    {format(
-                                      new Date(task.dueDate),
-                                      "dd/MM/yyyy"
-                                    )}
-                                  </div>
-                                )}
-
-                                {task.dueDate &&
-                                  new Date(task.dueDate).getTime() >
-                                    Date.now() && (
+                                {task.dueDate ? (
+                                  new Date(task.dueDate).getTime() <
+                                  Date.now() ? (
                                     <div className="inline-flex items-center text-sm text-orange-300 border-2 border-orange-300 rounded px-2 py-1 gap-x-2">
                                       <ClockCircleOutlined />
                                       {format(
@@ -371,59 +389,123 @@ const BoardPage = () => {
                                         "dd/MM/yyyy"
                                       )}
                                     </div>
-                                  )}
+                                  ) : (
+                                    <div className="inline-flex items-center text-sm text-gray-500 border-2 border-gray-300 rounded px-2 py-1 gap-x-2 font-semibold">
+                                      <CalendarOutlined />
+                                      {format(
+                                        new Date(task.dueDate),
+                                        "dd/MM/yyyy"
+                                      )}
+                                    </div>
+                                  )
+                                ) : null}
 
                                 <div className="flex items-start justify-end gap-x-2">
-                                  <span className="font-medium text-gray-600">
-                                    {task.priority
-                                      ? renderPriority(task.priority)
-                                      : ""}
-                                  </span>
+                                  <Tooltip title={task.priority}>
+                                    <span className="font-medium text-gray-600">
+                                      {task.priority
+                                        ? renderPriority(task.priority)
+                                        : ""}
+                                    </span>
+                                  </Tooltip>
                                   <Dropdown
                                     menu={{
                                       items: [
+                                        ...(task.assignee?._id
+                                          ? [
+                                              {
+                                                key: task.assignee._id,
+                                                label: (
+                                                  <div className="flex items-center gap-2 bg-gray-100">
+                                                    <Avatar
+                                                      src={task.assignee.avatar}
+                                                      size="small"
+                                                    />
+                                                    <div>
+                                                      <p className="font-medium">
+                                                        {task.assignee.fullName}
+                                                      </p>
+                                                      <p className="text-xs text-gray-400">
+                                                        {task.assignee.email}
+                                                      </p>
+                                                    </div>
+                                                  </div>
+                                                ),
+                                              },
+                                            ]
+                                          : []),
                                         {
                                           key: "unassigned",
-                                          label: "Unassigned",
-                                        },
-                                        ...contributor.map((e) => ({
-                                          key: e.userId._id,
                                           label: (
                                             <div className="flex items-center gap-2">
                                               <Avatar
-                                                src={e.userId.avatar}
-                                                size="small">
-                                                {e.userId.fullName[0]}
-                                              </Avatar>
+                                                src={<UserOutlined />}
+                                                size="small"
+                                                className="bg-gray-400"></Avatar>
                                               <div>
                                                 <p className="font-medium">
-                                                  {e.userId.fullName}
-                                                </p>
-                                                <p className="text-xs text-gray-400">
-                                                  {e.userId.email}
+                                                  Unassigned
                                                 </p>
                                               </div>
                                             </div>
                                           ),
-                                        })),
+                                        },
+                                        ...contributor
+                                          .filter((t) => {
+                                            return (
+                                              t.userId._id !==
+                                              task.assignee?._id
+                                            );
+                                          })
+                                          .map((e) => ({
+                                            key: e.userId._id,
+                                            label: (
+                                              <div className="flex items-center gap-2">
+                                                <Avatar
+                                                  src={e.userId.avatar}
+                                                  size="small">
+                                                  {e.userId.fullName[0]}
+                                                </Avatar>
+                                                <div>
+                                                  <p className="font-medium">
+                                                    {e.userId.fullName}
+                                                  </p>
+                                                  <p className="text-xs text-gray-400">
+                                                    {e.userId.email}
+                                                  </p>
+                                                </div>
+                                              </div>
+                                            ),
+                                          })),
                                       ],
-                                      onClick: ({ key }) => {
+                                      onClick: ({ key, domEvent }) => {
                                         setIsModalOpen(false);
+                                        domEvent.stopPropagation();
+                                        if (task._id && key) {
+                                          updateAssignee(task._id, key);
+                                        }
                                       },
                                     }}
                                     trigger={["click"]}>
-                                    <Avatar
-                                      className={`cursor-pointer text-white ${
-                                        task.assignee?.fullName === "Unassigned"
-                                          ? "bg-gray-400"
-                                          : ""
-                                      }`}
-                                      size="small"
-                                      src={task.assignee?.avatar} onClick={(e) => e?.stopPropagation()}>
-                                      {task.assignee?.fullName?.[0] || (
-                                        <UserOutlined />
-                                      )}
-                                    </Avatar>
+                                    <Tooltip
+                                      title={`Assignee: ${
+                                        task.assignee?.fullName || "Unassigned"
+                                      }`}>
+                                      <Avatar
+                                        className={`cursor-pointer text-white ${
+                                          task.assignee?.fullName ===
+                                          "Unassigned"
+                                            ? "bg-gray-400"
+                                            : ""
+                                        }`}
+                                        size="default"
+                                        src={task.assignee?.avatar}
+                                        onClick={(e) => e?.stopPropagation()}>
+                                        {task.assignee?.fullName?.[0] || (
+                                          <UserOutlined />
+                                        )}
+                                      </Avatar>
+                                    </Tooltip>
                                   </Dropdown>
                                 </div>
                               </div>
@@ -445,7 +527,10 @@ const BoardPage = () => {
       {selectedTask && (
         <DetailTaskModal
           open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            taskMutate();
+          }}
           task={selectedTask}
         />
       )}

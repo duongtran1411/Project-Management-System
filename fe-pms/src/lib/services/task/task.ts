@@ -97,6 +97,50 @@ export const getTasksByAssignee = async (
   }
 };
 
+export const updateAssigneeTask = async (taskId: string, assignee: string) => {
+  try {
+    const response = await axiosService.getAxiosInstance().patch(`${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`, {
+      assignee: assignee
+    })
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+    showErrorToast(message);
+    return null;
+  }
+}
+
+export const updateDescriptionTask = async (taskId: string, description: string) => {
+  try {
+    const response = await axiosService.getAxiosInstance().patch(`${Endpoints.Task.UPDATE_DESCRIPTION(taskId)}`, {
+      description: description
+    })
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+    showErrorToast(message);
+    return null;
+  }
+}
+
+export const updateEpicTask = async (taskId: string, epicId: string) => {
+  try {
+    const response = await axiosService.getAxiosInstance().patch(`${Endpoints.Task.UPDATE_EPIC(taskId)}`, {
+      epic: epicId
+    })
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+    showErrorToast(message);
+    return null;
+  }
+}
+
+
+
 export const updatePriorityTask = async (taskId: string, priority: string) => {
   try {
     const response = await axiosService

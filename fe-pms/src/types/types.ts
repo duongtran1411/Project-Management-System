@@ -1,26 +1,20 @@
+import { Assignee } from "@/models/assignee/assignee";
+import { Epic } from "@/models/epic/epic";
+
 export interface Task {
   _id?: string;
   name?: string;
   description?: string;
   status?: string;
   priority?: string;
-  assignee?: {
-    _id: string;
-    name?: string;
-    email?: string;
-    avatar?: string;
-    fullName?: string;
-  };
+  assignee?: Assignee
+  epic?: Epic
   reporter?: {
     _id: string;
     email?: string;
     avatar?: string;
     fullName?: string;
-  };
-  epic?: {
-    _id: string;
-    name: string;
-  };
+  }
   startDate?: string;
   dueDate?: string;
   milestones?: {
@@ -41,11 +35,6 @@ export interface Task {
   };
   updatedAt?: string;
   createdAt?: string;
-}
-
-export interface Epic {
-  _id: string;
-  name: string;
 }
 
 export interface Milestone {
