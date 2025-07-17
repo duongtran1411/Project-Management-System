@@ -1,23 +1,29 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import taskService from "../services/task.service";
+import { Server } from "socket.io";
 
 export class TaskController {
+  private io: Server | null = null;
+
+  setSocketIO(io: Server) {
+    this.io = io;
+    taskService.setSocketIO(io);
+  }
+
   createTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const taskData = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!;
 
       const task = await taskService.createTask(taskData, user);
+
+      if (this.io) {
+        this.io.emit("task-created", {
+          task,
+          projectId: taskData.projectId,
+        });
+      }
 
       res.status(201).json({
         success: true,
@@ -102,16 +108,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!; // User is guaranteed to exist due to auth middleware
 
       const task = await taskService.updateTask(id, updateData, user);
 
@@ -258,16 +255,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!; // User is guaranteed to exist due to auth middleware
 
       if (!status) {
         res.status(400).json({
@@ -312,16 +300,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       const { priority } = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!; // User is guaranteed to exist due to auth middleware
 
       if (!priority) {
         res.status(400).json({

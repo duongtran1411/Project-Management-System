@@ -5,28 +5,23 @@ import { Input, Button, Typography, Form, message, Image } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useRouter } from "next/navigation";
 import { createProject } from "@/lib/services/project/project";
-import { Project, ProjectContributor, ProjectRole } from "@/types/types";
+import { Project } from "@/types/types";
 import { useEffect, useState } from "react";
 import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
-import { createProjectContributor } from "@/lib/services/projectContributor/projectContributor";
-import useSWR from "swr";
-import { Endpoints } from "@/lib/endpoints";
 
 const { Title, Text } = Typography;
 type FormType = {
   name: string;
   description: string;
 };
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function ProjectForm() {
   const router = useRouter();
   const [form] = Form.useForm();
   const [userId, setUserId] = useState<string | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
-  const [projectRoleId, setProjectRoleId] = useState<string | null>(null);
 
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -37,23 +32,6 @@ export default function ProjectForm() {
       console.error("User ID not found in local storage");
     }
   }, []);
-
-  const { data: projectRoleData, error: projectRoleError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.ProjectRole.GET_ALL}`,
-    fetcher
-  );
-  useEffect(() => {
-    if (projectRoleData && !projectRoleError) {
-      const projectAdmin = projectRoleData?.data.find(
-        (role: ProjectRole) => role.name === "PROJECT_ADMIN"
-      );
-      if (projectAdmin) {
-        setProjectRoleId(projectAdmin._id);
-      } else {
-        console.error("Project role 'PROJECT_ADMIN' not found");
-      }
-    }
-  }, [projectRoleData, projectRoleError]);
 
   const handleNext = async () => {
     try {
@@ -69,24 +47,6 @@ export default function ProjectForm() {
       if (newProject == null) {
         message.error("Fail to create project!");
         form.resetFields();
-        return;
-      }
-
-      console.log("New Project Created:", newProject);
-
-      const projectContributorData: ProjectContributor = {
-        userId: userId || "",
-        projectId: newProject?._id || "",
-        projectRoleId: projectRoleId || null,
-      };
-      const newProjectContributor = await createProjectContributor(
-        projectContributorData
-      );
-      if (newProjectContributor == null) {
-        messageApi.open({
-          type: "error",
-          content: "Fail to create project contributor!",
-        });
         return;
       }
 

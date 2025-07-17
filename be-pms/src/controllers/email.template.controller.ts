@@ -6,8 +6,8 @@ import { AuthRequest } from "../middlewares/auth.middleware";
 export class EmailTemplateController {
   create = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const user = req.user;
       const { name, subject, header, body, footer, variables } = req.body;
-      const user = req.user
       let emailTemplate = await EmailTemplate.findOne({ name: name });
 
       if (emailTemplate) {
@@ -25,8 +25,9 @@ export class EmailTemplateController {
         body,
         footer,
         variables,
-        status: "ACTIVE",
-        createdBy:user._id
+        createdBy: user._id,
+        updatedBy: user._id,
+        status: "ACTIVE"
       });
       res.status(201).json({ success: true, data: template });
     } catch (error: any) {

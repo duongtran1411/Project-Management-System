@@ -27,6 +27,7 @@ import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask"
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
 import { createMilestone } from "@/lib/services/milestone/milestone";
 import { useParams } from "next/navigation";
+import axiosService from "@/lib/services/axios.service";
 
 export default function Backlog() {
   const params = useParams();
@@ -38,25 +39,25 @@ export default function Backlog() {
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [listTask, setListTask] = useState<Task[]>([]);
 
-  const fetcher = (url: string) => fetch(url).then((res) => res.json());
+  const fetcher = (url: string) =>
+    axiosService
+      .getAxiosInstance()
+      .get(url)
+      .then((res) => res.data);
   const { data: epicData, error: epicError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
-      projectId
-    )}`,
+    `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
 
-  const { data: taskData, error: taskError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
+  const {
+    data: taskData,
+    error: taskError,
+    mutate: mutateTask,
+  } = useSWR(`${Endpoints.Task.GET_BY_PROJECT(projectId)}`, fetcher);
+  console.log("task data", taskData);
 
   const { data: contributorData, error: contributorError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.User.GET_BY_PROJECT(
-      projectId
-    )}`,
+    `${Endpoints.User.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
 
@@ -64,15 +65,7 @@ export default function Backlog() {
     data: milestoneData,
     error: milestoneError,
     mutate,
-  } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
-  // const refreshData = () => {
-  //   mutate();
-  // };
+  } = useSWR(`${Endpoints.Milestone.GET_BY_PROJECT(projectId)}`, fetcher);
 
   // Loading and error states
   const isLoading =
@@ -87,7 +80,7 @@ export default function Backlog() {
       // Search by task name
       const nameMatch =
         !searchText ||
-        task.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        task.name?.toLowerCase().includes(searchText.toLowerCase()) ||
         (task.description &&
           task.description.toLowerCase().includes(searchText.toLowerCase()));
 
@@ -110,6 +103,8 @@ export default function Backlog() {
     if (filteredTasks) setListTask(filteredTasks);
   }, [filteredTasks]);
 
+  console.log("list task", listTask);
+
   // Clear all filters
   const clearFilters = () => {
     setSearchText("");
@@ -123,9 +118,7 @@ export default function Backlog() {
 
   //Create new task
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(
-    null
-  );
+  const [selectedMilestone, setSelectedMilestone] = useState<Milestone>();
   const showModal = (milestone: Milestone) => {
     setSelectedMilestone(milestone);
     setIsModalOpen(true);
@@ -136,13 +129,16 @@ export default function Backlog() {
   const handleCreateSprint = async (data: CreateMilestone) => {
     await createMilestone(data); // gọi API
     mutate(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone}`);
+
     setOpenCreateModal(false);
   };
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Spin size="large" tip="Loading..." />
+        <Spin size="large" tip="Loading...">
+          <div className="p-10" />
+        </Spin>
       </div>
     );
   }
@@ -213,8 +209,8 @@ export default function Backlog() {
                 style: { color: "#f56a00", backgroundColor: "#fde3cf" },
               }}
             >
-              <Avatar style={{ backgroundColor: "#f56a00" }}>K</Avatar>
-              {contributorData?.data.length > 1 && (
+              <Avatar style={{ backgroundColor: "#f56a00" }}>C</Avatar>
+              {contributorData?.data?.length > 1 && (
                 <Avatar
                   style={{
                     backgroundColor: "#f0f1f3",
@@ -257,6 +253,7 @@ export default function Backlog() {
         taskData={taskData?.data}
         showModal={showModal}
         refreshData={mutate}
+        mutateTask={mutateTask}
       />
 
       {/* Backlog Section */}
@@ -304,14 +301,16 @@ export default function Backlog() {
           </span>
         </Button> */}
       </div>
-
-      <ModalCreateTask
-        projectId={projectId}
-        isModalOpen={isModalOpen}
-        setIsModalOpen={setIsModalOpen}
-        setSelectedMilestone={setSelectedMilestone}
-        selectedMilestone={selectedMilestone}
-      />
+      {selectedMilestone && (
+        <ModalCreateTask
+          projectId={projectId}
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          //setSelectedMilestone={setSelectedMilestone}
+          selectedMilestone={selectedMilestone}
+          mutateTask={mutateTask}
+        />
+      )}
 
       <CreateSprintModal
         open={openCreateModal}

@@ -4,7 +4,7 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
-import { TaskModel } from "@/types/types";
+import { Task, TaskModel } from "@/types/types";
 
 export const createTask = async (task: TaskModel) => {
   try {
@@ -39,16 +39,15 @@ export const getTasksByProject = async (
   }
 };
 
-
-export const updateTaskStatus = async (taskId: string, status: string) => {
+export const updateTask = async (taskId: string, task: Task) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .put(Endpoints.Task.UPDATE_TASK(taskId), { status }); 
+      .put(Endpoints.Task.UPDATE_TASK(taskId), task);
 
     if (response.data?.success) {
-      showSuccessToast("Cập nhật trạng thái status thành công!");
-      return response.data.data;
+      showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
+      return response?.data.data;
     } else {
       throw new Error(response.data?.message || "Cập nhật thất bại");
     }
@@ -59,6 +58,43 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
     throw error;
   }
 };
+
+export const updateTaskStatus = async (taskId: string, status: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .put(Endpoints.Task.UPDATE_TASK(taskId), { status });
+
+    if (response.data?.success) {
+      showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
+      return response?.data.data;
+    } else {
+      throw new Error(response.data?.message || "Cập nhật thất bại");
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật trạng thái task!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+export const getTasksByAssignee = async (
+  userId: string
+): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_BY_ASSIGNEE(userId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy danh sách task được giao!";
+    showErrorToast(message);
+    return null;
+  }
+};
+
 
 
 

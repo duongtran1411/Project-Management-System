@@ -9,6 +9,7 @@ import ProjectRole from "../models/project.role.model";
 import mongoose from "mongoose";
 import { sendProjectInvitationEmail } from "../utils/email.util";
 import crypto from "crypto";
+import NotificationService from "./notification.service";
 
 export class ProjectContributorService {
   private generateInvitationToken(): string {
@@ -87,6 +88,22 @@ export class ProjectContributorService {
       role.name,
       confirmUrl
     );
+
+    // Create notification for invited user
+    try {
+      await NotificationService.createNotification({
+        recipientId: (user._id as any).toString(),
+        senderId: invitedBy,
+        type: "PROJECT_UPDATE",
+        entityType: "Project",
+        entityId: projectId,
+        metadata: {
+          projectName: project.name,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create project invitation notification:", error);
+    }
 
     return {
       invitation: invitation._id,
@@ -242,11 +259,17 @@ export class ProjectContributorService {
       .populate({
         path: "projectId",
         select: "name icon projectType projectLead",
+        populate: {
+          path: "projectLead",
+          select: "fullName email",
+        },
       })
       .select("projectId")
       .lean();
 
-    return contributors.map((c) => c.projectId);
+    return contributors
+      .map((c) => c.projectId)
+      .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
   }
 }
 

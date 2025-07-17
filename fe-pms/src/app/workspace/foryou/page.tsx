@@ -1,61 +1,50 @@
 "use client";
-import { Card, Tabs, Badge, List, Checkbox } from "antd";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getProjectsContributorByUserId } from "@/lib/services/projectContributor/projectContributor";
-import { Project } from "@/types/types";
 
-const assignedTasks = [
-    {
-        status: "IN PROGRESS",
-        items: [
-            {
-                title: "Team member",
-                code: "SCRUM-62",
-                project: "Project Management",
-                state: "In Progress",
-            },
-        ],
-    },
-    {
-        status: "TO DO",
-        items: [
-            {
-                title: "For you page",
-                code: "SCRUM-73",
-                project: "Project Management",
-                state: "To Do",
-            },
-            {
-                title: "List page",
-                code: "SCRUM-71",
-                project: "Project Management",
-                state: "To Do",
-            },
-            {
-                title: "List epic and task",
-                code: "SCRUM-57",
-                project: "Project Management",
-                state: "To Do",
-            },
-        ],
-    },
-];
+import { Card, Tabs, Badge, List, Checkbox, Spin, Alert } from "antd";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { getProjectsContributorByUserId } from "@/lib/services/projectContributor/projectContributor";
+import { AssignedTaskItem, Project } from "@/types/types";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+
+
+
+const fetcher = (url: string) =>
+    axiosService.getAxiosInstance().get(url).then((res) => res.data);
+
+const useTasksByAssignee = (userId?: string) => {
+    const shouldFetch = !!userId;
+    const { data, error, isLoading } = useSWR(
+        shouldFetch
+            ? `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_ASSIGNEE(userId)}`
+            : null,
+        fetcher
+    );
+    return {
+        data: data?.data || [],
+        error,
+        isLoading,
+    };
+};
 
 export default function Page() {
     const [projects, setProjects] = useState<Project[]>([]);
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const currentUser =
             typeof window !== "undefined"
                 ? localStorage.getItem("currentUser")
                 : null;
-        const userId = currentUser ? JSON.parse(currentUser).userId : null;
+        const parsed = currentUser ? JSON.parse(currentUser) : null;
+        setUserId(parsed?.userId || null);
 
-        if (!userId) return;
+        if (!parsed?.userId) return;
 
         const fetchProjects = async () => {
-            const data = await getProjectsContributorByUserId(userId);
+            const data = await getProjectsContributorByUserId(parsed.userId);
             if (Array.isArray(data)) {
                 const filteredProjects = data.filter(
                     (proj): proj is Project => proj !== null
@@ -67,10 +56,35 @@ export default function Page() {
         fetchProjects();
     }, []);
 
+    const { data: rawTasks, error, isLoading: isTasksLoading } = useTasksByAssignee(userId || undefined);
+
+    const groupTasksByStatus = (tasks: AssignedTaskItem[]) => {
+        const sections = [
+            { status: "TO DO", items: [] as AssignedTaskItem[] },
+            { status: "IN PROGRESS", items: [] as AssignedTaskItem[] },
+            { status: "DONE", items: [] as AssignedTaskItem[] },
+        ];
+
+        tasks.forEach((task) => {
+            const taskStatus = task.status?.toUpperCase()?.replace("_", " ");
+            const section = sections.find((s) => s.status === taskStatus);
+            if (section) section.items.push(task);
+        });
+
+        return sections;
+    };
+
+
+    const assignedTasksByStatus = useMemo(() => {
+        if (!rawTasks) return [];
+        return groupTasksByStatus(rawTasks);
+    }, [rawTasks]);
+
     return (
         <div className="min-h-screen p-8 bg-white">
             <h1 className="text-2xl font-semibold mb-7">For you</h1>
             <div className="w-full mb-4 border-b border-gray-200"></div>
+
             <div>
                 <div className="flex items-center justify-between mb-2">
                     <div className="text-lg font-medium">Recent projects</div>
@@ -90,8 +104,8 @@ export default function Page() {
                             styles={{ body: { padding: 0 } }}
                         >
                             <div className="flex">
-                                <div className={`w-4 rounded-l bg-blue-100`}></div>
-                                <div className="flex-1 ">
+                                <div className="w-4 bg-blue-100 rounded-l"></div>
+                                <div className="flex-1">
                                     <div className="flex items-center p-4 space-x-3">
                                         <img
                                             src="https://fpt-team-zwu4t30d.atlassian.net/rest/api/2/universal_avatar/view/type/project/avatar/10408?size=medium"
@@ -107,7 +121,6 @@ export default function Page() {
                                             </div>
                                         </div>
                                     </div>
-
                                     <div className="flex items-center justify-between px-4 mt-2 text-sm text-gray-600">
                                         <span>My open work items</span>
                                         <Badge count={0} color="#d1d5db" />
@@ -115,9 +128,8 @@ export default function Page() {
                                     <div className="pl-4 mt-1 text-sm text-gray-600">
                                         Done work items
                                     </div>
-
                                     <Link
-                                        href={`/workspace/project-management/${proj._id}`}
+                                        href={`/workspace/project-management/${proj._id}/board`}
                                         className="flex items-center justify-between block px-4 py-2 mt-4 text-xs text-gray-500 transition border-t border-gray-200 hover:bg-gray-100"
                                     >
                                         <span>Board</span>
@@ -128,6 +140,7 @@ export default function Page() {
                     ))}
                 </div>
             </div>
+
             <Tabs
                 defaultActiveKey="assigned"
                 className="mb-4"
@@ -139,36 +152,49 @@ export default function Page() {
                         label: (
                             <span>
                                 Assigned to me{" "}
-                                <Badge color="#d1d5db" count={4} className="ml-1" />
+                                <Badge color="#d1d5db" count={rawTasks?.length || 0} className="ml-1" />
                             </span>
                         ),
                         children: (
-                            <div>
-                                {assignedTasks.map((section, idx) => (
-                                    <div key={idx} className="mb-4">
-                                        <div className="mb-2 text-xs font-semibold text-gray-500">
-                                            {section.status}
-                                        </div>
-                                        <List
-                                            dataSource={section.items}
-                                            renderItem={(item) => (
-                                                <List.Item className="flex items-center">
-                                                    <Checkbox checked className="mr-2" />
-                                                    <div>
-                                                        <div className="font-medium">{item.title}</div>
-                                                        <div className="text-xs text-gray-500">
-                                                            {item.code} · {item.project}
-                                                        </div>
+                            <>
+                                {isTasksLoading ? (
+                                    <Spin />
+                                ) : error ? (
+                                    <Alert message="Error loading tasks" type="error" />
+                                ) : (
+                                    <div>
+                                        {assignedTasksByStatus.map((section, idx) => {
+                                            if (section.items.length === 0) return null; // Không hiển thị nếu không có task
+                                            return (
+                                                <div key={idx} className="mb-4">
+                                                    <div className="mb-2 text-xs font-semibold text-gray-500">
+                                                        {section.status}
                                                     </div>
-                                                    <div className="ml-auto text-xs text-gray-400">
-                                                        {item.state}
-                                                    </div>
-                                                </List.Item>
-                                            )}
-                                        />
+                                                    <List
+                                                        dataSource={section.items}
+                                                        renderItem={(item: AssignedTaskItem) => (
+                                                            <List.Item className="flex items-center">
+                                                                <Checkbox checked={true} className="mr-4" />
+                                                                <div>
+                                                                    <div className="font-medium">{item.name}</div>
+                                                                    <div className="text-xs text-gray-500">
+                                                                        {item.projectId?.name}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="ml-auto text-xs text-gray-400">
+                                                                    {item.status}
+                                                                </div>
+                                                            </List.Item>
+                                                        )}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+
                                     </div>
-                                ))}
-                            </div>
+                                )}
+                            </>
                         ),
                     },
                     { key: "starred", label: "Starred" },

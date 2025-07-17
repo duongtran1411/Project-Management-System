@@ -38,11 +38,38 @@ class UserController {
 
   findAll = async (req: Request, res: Response): Promise<void> => {
     try {
-      const users = await User.find({ status: { $ne: "DELETED" } })
-        .select("-password")
-        .populate("role", "_id name");
+      const { limit = 50, page = 1, search = "" } = req.query;
 
-      res.json({ success: true, data: users });
+      const numericLimit = Math.max(Number(limit), 1);
+      const numericPage = Math.max(Number(page), 1);
+
+      const query: any = {
+        status: { $ne: "DELETED" },
+      };
+
+      if (search) {
+        query.fullName = { $regex: search, $options: "i" };
+      }
+
+      const total = await User.countDocuments(query);
+      const totalPages = Math.ceil(total / numericLimit) || 1; // đảm bảo totalPages >= 1
+      const currentPage = numericPage > totalPages ? totalPages : numericPage;
+      const skip = (currentPage - 1) * numericLimit;
+
+      const users = await User.find(query)
+        .select("-password")
+        .populate("role", "_id name")
+        .skip(skip)
+        .limit(numericLimit);
+
+      res.json({
+        success: true,
+        data: users,
+        total,
+        totalPages,
+        page: currentPage,
+        limit: numericLimit,
+      });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
@@ -146,6 +173,70 @@ class UserController {
         success: false,
         message: error.message,
       });
+    }
+  };
+
+  getUserProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.isValidObjectId(id)) {
+        res.status(400).json({ success: false, message: "Invalid user ID" });
+      }
+
+      const user = await User.findById(id).select(
+        "fullname email avatar phone "
+      );
+      if (!user || user.status === "DELETED") {
+        res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.json({ success: true, data: user });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  };
+
+  udpateProfile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      if (!mongoose.isValidObjectId(id)) {
+        res.status(400).json({ success: false, message: "Invalid user ID" });
+      }
+
+      const allowedFields = [
+        "fullName",
+        "email",
+        "password",
+        "avatar",
+        "phone",
+      ];
+
+      const updateData: any = {};
+
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          updateData[field] = req.body[field];
+        }
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        res
+          .status(400)
+          .json({ success: false, message: "No valid fields to update" });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true,
+      }).select("-password");
+
+      if (!updatedUser) {
+        res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.json({ success: true, data: updatedUser });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
     }
   };
 }

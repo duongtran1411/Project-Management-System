@@ -1,13 +1,14 @@
 export interface Task {
   _id?: string;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   status?: string;
   priority?: string;
   assignee?: {
-    _id: string;
-    name?: string;
-    email?: string;
+    _id: string
+    fullName?: string
+    email?: string
+    avatar:string
   };
   epic?: {
     _id: string;
@@ -19,6 +20,20 @@ export interface Task {
     _id: string;
     name?: string;
   };
+  createdBy?: {
+    _id: string;
+    fullName: string;
+    email: string;
+    avatar?: string;
+  };
+  updatedBy?: {
+    _id: string;
+    fullName: string;
+    email: string;
+    avatar?: string;
+  };
+  updatedAt?: string;
+  createdAt?: string;
 }
 
 export interface Epic {
@@ -103,6 +118,7 @@ export interface ProjectRole {
   projectpermissionIds?: string[];
 }
 
+// priority statistic
 export interface PriorityStat {
   count: number;
   priority: "HIGH" | "MEDIUM" | "LOW";
@@ -132,7 +148,6 @@ export interface TaskApiResponse {
   };
 }
 
-
 export interface UITask {
   id: string;
   title: string;
@@ -143,3 +158,46 @@ export interface UITask {
   priority: string;
   raw: TaskApiResponse;
 }
+
+// Task statistic
+export interface TaskStatusStats {
+  count: number;
+  status: string;
+  percentage: string;
+}
+
+export interface TaskStatistic {
+  totalTasks: number;
+  taskStatusStats: TaskStatusStats[];
+}
+
+// statistic task follow contributor
+export interface ContributorStats {
+  count: number;
+  assignee: string;
+  userName: string;
+  percentage: string;
+}
+export interface TaskContributorStatistic {
+  totalTasks: number;
+  contributorStats: ContributorStats[];
+}
+
+
+export interface AssignedTaskItem {
+   _id: string;
+  name: string;
+  status: "TO DO" | "IN PROGRESS" | "DONE";
+  projectId: {
+    _id: string;
+    name: string;
+  };
+}
+
+// project invite multiple member
+export interface InviteMultiple {
+  emails: string[];
+  projectId: string;
+  projectRoleId: string;
+}
+
