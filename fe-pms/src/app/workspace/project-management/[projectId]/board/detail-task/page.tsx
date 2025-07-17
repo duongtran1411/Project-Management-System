@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Modal, Tag, Avatar, Button, Input, Select } from "antd";
+import { Modal, Tag, Avatar, Button, Input, Select, Space } from "antd";
 import {
   UserOutlined,
   ArrowUpOutlined,
@@ -17,9 +17,8 @@ import { ProjectContributorTag } from "@/models/projectcontributor/projectcontri
 import { Comment } from "@/models/comment/comment";
 import Spinner from "@/components/common/spinner/spin";
 import { Task } from "@/types/types";
-
-
-
+import { createComment } from "@/lib/services/comment/comment.service";
+import { DatePicker } from "antd";
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
@@ -36,12 +35,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [priority, setPriority] = useState("Medium");
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<Comment[]>();
-  const [commentMap, setCommentMap] = useState<
-    Record<string, { author: string; content: string; time: string }[]>
-  >({});
   const [contributor, setContributors] = useState<ProjectContributorTag[]>();
   const { projectId } = useParams<{ projectId: string }>();
-
   const getMemberProject = async (
     url: string
   ): Promise<ProjectContributorTag[]> => {
@@ -79,7 +74,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     error: errorComment,
     isLoading: loadingComment,
   } = useSWR(
-    task.id ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(task.id)}` : "",
+    task._id ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(task._id)}` : "",
     getCommentTask
   );
 
@@ -97,7 +92,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
   useEffect(() => {
     if (task) {
-      setDescription(task.subtitle || "");
+      setDescription(task.description || "");
       setPriority(task.priority || "Medium");
     }
   }, [task]);
@@ -110,25 +105,42 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const handleCancelDescription = () => {
-    setDescription(task.subtitle || "");
+    setDescription(task.description || "");
     setIsEditingDescription(false);
   };
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
+  // const handleAddComment = () => {
+  //   if (!newComment.trim()) return;
 
-    const newEntry = {
-      author: "Giang",
-      content: newComment.trim(),
-      time: "Just now",
-    };
+  //   const newEntry = {
+  //     author: "Giang",
+  //     content: newComment.trim(),
+  //     time: "Just now",
+  //   };
 
-    setCommentMap((prev) => ({
-      ...prev,
-      [task.id]: [newEntry, ...(prev[task.id] || [])],
-    }));
+  //   setCommentMap((prev) => ({
+  //     ...prev,
+  //     [task._id]: [newEntry, ...(prev[task._id] || [])],
+  //   }));
 
-    setNewComment("");
+  //   setNewComment("");
+  // };
+
+  const handleComment = async () => {
+    try {
+      const response = await createComment(
+        task._id ? task._id : "",
+        newComment
+      );
+      if (response.success) {
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
+      if (errorMessage) {
+        showErrorToast(errorMessage);
+      }
+    }
   };
 
   const priorityOptions = [
@@ -144,6 +156,11 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       icon: <ArrowDownOutlined className="text-blue-500 rotate-45" />,
     },
   ];
+  console.log("task", task);
+
+  const onChange = (date: string, dateString: string) => {
+    console.log(date, dateString);
+  };
 
   if (error || errorComment) {
     showErrorToast(error ? error : errorComment);
@@ -162,18 +179,18 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       styles={{ body: { padding: 0 } }}>
       <div className="flex">
         {/* Left section */}
-        <div className="w-3/5 p-6 overflow-y-auto max-h-[500px]">
+        <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
           {/* ID */}
           <div className="flex items-center mb-8 text-sm text-gray-500">
-            <span>{task.id}</span>
+            <span>{task._id}</span>
           </div>
 
           {/* Title */}
-          <h2 className="mb-2 text-2xl font-semibold">{task.title}</h2>
+          <h2 className="mb-2 text-3xl font-bold">{task.name}</h2>
 
           {/* Description */}
           <div className="mb-4">
-            <h3 className="mb-2 text-lg font-semibold">Description</h3>
+            <h3 className="mb-2 text-xl font-semibold">Description</h3>
             {isEditingDescription ? (
               <div>
                 <Input.TextArea
@@ -277,7 +294,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 <Button
                   type="primary"
                   size="small"
-                  onClick={handleAddComment}
+                  onClick={handleComment}
                   disabled={!newComment.trim()}>
                   Save
                 </Button>
@@ -314,42 +331,74 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
         {/* Right section */}
 
-        <div className="w-2/5 p-6 overflow-y-auto max-h-[500px]">
+        <div className="w-3/5 p-6">
+          <div>
+            <Tag color="purple" className="mb-2">
+              {task.status || "None"}
+            </Tag>
+          </div>
           <div className="px-5 space-y-5 text-sm border border-gray-200 rounded-md py-7">
             <h3 className="mb-2 text-lg font-semibold">Details</h3>
 
-            <div className="grid grid-cols-2 gap-y-5">
+            <div className="grid grid-cols-2 gap-y-5 gap-x-1">
               <span className="font-semibold text-gray-600">Assignee:</span>
-              <div className="flex items-center space-x-2">
-                <Avatar icon={<UserOutlined />} />
-                <span>{task.assignee || "Unassigned"}</span>
-              </div>
-              <span className="font-semibold text-gray-600">Labels:</span>
-              <span>{task.title || "None"}</span>
+              <Select
+                style={{ width: 210 }}
+                value={task.assignee?.fullName || "unassigned"}
+                onChange={(value) => {
+                  console.log("Selected Assignee:", value);
+                }}
+                placeholder="Select assignee"
+                optionLabelProp="label">
+                {!task.assignee?._id && (
+                  <Select.Option
+                    key="unassigned"
+                    value="unassigned"
+                    label="Unassigned">
+                    <div className="flex items-center space-x-2">
+                      <Avatar icon={<UserOutlined />} size="small" />
+                      <span>Unassigned</span>
+                    </div>
+                  </Select.Option>
+                )}
 
+                {contributor?.map((member) => (
+                  <Select.Option
+                    key={member.userId._id}
+                    value={member.userId._id}
+                    label={member.userId.fullName}>
+                    <div className="flex items-center space-x-2">
+                      <Avatar src={member.userId.avatar} size="small" />
+                      <span>{member.userId.fullName}</span>
+                    </div>
+                  </Select.Option>
+                ))}
+              </Select>
+
+              <span className="font-semibold text-gray-600">Labels:</span>
+              <span>{task.name || "None"}</span>
               <span className="font-semibold text-gray-600">Parent:</span>
-              <Tag color="purple">{task.parent || "None"}</Tag>
+              <Tag color="purple">{task.epic?.name || "None"}</Tag>
+
               <span className="font-semibold text-gray-600">Start Date:</span>
+              <Space direction="vertical">
+                <DatePicker value={task.startDate} />
+              </Space>
 
               <span className="font-semibold text-gray-600">Due Date:</span>
-              <span>{task.dueDate || "None"}</span>
+              <Space direction="vertical">
+                <DatePicker value={task.dueDate} />
+              </Space>
 
               <span className="font-semibold text-gray-600">Sprint:</span>
-              <span className="text-blue-600">{task.sprint || "None"}</span>
-
-              <span className="font-semibold text-gray-600">Tags:</span>
-              <div className="flex flex-wrap gap-1">
-                {task.tags &&
-                  Array.isArray(task.tags) &&
-                  ((task.tags || []).length > 0 ? (
-                    task.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)
-                  ) : (
-                    <span>None</span>
-                  ))}
+              <span className="text-blue-600">
+                {task.milestones?.name || "None"}
+              </span>
+              <span className="font-semibold text-gray-600">Reporter:</span>
+              <div className="flex items-center space-x-1">
+                <Avatar src={task.createdBy?.avatar} className="mx-1" />{" "}
+                <p>{task.createdBy?.fullName}</p>
               </div>
-
-              <span className="font-semibold text-gray-600">Story Points:</span>
-              <span>{task.storyPoints || "None"}</span>
             </div>
           </div>
         </div>

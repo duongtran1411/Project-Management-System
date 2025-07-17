@@ -41,7 +41,7 @@ export default function Page() {
   };
   return (
     <div className="flex h-screen">
-      <div className="flex-1 overflow-auto bg-white">
+      <div className="flex-1 overflow-hidden bg-white">
         <Header />
         <div className="flex items-center justify-center min-h-screen h-full bg-[#deebfe] p-20 gap-10">
           <div className="flex flex-col justify-center min-h-screen h-full bg-[#deebfe]  ">
