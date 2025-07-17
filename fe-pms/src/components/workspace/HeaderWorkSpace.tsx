@@ -18,9 +18,6 @@ import {
 } from "@ant-design/icons";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
-import { Constants } from "@/lib/constants";
 
 import { logout } from "@/lib/utils";
 import NotificationPopup from "./NotificationPopup";

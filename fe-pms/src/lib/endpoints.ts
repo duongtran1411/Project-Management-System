@@ -22,6 +22,9 @@ export class Endpoints {
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
     GET_BY_ASSIGNEE: (userId: string) => `task/assignee/${userId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
+    UPDATE_ASSIGNEE: (taskId:string) => `task/${taskId}/assignee`,
+    UPDATE_DESCRIPTION: (taskId:string) => `task/${taskId}/description`,
+    UPDATE_EPIC: (taskId:string) => `task/${taskId}/epic`
   };
 
   static readonly Milestone = {
