@@ -454,6 +454,338 @@ export class TaskService {
     return task;
   }
 
+  async updateTaskName(
+    taskId: string,
+    name: string,
+    user: any
+  ): Promise<ITask | null> {
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        name,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for name change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { name },
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskDescription(
+    taskId: string,
+    description: string,
+    user: any
+  ): Promise<ITask | null> {
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        description,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for description change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { description },
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskAssignee(
+    taskId: string,
+    assignee: string,
+    user: any
+  ): Promise<ITask | null> {
+    const oldTask = await Task.findById(taskId);
+
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        assignee,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Create notifications for assignee changes
+    if (task && oldTask) {
+      try {
+        // Notify new assignee about assignment
+        if (
+          assignee &&
+          oldTask.assignee?.toString() !== assignee &&
+          assignee !== user._id.toString()
+        ) {
+          await NotificationService.createNotification({
+            recipientId: assignee,
+            senderId: user._id.toString(),
+            type: "TASK_ASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+        }
+
+        // Notify old assignee about unassignment
+        if (
+          oldTask.assignee &&
+          oldTask.assignee.toString() !== assignee &&
+          oldTask.assignee.toString() !== user._id.toString()
+        ) {
+          await NotificationService.createNotification({
+            recipientId: oldTask.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UNASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+        }
+      } catch (error) {
+        console.error("Failed to create assignee change notifications:", error);
+      }
+    }
+
+    // Emit real-time event for assignee change
+    if (this.io && task && oldTask) {
+      this.io.emit("task-assigned", {
+        task,
+        projectId: task.projectId,
+        oldAssignee: oldTask.assignee,
+        newAssignee: assignee,
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskReporter(
+    taskId: string,
+    reporter: string,
+    user: any
+  ): Promise<ITask | null> {
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        reporter,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for reporter change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { reporter },
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskEpic(
+    taskId: string,
+    epic: string,
+    user: any
+  ): Promise<ITask | null> {
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        epic,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for epic change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { epic },
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskMilestone(
+    taskId: string,
+    milestone: string,
+    user: any
+  ): Promise<ITask | null> {
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        milestones: milestone,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for milestone change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { milestone },
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskDates(
+    taskId: string,
+    startDate: Date | null,
+    dueDate: Date | null,
+    user: any
+  ): Promise<ITask | null> {
+    const updateData: any = { updatedBy: user._id };
+
+    if (startDate !== undefined) updateData.startDate = startDate;
+    if (dueDate !== undefined) updateData.dueDate = dueDate;
+
+    const task = await Task.findByIdAndUpdate(taskId, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for dates change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { startDate, dueDate },
+      });
+    }
+
+    return task;
+  }
+
+  async updateTaskLabels(
+    taskId: string,
+    labels: string[],
+    user: any
+  ): Promise<ITask | null> {
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        labels,
+        updatedBy: user._id,
+      },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "assignee", select: "fullName email avatar" },
+      { path: "reporter", select: "fullName email avatar" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectId", select: "name description" },
+      { path: "epic", select: "name description" },
+      { path: "milestones", select: "name description" },
+    ]);
+
+    // Emit real-time event for labels change
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { labels },
+      });
+    }
+
+    return task;
+  }
+
   async deleteManyTasks(
     taskIds: string[]
   ): Promise<{ success: number; failed: number }> {
