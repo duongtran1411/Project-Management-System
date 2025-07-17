@@ -51,7 +51,7 @@ export const confirmInvite = async (token: string) => {
       .getAxiosInstance()
       .post(Endpoints.ProjectContributor.CONFIRM_INVITE(token), token);
 
-    if (response.status === 201) {
+    if (response.status === 200) {
       showSuccessToast("Confirm invitation members successfully!");
       return response;
     }

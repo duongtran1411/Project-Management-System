@@ -8,6 +8,14 @@ export interface Task {
     _id: string;
     name?: string;
     email?: string;
+    avatar?: string;
+    fullName?: string;
+  };
+  reporter?: {
+    _id: string;
+    email?: string;
+    avatar?: string;
+    fullName?: string;
   };
   epic?: {
     _id: string;
@@ -109,6 +117,21 @@ export interface Role {
   createdBy?: string;
   updatedBy?: string;
   createdAt?: Date;
+}
+
+export interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+  status: "ACTIVE" | "INACTIVE" | string;
+  failedLoginAttempts: number;
+  verified: boolean;
+  role: Role;
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 export interface ProjectRole {

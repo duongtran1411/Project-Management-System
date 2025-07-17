@@ -58,3 +58,43 @@ export const updateTask = async (taskId: string, task: Task) => {
     throw error;
   }
 };
+
+export const updateTaskStatus = async (taskId: string, status: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(Endpoints.Task.UPDATE_STATUS(taskId), { status });
+
+    if (response.data?.success) {
+      showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
+      return response?.data.data;
+    } else {
+      throw new Error(response.data?.message || "Cập nhật thất bại");
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật trạng thái task!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
+export const updatePriorityTask = async (taskId: string, priority: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(Endpoints.Task.UPDATE_PRIORITY(taskId), { priority });
+
+    if (response.data?.success) {
+      showSuccessToast("Cập nhật dộ ưu tiên thành công!");
+      return response?.data.data;
+    } else {
+      throw new Error(response.data?.message || "Cập nhật thất bại");
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật độ ưu tiên task!";
+    showErrorToast(message);
+    throw error;
+  }
+};

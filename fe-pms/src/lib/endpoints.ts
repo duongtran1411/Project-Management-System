@@ -21,6 +21,8 @@ export class Endpoints {
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
+    UPDATE_STATUS: (taskId: string) => `task/${taskId}/status`,
+    UPDATE_PRIORITY: (taskId: string) => `task/${taskId}/priority`,
   };
 
   static readonly Milestone = {
