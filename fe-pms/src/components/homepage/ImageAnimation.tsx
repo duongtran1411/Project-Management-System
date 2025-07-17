@@ -11,42 +11,46 @@ const imageList = [
 
 const ImageAnimation: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [expanded, setExpanded] = useState(false);
+  const [slideDirection, setSlideDirection] = useState("right");
 
   useEffect(() => {
-    // Bắt đầu hiệu ứng mở
-    setExpanded(true);
-
-    const closeTimeout = setTimeout(() => {
-      // Đóng lại
-      setExpanded(false);
-    }, 4000); // Sau 4s thì bắt đầu thu lại
-
     const nextImageTimeout = setTimeout(() => {
-      // Chuyển sang ảnh tiếp theo
-      setCurrentIndex((prev) => (prev + 1) % imageList.length);
-      setExpanded(true); // Mở lại ảnh tiếp theo
-    }, 7000); // Sau 5s chuyển ảnh
+      // Chuyển sang ảnh tiếp theo với hiệu ứng slide
+      setSlideDirection("left");
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % imageList.length);
+        setSlideDirection("right");
+      }, 300);
+    }, 8000); // Mỗi ảnh hiển thị 8 giây
 
     return () => {
-      clearTimeout(closeTimeout);
       clearTimeout(nextImageTimeout);
     };
   }, [currentIndex]);
 
   return (
-    <div>
+    <div className="flex justify-center items-center w-full">
       <div
-        className={`overflow-hidden transition-all duration-1000 ease-in-out ${
-          expanded ? "h-[400px]" : "h-[10px]"
-        } `}
-        style={{ width: "560px" }}
+        className="overflow-hidden rounded-2xl shadow-2xl"
+        style={{
+          width: "100%",
+          maxWidth: "560px",
+          height: "400px",
+        }}
       >
-        <img
-          src={imageList[currentIndex]}
-          alt="Slideshow"
-          className="w-full h-full object-contain mx-auto block rounded-2xl shadow-[#0000001a_0px_18px_40px_0px]"
-        />
+        <div
+          className={`w-full h-full transition-transform duration-500 ease-in-out ${
+            slideDirection === "left"
+              ? "transform -translate-x-full"
+              : "transform translate-x-0"
+          }`}
+        >
+          <img
+            src={imageList[currentIndex]}
+            alt="Slideshow"
+            className="w-full h-full object-contain mx-auto block rounded-2xl"
+          />
+        </div>
       </div>
     </div>
   );

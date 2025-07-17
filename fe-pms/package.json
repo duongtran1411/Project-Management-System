@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H localhost -p 3000",
+    "dev:fast": "next dev -H localhost -p 3000 --turbo",
+    "dev:ultra": "next dev -H localhost -p 3000 --turbo",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

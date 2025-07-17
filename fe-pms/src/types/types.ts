@@ -9,6 +9,12 @@ export interface Task {
   priority?: string;
   assignee?: Assignee
   epic?: Epic
+  reporter?: {
+    _id: string;
+    email?: string;
+    avatar?: string;
+    fullName?: string;
+  }
   startDate?: string;
   dueDate?: string;
   milestones?: {
@@ -102,6 +108,21 @@ export interface Role {
   createdAt?: Date;
 }
 
+export interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+  status: "ACTIVE" | "INACTIVE" | string;
+  failedLoginAttempts: number;
+  verified: boolean;
+  role: Role;
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export interface ProjectRole {
   _id?: string;
   name: string;
@@ -173,7 +194,6 @@ export interface TaskContributorStatistic {
   contributorStats: ContributorStats[];
 }
 
-
 export interface AssignedTaskItem {
   _id: string;
   name: string;
@@ -190,4 +210,3 @@ export interface InviteMultiple {
   projectId: string;
   projectRoleId: string;
 }
-

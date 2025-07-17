@@ -1,49 +1,59 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import {
-  Button,
-  Input,
-  Avatar,
-  Typography,
-  MenuProps,
-  Dropdown,
-  Space,
-} from "antd";
-import {
-  QuestionCircleOutlined,
-  SettingOutlined,
-  SearchOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  Input,
+  MenuProps,
+  Space,
+  Typography,
+} from "antd";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "@/lib/auth/auth-context";
 import { logout } from "@/lib/utils";
 import NotificationPopup from "./NotificationPopup";
-import { useAuth } from "@/lib/auth/auth-context";
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
   const { userInfo } = useAuth();
   const avatar = userInfo?.avatar?.trim() || undefined;
+  const userName = userInfo?.fullname || "";
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
+      case "home":
+        router.push("/");
+        break;
       case "profile":
         router.push("/profile");
-        console.log("Go to Profile");
         break;
       case "logout":
         logout();
-        console.log("Logging out...");
         break;
     }
   };
 
   const items: MenuProps["items"] = [
     {
+      label: "Home",
+      key: "home",
+      icon: <HomeOutlined />,
+    },
+    {
       label: "Profile",
       key: "profile",
+      icon: <UserOutlined />,
     },
     {
       type: "divider",
@@ -51,6 +61,8 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
     {
       label: "Logout",
       key: "logout",
+      icon: <LogoutOutlined />,
+      danger: true,
     },
   ];
   return (
@@ -64,7 +76,8 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         />
         <div
           className="flex items-center gap-x-1 cursor-pointer"
-          onClick={() => router.push("/")}>
+          onClick={() => router.push("/")}
+        >
           <Image src="/jira_icon.png" alt="Jira Logo" width={24} height={24} />
           <Typography.Text strong className="text-xl font-semibold">
             Hub
@@ -95,9 +108,11 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
           {userInfo ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
-              trigger={["click"]}>
+              trigger={["click"]}
+            >
               <Space className="cursor-pointer">
                 <Avatar src={avatar} />
+                <span className="text-gray-700">{userName}</span>
               </Space>
             </Dropdown>
           ) : (
