@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Input,
-  Badge,
   Avatar,
   Typography,
   MenuProps,
@@ -11,7 +10,6 @@ import {
   Space,
 } from "antd";
 import {
-  BellOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   SearchOutlined,
@@ -25,25 +23,15 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 import { Constants } from "@/lib/constants";
 
 import { logout } from "@/lib/utils";
+import NotificationPopup from "./NotificationPopup";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
-  const [token, setToken] = useState("");
-  const [avatar, setAvatar] = useState<string>("");
-  useEffect(() => {
-    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (access_token) {
-      const decoded = jwtDecode<TokenPayload>(access_token);
-      setAvatar(decoded.avatar);
-      setToken(access_token);
-    }
-  }, []);
+  const { userInfo } = useAuth();
+  const avatar = userInfo?.avatar?.trim() || undefined;
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
-      case "workspace":
-        router.push("/workspace");
-        console.log("Go to My Workspace");
-        break;
       case "profile":
         router.push("/profile");
         console.log("Go to Profile");
@@ -56,10 +44,6 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   };
 
   const items: MenuProps["items"] = [
-    {
-      label: "My Workspace",
-      key: "workspace",
-    },
     {
       label: "Profile",
       key: "profile",
@@ -83,8 +67,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         />
         <div
           className="flex items-center gap-x-1 cursor-pointer"
-          onClick={() => router.push("/")}
-        >
+          onClick={() => router.push("/")}>
           <Image src="/jira_icon.png" alt="Jira Logo" width={24} height={24} />
           <Typography.Text strong className="text-xl font-semibold">
             Hub
@@ -107,18 +90,15 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
 
       {/* Right */}
       <div className="flex items-center gap-x-4">
-        <Badge count="9+">
-          <BellOutlined className="text-lg text-gray-600" />
-        </Badge>
+        <NotificationPopup />
         <QuestionCircleOutlined className="text-lg text-gray-600" />
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {token ? (
+          {userInfo ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
-              trigger={["click"]}
-            >
+              trigger={["click"]}>
               <Space className="cursor-pointer">
                 <Avatar src={avatar} />
               </Space>

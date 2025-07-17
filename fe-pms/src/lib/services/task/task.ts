@@ -63,7 +63,7 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .patch(Endpoints.Task.UPDATE_STATUS(taskId), { status });
+      .put(Endpoints.Task.UPDATE_TASK(taskId), { status });
 
     if (response.data?.success) {
       showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
@@ -76,6 +76,23 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
       error?.response?.data?.message || "Lỗi khi cập nhật trạng thái task!";
     showErrorToast(message);
     throw error;
+  }
+};
+export const getTasksByAssignee = async (
+  userId: string
+): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_BY_ASSIGNEE(userId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      "Không thể lấy danh sách task được giao!";
+    showErrorToast(message);
+    return null;
   }
 };
 

@@ -11,28 +11,25 @@ import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/auth-context";
 const { Text } = Typography;
 export default function Page() {
   const [name, setName] = useState<string>("");
   const router = useRouter();
-  const [accessToken, setAccessToken] = useState<string>("");
+  const { userInfo } = useAuth();
   useEffect(() => {
-    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
-    if (token && justLoggedIn === "true") {
-      setAccessToken(token);
-      const decoded = jwtDecode<TokenPayload>(token);
-      setName(decoded.fullname);
-      showSuccessToast("Đăng nhập thành công!");
-      localStorage.removeItem("justLoggedIn");
-    } else if (token) {
-      const decoded = jwtDecode<TokenPayload>(token);
-      setName(decoded.fullname);
+    if (userInfo && justLoggedIn === "true") {
+      setName(userInfo?.fullname);
+      showSuccessToast("Welcom Project Hub!");
+      localStorage.removeItem(Constants.API_FIRST_LOGIN);
+    } else if (userInfo) {
+      setName(userInfo.fullname);
     }
   }, []);
 
   const handleContinue = () => {
-    if (accessToken) {
+    if (userInfo) {
       router.push("/workspace");
     } else {
       showSuccessToast("Vui lòng đăng nhập trước khi tiếp tục!");
@@ -40,14 +37,11 @@ export default function Page() {
     }
   };
   return (
-    <div className="flex max-h-screen">
-      <div className="flex-1 bg-white">
-        <div className="fixed left-0 top-0 right-0">
-          <Header />
-        </div>
-
-        <div className="flex items-center justify-center max-h-screen h-full bg-[#deebfe] p-20 gap-10">
-          <div className="flex flex-col justify-center max-h-screen h-full bg-[#deebfe]  ">
+    <div className="flex h-screen">
+      <div className="flex-1 overflow-hidden bg-white">
+        <Header />
+        <div className="flex items-center justify-center min-h-screen h-full bg-[#deebfe] p-20 gap-10">
+          <div className="flex flex-col justify-center min-h-screen h-full bg-[#deebfe]  ">
             <p className="font-semibold mb-5 max-w-[700px] leading-[1.15] font-charlie text-[44px]">
               Connect every team,
               <br />
@@ -55,7 +49,7 @@ export default function Page() {
               <br />
               together with Project Hub
             </p>
-            {accessToken && (
+            {userInfo && (
               <div className="mt-8">
                 <Text className="text-4xl font-medium mb-2 inline-block relative text-center">
                   Welcome back, {name}

@@ -1,6 +1,6 @@
 "use client";
-import { Form, Input, Flex, Button, Checkbox } from "antd";
-import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { Form, Input, Flex, Button, Checkbox, Typography, Divider } from "antd";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { GoogleCredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
@@ -12,13 +12,16 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/auth-context";
+
+const { Title, Text } = Typography;
 
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorLogin, setErrorLogin] = useState<string>("");
   const router = useRouter();
+  const { loginSuccess } = useAuth();
   //login
   const onFinish = async () => {
     setLoading(true);
@@ -27,26 +30,19 @@ export default function Page() {
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
-        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (!response || typeof response.success === "undefined") {
           throw new Error("Lỗi không xác định từ máy chủ");
         }
-        if (token) {
-          const decoded = jwtDecode<TokenPayload>(token);
+        loginSuccess(token);
+        const decoded = jwtDecode<TokenPayload>(token);
 
-          //Lưu thông tin người dùng
-          localStorage.setItem("currentUser", JSON.stringify(decoded));
-
-          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
-          router.replace(decoded.role === "ADMIN" ? "/admin" : "/");
-        }
+        localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
+        router.replace(decoded.role === "USER" ? "/" : "/authentication/login");
         return;
       }
 
       localStorage.removeItem(Constants.API_TOKEN_KEY);
-      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
       const message =
         typeof response?.data?.message === "string"
           ? response.data.message
@@ -64,7 +60,9 @@ export default function Page() {
   };
 
   //login with google
-  const handleLoginGoogle = async (credentialReponse: GoogleCredentialResponse) => {
+  const handleLoginGoogle = async (
+    credentialReponse: GoogleCredentialResponse
+  ) => {
     setLoading(true);
     try {
       const credential = credentialReponse.credential;
@@ -76,23 +74,17 @@ export default function Page() {
       const response = await loginGoogle(credential);
       if (response.success) {
         const token = response.data.access_token;
-        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-
+        loginSuccess(token)
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
 
-          localStorage.setItem("currentUser", JSON.stringify(decoded));
-
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
 
-          if (decoded.role === "USER") {
-            router.replace("/");
-          }
+          router.replace(decoded.role === "USER" ? "/" : "/authentication/login");
+          return;
         }
       } else {
-        // Xóa token cũ khi login thất bại
         localStorage.removeItem(Constants.API_TOKEN_KEY);
         localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
@@ -105,7 +97,6 @@ export default function Page() {
     } catch (error: any) {
       // Xóa token cũ khi có lỗi
       localStorage.removeItem(Constants.API_TOKEN_KEY);
-      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
@@ -120,74 +111,157 @@ export default function Page() {
   if (loading) {
     return <Spinner />;
   }
+
   return (
-    <div className="border-2 border-gray-200 shadow-xl rounded-xl">
-      <Form
-        name="login"
-        initialValues={{ remember: true }}
-        style={{ maxWidth: 360 }}
-        onFinish={onFinish} className="pt-6 pl-4">
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <Image
-            width={300}
-            src="/Project Hub logo.png"
-            alt="Logo"
-            preview={false}
-            className="mb-8"
-          />
+    <div className="login-page-container">
+      {/* Left Side - Branding */}
+      <div className="login-branding">
+        <div className="branding-content">
+          <div className="logo-container">
+            <div className="logo-background">
+              <Image
+                width={180}
+                src="/Project Hub logo.png"
+                alt="Project Hub Logo"
+                preview={false}
+                className="brand-logo"
+              />
+            </div>
+          </div>
+          <div className="brand-text">
+            <Title level={1} className="brand-title">
+              Chào mừng bạn trở lại
+            </Title>
+            <Text className="brand-subtitle">
+              Đăng nhập để tiếp tục quản lý dự án của bạn một cách hiệu quả
+            </Text>
+          </div>
+          <div className="brand-features">
+            <div className="feature-item">
+              <div className="feature-icon">📊</div>
+              <div className="feature-text">
+                <Text strong>Quản lý dự án thông minh</Text>
+                <Text type="secondary">
+                  Theo dõi tiến độ và tối ưu hóa workflow
+                </Text>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">👥</div>
+              <div className="feature-text">
+                <Text strong>Làm việc nhóm hiệu quả</Text>
+                <Text type="secondary">Cộng tác mượt mà với team của bạn</Text>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">📈</div>
+              <div className="feature-text">
+                <Text strong>Báo cáo chi tiết</Text>
+                <Text type="secondary">
+                  Phân tích dữ liệu và đưa ra quyết định
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <Form.Item
-          name="email"
-          rules={[
-            { required: true, message: "Please input your email!" },
-            { type: "email", message: "Email must be include @example.com!" },
-          ]}>
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "Please input your Password!" }]}>
-          <Input
-            prefix={<LockOutlined />}
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Flex justify="space-between" align="center">
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Remember me</Checkbox>
+      {/* Right Side - Login Form */}
+      <div className="login-form-section">
+        <div className="form-container">
+          <div className="form-header">
+            <Title level={2} className="form-title">
+              Đăng nhập
+            </Title>
+            <Text className="form-subtitle">
+              Vui lòng nhập thông tin đăng nhập của bạn
+            </Text>
+          </div>
+
+          <Form
+            name="login"
+            initialValues={{ remember: true }}
+            onFinish={onFinish}
+            className="login-form"
+            layout="vertical"
+            size="large"
+          >
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: "Vui lòng nhập email của bạn!" },
+                { type: "email", message: "Email phải có định dạng hợp lệ!" },
+              ]}
+            >
+              <Input
+                prefix={<MailOutlined className="input-icon" />}
+                placeholder="Email"
+                onChange={(e) => setEmail(e.target.value)}
+                className="custom-input"
+              />
             </Form.Item>
-            <Link
-              href={'/authentication/forgot-password'}
-              className="text-sm text-blue-500 hover:decoration-solid hover:underline">
-              Forgot password?
-            </Link>
-          </Flex>
-        </Form.Item>
 
-        <Form.Item>
-          <Button block type="primary" htmlType="submit" className="mb-2">
-            Log in
-          </Button>
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+            >
+              <Input
+                prefix={<LockOutlined className="input-icon" />}
+                type="password"
+                placeholder="Mật khẩu"
+                onChange={(e) => setPassword(e.target.value)}
+                className="custom-input"
+              />
+            </Form.Item>
 
-          <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              setLoading(true); // Đảm bảo bật spinner ngay lập tức
-              handleLoginGoogle(credentialResponse);
-            }}
-            onError={() => {
-              showErrorToast("Đăng nhập Google thất bại");
-            }}
-          />
-        </Form.Item>
-      </Form>
+            <Form.Item>
+              <Flex justify="space-between" align="center">
+                <Form.Item name="remember" valuePropName="checked" noStyle>
+                  <Checkbox className="remember-me-checkbox">
+                    Ghi nhớ đăng nhập
+                  </Checkbox>
+                </Form.Item>
+                <Link
+                  href={"/authentication/forgot-password"}
+                  className="forgot-password-link"
+                >
+                  Quên mật khẩu?
+                </Link>
+              </Flex>
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                block
+                type="primary"
+                htmlType="submit"
+                className="login-button"
+                loading={loading}
+              >
+                Đăng nhập
+              </Button>
+            </Form.Item>
+
+            <Divider className="divider">
+              <Text type="secondary">hoặc</Text>
+            </Divider>
+
+            <Form.Item>
+              <div className="google-login-container">
+                <GoogleLogin
+                  onSuccess={(credentialResponse) => {
+                    setLoading(true);
+                    handleLoginGoogle(credentialResponse);
+                  }}
+                  onError={() => {
+                    showErrorToast("Đăng nhập Google thất bại");
+                  }}
+                />
+              </div>
+            </Form.Item>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 }

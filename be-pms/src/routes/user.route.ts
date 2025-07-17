@@ -1,6 +1,7 @@
 import { Router } from "express";
 import userController from "../controllers/user.controller";
 import { authenticate } from "../middlewares/auth.middleware";
+import { auth } from "google-auth-library";
 
 const router = Router();
 
@@ -160,5 +161,64 @@ router.delete("/:id", authenticate, userController.delete);
  *       404: { description: Không tìm thấy người dùng }
  */
 router.patch("/:id/status", authenticate, userController.updateUserStatus);
+
+/**
+ * @openapi
+ * /user/{id}/profile:
+ *   get:
+ *     summary: Lấy thông tin profile của người dùng
+ *     security: [bearerAuth: []]
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của người dùng
+ *     responses:
+ *       200:
+ *         description: Lấy profile thành công
+ *       400:
+ *         description: ID không hợp lệ
+ *       404:
+ *         description: Không tìm thấy người dùng
+ */
+router.get("/:id/profile", authenticate, userController.getUserProfile);
+
+/**
+ * @openapi
+ * /user/{id}/updateProfile:
+ *   patch:
+ *     summary: Cập nhật thông tin profile của người dùng
+ *     security: [bearerAuth: []]
+ *     tags: [User]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của người dùng cần cập nhật profile
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName: { type: string }
+ *               email: { type: string }
+ *               avatar: { type: string }
+ *               phone: { type: string }
+ *     responses:
+ *       200:
+ *         description: Cập nhật profile thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ hoặc ID không hợp lệ
+ *       404:
+ *         description: Không tìm thấy người dùng
+ */
+router.patch("/:id/updateProfile", authenticate, userController.udpateProfile);
 
 export default router;

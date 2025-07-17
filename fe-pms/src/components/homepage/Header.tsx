@@ -9,20 +9,12 @@ import Link from "next/link";
 import { logout } from "@/lib/utils";
 import { jwtDecode } from "jwt-decode";
 import { TokenPayload } from "@/models/user/TokenPayload";
+import { useAuth } from "@/lib/auth/auth-context";
 const Header: React.FC = () => {
-  const [token, setToken] = useState("");
   const router = useRouter();
-  const [userName, setUserName] = useState<string>("");
-  const [avatar, setAvatar] = useState<string>("");
-  useEffect(() => {
-    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (access_token) {
-      const decoded = jwtDecode<TokenPayload>(access_token);
-      setUserName(decoded.fullname);
-      setAvatar(decoded.avatar);
-      setToken(access_token);
-    }
-  }, []);
+  const { userInfo } = useAuth();
+  const avatar = userInfo?.avatar?.trim() || undefined;
+  const userName = userInfo?.fullname || "";
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "workspace":
@@ -65,11 +57,10 @@ const Header: React.FC = () => {
       </div>
 
       <div>
-        {token ? (
+        {userInfo ? (
           <Dropdown
             menu={{ items, onClick: handleMenuClick }}
-            trigger={["click"]}
-          >
+            trigger={["click"]}>
             <Space className="cursor-pointer">
               <Avatar src={avatar} />
               <span className="text-gray-700">{userName}</span>
