@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 @import "antd/dist/reset.css";
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -62,11 +63,31 @@ a {
   padding: 0 !important;
 }
 
-/* Highlight mention in Ant Design Mentions input */
-.ant-mentions .ant-mentions-mention {
-  background: #dbeafe !important; /* Tailwind bg-blue-100 */
-  color: #2563eb !important;      /* Tailwind text-blue-600 */
-  font-weight: bold !important;   /* Tailwind font-bold */
-  border-radius: 4px !important;  /* Tailwind rounded */
-  padding: 0 4px !important;      /* Tailwind px-1 */
+/* Notification popup styles */
+.notification-dropdown .ant-dropdown-menu {
+  padding: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.notification-dropdown .ant-dropdown-menu-item {
+  padding: 0 !important;
+}
+
+.notification-dropdown .ant-tabs-tab {
+  padding: 8px 16px !important;
+  margin: 0 !important;
+}
+
+.notification-dropdown .ant-tabs-tab-active {
+  border-bottom: 2px solid #1890ff !important;
+}
+
+.notification-dropdown .ant-tabs-content-holder {
+  padding: 0 !important;
+}
+
+.notification-dropdown .ant-tabs-tabpane {
+  padding: 0 !important;
 }

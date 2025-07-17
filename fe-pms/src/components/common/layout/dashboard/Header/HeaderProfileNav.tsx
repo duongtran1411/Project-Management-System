@@ -1,18 +1,18 @@
 "use client";
 
-import { Menu, Dropdown, Avatar, Badge, Divider, Typography } from "antd";
 import {
   BellOutlined,
-  MailOutlined,
   CheckSquareOutlined,
-  MessageOutlined,
-  UserOutlined,
-  SettingOutlined,
   CreditCardOutlined,
   FileTextOutlined,
   LockOutlined,
+  MailOutlined,
+  MessageOutlined,
   PoweroffOutlined,
+  SettingOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
+import { Avatar, Badge, Dropdown, Typography } from "antd";
 import Link from "next/link";
 
 const { Text } = Typography;
@@ -116,7 +116,7 @@ export default function HeaderProfileNav() {
       label: (
         <Link href="#">
           <span></span>
-            <FileTextOutlined /> file text
+          <FileTextOutlined /> file text
         </Link>
       ),
     },
@@ -136,9 +136,9 @@ export default function HeaderProfileNav() {
     {
       key: "logout",
       label: (
-          <span>
-            <PoweroffOutlined /> power of
-          </span>
+        <span>
+          <PoweroffOutlined /> power of
+        </span>
       ),
     },
   ];
@@ -147,12 +147,10 @@ export default function HeaderProfileNav() {
     <Dropdown
       menu={{ items: menuItems }}
       trigger={["click"]}
-      overlayStyle={{ width: 240 }}>
+      overlayStyle={{ width: 240 }}
+    >
       <div className="cursor-pointer d-flex align-items-center px-2">
-        <Avatar
-          icon={<UserOutlined />}
-          size={32}
-        />
+        <Avatar icon={<UserOutlined />} size={32} />
       </div>
     </Dropdown>
   );

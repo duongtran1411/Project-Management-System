@@ -16,6 +16,7 @@ import permissionRoutes from "./permission.routes";
 import roleRoutes from "./role.routes";
 import commentRoutes from './comment.routes';
 import peopleYouWorkWithRoutes from "./people-you-work-with.routes";
+import notificationRoutes from "./notification.routes";
 const router = Router();
 
 // Mount routes
@@ -36,5 +37,6 @@ router.use("/password-reset", passwordResetRoutes);
 router.use("/role", roleRoutes);
 router.use('/comment',commentRoutes)
 router.use("/people-you-work-with", peopleYouWorkWithRoutes);
+router.use("/notification", notificationRoutes);
 
 export default router;

@@ -42,7 +42,8 @@ export class Endpoints {
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
-    GET_USER_BY_PROJECT: (projectId: string) => `project-contributor/project/${projectId}/users`,
+    GET_USER_BY_PROJECT: (projectId: string) =>
+      `project-contributor/project/${projectId}/users`,
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
@@ -67,6 +68,17 @@ export class Endpoints {
 
   static readonly Comment = {
     GET_COMMENT_BY_TASK: (taskId: string) => `comment/${taskId}`,
-    CREATE_COMMENT: 'comment'
-  }
+    CREATE_COMMENT: "comment",
+  };
+
+  static readonly Notification = {
+    GET_NOTIFICATIONS: "notification",
+    GET_STATS: "notification/stats",
+    MARK_AS_READ: (notificationId: string) =>
+      `notification/${notificationId}/read`,
+    MARK_ALL_AS_READ: "notification/mark-all-read",
+    ARCHIVE: (notificationId: string) =>
+      `notification/${notificationId}/archive`,
+    DELETE: (notificationId: string) => `notification/${notificationId}`,
+  };
 }

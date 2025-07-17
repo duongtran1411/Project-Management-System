@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Input,
-  Badge,
   Avatar,
   Typography,
   MenuProps,
@@ -11,7 +10,6 @@ import {
   Space,
 } from "antd";
 import {
-  BellOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   SearchOutlined,
@@ -25,6 +23,7 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 import { Constants } from "@/lib/constants";
 
 import { logout } from "@/lib/utils";
+import NotificationPopup from "./NotificationPopup";
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
@@ -107,9 +106,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
 
       {/* Right */}
       <div className="flex items-center gap-x-4">
-        <Badge count="9+">
-          <BellOutlined className="text-lg text-gray-600" />
-        </Badge>
+        <NotificationPopup />
         <QuestionCircleOutlined className="text-lg text-gray-600" />
         <SettingOutlined className="text-lg text-gray-600" />
 
