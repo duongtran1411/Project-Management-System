@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 
 const Header: React.FC = () => {
-  const [token, setToken] = useState("");
   const router = useRouter();
   const { userInfo } = useAuth();
   const avatar = userInfo?.avatar?.trim() || undefined;

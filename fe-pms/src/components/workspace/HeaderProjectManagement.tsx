@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Alert, Menu, Spin } from "antd";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
+import { useAuth } from "@/lib/auth/auth-context";
 import { Constants } from "@/lib/constants";
 
 const fetcherWithToken = async ([url, token]: [string, string]) => {
@@ -30,13 +31,10 @@ const HeaderProjectManagement = () => {
   const router = useRouter();
   const params = useParams();
   const projectId = params.projectId as string;
-  const [token, setToken] = useState("");
-  useEffect(() => {
-    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (access_token) {
-      setToken(access_token);
-    }
-  }, []);
+  const { userInfo } = useAuth();
+  const token = userInfo
+    ? localStorage.getItem(Constants.API_TOKEN_KEY) || ""
+    : "";
 
   const {
     data: projectData,
@@ -45,11 +43,11 @@ const HeaderProjectManagement = () => {
   } = useSWR(
     token
       ? [
-        `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Project.GET_BY_ID(
-          projectId || ""
-        )}`,
-        token,
-      ]
+          `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Project.GET_BY_ID(
+            projectId || ""
+          )}`,
+          token,
+        ]
       : null,
     fetcherWithToken
   );
@@ -93,7 +91,7 @@ const HeaderProjectManagement = () => {
       key: "List",
       label: "List",
       icon: <BarsOutlined />,
-      url: `/workspace/project-management/${projectId}/list`
+      url: `/workspace/project-management/${projectId}/list`,
     },
   ];
 

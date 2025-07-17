@@ -27,16 +27,9 @@ import NotificationPopup from "./NotificationPopup";
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
-  const [token, setToken] = useState("");
-  const [avatar, setAvatar] = useState<string>("");
-  useEffect(() => {
-    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (access_token) {
-      const decoded = jwtDecode<TokenPayload>(access_token);
-      setAvatar(decoded.avatar);
-      setToken(access_token);
-    }
-  }, []);
+  const { userInfo } = useAuth();
+  const avatar = userInfo?.avatar?.trim() || undefined;
+  const userName = userInfo?.fullname || "";
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "home":
@@ -112,13 +105,14 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {token ? (
+          {userInfo ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
             >
               <Space className="cursor-pointer">
                 <Avatar src={avatar} />
+                <span className="text-gray-700">{userName}</span>
               </Space>
             </Dropdown>
           ) : (
