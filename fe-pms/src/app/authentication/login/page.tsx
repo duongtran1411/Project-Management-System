@@ -78,8 +78,7 @@ export default function Page() {
         const token = response.data.access_token;
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
-
+        loginSuccess(token);
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
 
@@ -87,9 +86,10 @@ export default function Page() {
 
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
 
-          if (decoded.role === "USER") {
-            router.replace("/");
-          }
+          router.replace(
+            decoded.role === "USER" ? "/" : "/authentication/login"
+          );
+          return;
         }
       } else {
         // Xóa token cũ khi login thất bại
@@ -121,20 +121,58 @@ export default function Page() {
     return <Spinner />;
   }
   return (
-    <div className="border-2 border-gray-200 shadow-xl rounded-xl">
-      <Form
-        name="login"
-        initialValues={{ remember: true }}
-        style={{ maxWidth: 360 }}
-        onFinish={onFinish} className="pt-6 pl-4">
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <Image
-            width={300}
-            src="/Project Hub logo.png"
-            alt="Logo"
-            preview={false}
-            className="mb-8"
-          />
+    <div className="login-page-container">
+      {/* Left Side - Branding */}
+      <div className="login-branding">
+        <div className="branding-content">
+          <div className="logo-container">
+            <Link href="/" className="logo-link">
+              <div className="logo-background">
+                <Image
+                  width={180}
+                  src="/Project Hub logo.png"
+                  alt="Project Hub Logo"
+                  preview={false}
+                  className="brand-logo"
+                />
+              </div>
+            </Link>
+          </div>
+          <div className="brand-text">
+            <Title level={1} className="brand-title">
+              Chào mừng bạn trở lại
+            </Title>
+            <Text className="brand-subtitle">
+              Đăng nhập để tiếp tục quản lý dự án của bạn một cách hiệu quả
+            </Text>
+          </div>
+          <div className="brand-features">
+            <div className="feature-item">
+              <div className="feature-icon">📊</div>
+              <div className="feature-text">
+                <Text strong>Quản lý dự án thông minh</Text>
+                <Text type="secondary">
+                  Theo dõi tiến độ và tối ưu hóa workflow
+                </Text>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">👥</div>
+              <div className="feature-text">
+                <Text strong>Làm việc nhóm hiệu quả</Text>
+                <Text type="secondary">Cộng tác mượt mà với team của bạn</Text>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">📈</div>
+              <div className="feature-text">
+                <Text strong>Báo cáo chi tiết</Text>
+                <Text type="secondary">
+                  Phân tích dữ liệu và đưa ra quyết định
+                </Text>
+              </div>
+            </div>
+          </div>
         </div>
 
         <Form.Item

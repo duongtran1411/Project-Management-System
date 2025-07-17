@@ -1,27 +1,27 @@
 "use client";
-import React, { useEffect, useState } from "react";
 import {
-  Button,
-  Input,
-  Avatar,
-  Typography,
-  MenuProps,
-  Dropdown,
-  Space,
-} from "antd";
-import {
-  QuestionCircleOutlined,
-  SettingOutlined,
-  SearchOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+  SettingOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  Input,
+  MenuProps,
+  Space,
+  Typography,
+} from "antd";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
-import { Constants } from "@/lib/constants";
 
+import { useAuth } from "@/lib/auth/auth-context";
 import { logout } from "@/lib/utils";
 import NotificationPopup from "./NotificationPopup";
 
@@ -39,29 +39,28 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   }, []);
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
-      case "workspace":
-        router.push("/workspace");
-        console.log("Go to My Workspace");
+      case "home":
+        router.push("/");
         break;
       case "profile":
         router.push("/profile");
-        console.log("Go to Profile");
         break;
       case "logout":
         logout();
-        console.log("Logging out...");
         break;
     }
   };
 
   const items: MenuProps["items"] = [
     {
-      label: "My Workspace",
-      key: "workspace",
+      label: "Home",
+      key: "home",
+      icon: <HomeOutlined />,
     },
     {
       label: "Profile",
       key: "profile",
+      icon: <UserOutlined />,
     },
     {
       type: "divider",
@@ -69,6 +68,8 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
     {
       label: "Logout",
       key: "logout",
+      icon: <LogoutOutlined />,
+      danger: true,
     },
   ];
   return (

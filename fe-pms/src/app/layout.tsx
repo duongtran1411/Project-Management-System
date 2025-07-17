@@ -1,4 +1,4 @@
-// import "antd/dist/reset.css";
+import "antd/dist/reset.css";
 import "@/styles/globals.css";
 import "quill/dist/quill.snow.css";
 import type { Metadata } from "next";
