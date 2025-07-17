@@ -207,6 +207,8 @@ const SprintSection: React.FC<Props> = ({
   const handleDeleteTask = async () => {
     try {
       if (selectedTaskIds) await deleteTaskMultiple(selectedTaskIds);
+      setSelectedTaskIds([]);
+      await mutateTask();
     } catch (error) {
       console.log(error);
     }

@@ -1,6 +1,6 @@
 "use client";
-import { Form, Input, Flex, Button, Checkbox, Typography, Divider } from "antd";
-import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import { Form, Input, Flex, Button, Checkbox, Typography } from "antd";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { GoogleCredentialResponse, GoogleLogin } from "@react-oauth/google";
 import { login, loginGoogle } from "@/lib/services/authentication/auth";
@@ -30,19 +30,29 @@ export default function Page() {
       const response = await login(email, password);
       if (response.success) {
         const token = response.data.access_token;
+        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
+        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (!response || typeof response.success === "undefined") {
           throw new Error("Lỗi không xác định từ máy chủ");
         }
-        loginSuccess(token);
-        const decoded = jwtDecode<TokenPayload>(token);
+        if (token) {
+          const decoded = jwtDecode<TokenPayload>(token);
 
-        localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
-        router.replace(decoded.role === "USER" ? "/" : "/authentication/login");
+          //Lưu thông tin người dùng
+          localStorage.setItem("currentUser", JSON.stringify(decoded));
+
+          // Cập nhật auth context
+          loginSuccess(token);
+
+          localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
+          router.replace(decoded.role === "ADMIN" ? "/admin" : "/");
+        }
         return;
       }
 
       localStorage.removeItem(Constants.API_TOKEN_KEY);
+      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
       const message =
         typeof response?.data?.message === "string"
           ? response.data.message
@@ -74,17 +84,26 @@ export default function Page() {
       const response = await loginGoogle(credential);
       if (response.success) {
         const token = response.data.access_token;
+        const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        loginSuccess(token)
+        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
 
+          localStorage.setItem("currentUser", JSON.stringify(decoded));
+
+          // Cập nhật auth context
+          loginSuccess(token);
+
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
 
-          router.replace(decoded.role === "USER" ? "/" : "/authentication/login");
+          router.replace(
+            decoded.role === "USER" ? "/" : "/authentication/login"
+          );
           return;
         }
       } else {
+        // Xóa token cũ khi login thất bại
         localStorage.removeItem(Constants.API_TOKEN_KEY);
         localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
@@ -97,6 +116,7 @@ export default function Page() {
     } catch (error: any) {
       // Xóa token cũ khi có lỗi
       localStorage.removeItem(Constants.API_TOKEN_KEY);
+      localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
 
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
@@ -111,22 +131,23 @@ export default function Page() {
   if (loading) {
     return <Spinner />;
   }
-
   return (
     <div className="login-page-container">
       {/* Left Side - Branding */}
       <div className="login-branding">
         <div className="branding-content">
           <div className="logo-container">
-            <div className="logo-background">
-              <Image
-                width={180}
-                src="/Project Hub logo.png"
-                alt="Project Hub Logo"
-                preview={false}
-                className="brand-logo"
-              />
-            </div>
+            <Link href="/" className="logo-link">
+              <div className="logo-background">
+                <Image
+                  width={180}
+                  src="/Project Hub logo.png"
+                  alt="Project Hub Logo"
+                  preview={false}
+                  className="brand-logo"
+                />
+              </div>
+            </Link>
           </div>
           <div className="brand-text">
             <Title level={1} className="brand-title">
@@ -169,95 +190,64 @@ export default function Page() {
       {/* Right Side - Login Form */}
       <div className="login-form-section">
         <div className="form-container">
-          <div className="form-header">
-            <Title level={2} className="form-title">
-              Đăng nhập
-            </Title>
-            <Text className="form-subtitle">
-              Vui lòng nhập thông tin đăng nhập của bạn
-            </Text>
-          </div>
-
-          <Form
-            name="login"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            className="login-form"
-            layout="vertical"
-            size="large"
-          >
+          <Form onFinish={onFinish} layout="vertical">
             <Form.Item
               name="email"
               rules={[
-                { required: true, message: "Vui lòng nhập email của bạn!" },
-                { type: "email", message: "Email phải có định dạng hợp lệ!" },
+                { required: true, message: "Please input your email!" },
+                {
+                  type: "email",
+                  message: "Email must be include @example.com!",
+                },
               ]}
             >
               <Input
-                prefix={<MailOutlined className="input-icon" />}
+                prefix={<UserOutlined />}
                 placeholder="Email"
                 onChange={(e) => setEmail(e.target.value)}
-                className="custom-input"
               />
             </Form.Item>
-
             <Form.Item
               name="password"
-              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
+              rules={[
+                { required: true, message: "Please input your Password!" },
+              ]}
             >
               <Input
-                prefix={<LockOutlined className="input-icon" />}
+                prefix={<LockOutlined />}
                 type="password"
-                placeholder="Mật khẩu"
+                placeholder="Password"
                 onChange={(e) => setPassword(e.target.value)}
-                className="custom-input"
               />
             </Form.Item>
-
             <Form.Item>
               <Flex justify="space-between" align="center">
                 <Form.Item name="remember" valuePropName="checked" noStyle>
-                  <Checkbox className="remember-me-checkbox">
-                    Ghi nhớ đăng nhập
-                  </Checkbox>
+                  <Checkbox>Remember me</Checkbox>
                 </Form.Item>
                 <Link
                   href={"/authentication/forgot-password"}
-                  className="forgot-password-link"
+                  className="text-sm text-blue-500 hover:decoration-solid hover:underline"
                 >
-                  Quên mật khẩu?
+                  Forgot password?
                 </Link>
               </Flex>
             </Form.Item>
 
             <Form.Item>
-              <Button
-                block
-                type="primary"
-                htmlType="submit"
-                className="login-button"
-                loading={loading}
-              >
-                Đăng nhập
+              <Button block type="primary" htmlType="submit" className="mb-2">
+                Log in
               </Button>
-            </Form.Item>
 
-            <Divider className="divider">
-              <Text type="secondary">hoặc</Text>
-            </Divider>
-
-            <Form.Item>
-              <div className="google-login-container">
-                <GoogleLogin
-                  onSuccess={(credentialResponse) => {
-                    setLoading(true);
-                    handleLoginGoogle(credentialResponse);
-                  }}
-                  onError={() => {
-                    showErrorToast("Đăng nhập Google thất bại");
-                  }}
-                />
-              </div>
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  setLoading(true); // Đảm bảo bật spinner ngay lập tức
+                  handleLoginGoogle(credentialResponse);
+                }}
+                onError={() => {
+                  showErrorToast("Đăng nhập Google thất bại");
+                }}
+              />
             </Form.Item>
           </Form>
         </div>
