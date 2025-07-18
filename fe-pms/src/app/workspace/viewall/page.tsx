@@ -10,7 +10,7 @@ import {
   Spin,
   Alert,
 } from "antd";
-import { StarOutlined } from "@ant-design/icons";
+import { SearchOutlined, StarOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
@@ -168,7 +168,8 @@ const ProjectTable = () => {
       <div className="flex gap-4 mb-4">
         <Input
           placeholder="Search projects"
-          className="w-64"
+          className="w-[450px] h-[10px] board-search-input"
+          prefix={<SearchOutlined className="text-gray-400" />}
           value={searchTerm}
           onChange={handleSearch}
         />

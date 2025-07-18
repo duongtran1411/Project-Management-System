@@ -66,7 +66,16 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
     },
   ];
   return (
-    <header className="bg-white px-4 py-2 flex items-center justify-between w-full border-b border-gray-300">
+    <header
+      className="bg-white px-4 py-2 flex items-center justify-between w-full border-b border-gray-300"
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+        backdropFilter: "blur(8px)",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+      }}
+    >
       {/* Left */}
       <div className="flex items-center gap-x-3">
         <Button
