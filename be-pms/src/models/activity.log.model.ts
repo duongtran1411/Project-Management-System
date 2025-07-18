@@ -104,13 +104,22 @@ const activityLogSchema = new Schema<IActivityLog>(
       required: [true, "IP address is required"],
       validate: {
         validator: function (v: string) {
+          // Accept unknown IP
+          if (v === "unknown") return true;
           // Accept localhost IPv4/IPv6
-          if (v === "::1" || v === "127.0.0.1" || v === "0.0.0.0") return true;
+          if (v === "::1" || v === "127.0.0.1" || v === "0.0.0.0" || v === "::")
+            return true;
           // Basic IP validation (IPv4 and IPv6)
           const ipv4Regex =
             /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-          const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-          return ipv4Regex.test(v) || ipv6Regex.test(v);
+          const ipv6Regex =
+            /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/;
+          // IPv4-mapped IPv6 addresses
+          const ipv4MappedRegex =
+            /^::ffff:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+          return (
+            ipv4Regex.test(v) || ipv6Regex.test(v) || ipv4MappedRegex.test(v)
+          );
         },
         message: "Invalid IP address format",
       },
