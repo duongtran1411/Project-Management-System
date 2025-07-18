@@ -69,8 +69,8 @@ export default function ProgressChartAnt() {
             }
           >
             <Progress
-              percent={task.donePercent + task.inProgressPercent}
-              success={{ percent: task.donePercent, strokeColor: "#6a9a24" }}
+              percent={task.done + task.inProgress}
+              success={{ percent: task.done, strokeColor: "##6a9a24" }} // Tailwind green-600
               showInfo={true}
               percentPosition={{ align: "start", type: "inner" }}
               size={{ height: 23 }}

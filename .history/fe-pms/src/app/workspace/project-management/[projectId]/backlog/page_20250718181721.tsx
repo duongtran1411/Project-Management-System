@@ -86,7 +86,7 @@ export default function Backlog() {
       // Filter by assignee
       const assigneeMatch =
         selectedAssignees.length === 0 ||
-        (task.assignee?._id && selectedAssignees.includes(task.assignee._id)) ||
+        (task._id && selectedAssignees.includes(task._id)) ||
         (selectedAssignees.includes("unassigned") && !task.assignee);
 
       // Filter by epic
@@ -175,11 +175,8 @@ export default function Backlog() {
         onChange={setSelectedAssignees}
         className="flex flex-col  gap-2"
       >
-        <Checkbox key="unassigned" value="unassigned">
-          Unassigned
-        </Checkbox>
         {contributorData?.data?.map((contributor: Contributor) => (
-          <Checkbox key={contributor._id} value={contributor.userId._id}>
+          <Checkbox key={contributor._id} value={contributor._id}>
             {contributor?.userId?.fullName}
           </Checkbox>
         ))}

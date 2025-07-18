@@ -9,6 +9,7 @@ import {
   TableProps,
   Spin,
   Alert,
+  Avatar,
 } from "antd";
 import { SearchOutlined, StarOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
@@ -63,17 +64,17 @@ const columns: TableProps<DataType>["columns"] = [
       <span className="text-gray-500">{text || "updating"}</span>
     ),
   },
-  // {
-  //   title: "Lead",
-  //   dataIndex: "lead",
-  //   key: "lead",
-  //   render: (lead) => (
-  //     <div className="flex items-center space-x-2">
-  //       <Avatar style={{ backgroundColor: lead.color }}>{lead.avatar}</Avatar>
-  //       <span>{lead.name}</span>
-  //     </div>
-  //   ),
-  // },
+  {
+    title: "Lead",
+    dataIndex: "projectLead",
+    key: "lead",
+    render: (lead) => (
+      <div className="flex items-center space-x-2">
+        <Avatar src={lead.avatar} />
+        <span>{lead.fullName}</span>
+      </div>
+    ),
+  },
   // {
   //   title: "Project URL",
   //   dataIndex: "url",

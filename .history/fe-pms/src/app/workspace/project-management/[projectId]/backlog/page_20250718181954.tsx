@@ -175,9 +175,6 @@ export default function Backlog() {
         onChange={setSelectedAssignees}
         className="flex flex-col  gap-2"
       >
-        <Checkbox key="unassigned" value="unassigned">
-          Unassigned
-        </Checkbox>
         {contributorData?.data?.map((contributor: Contributor) => (
           <Checkbox key={contributor._id} value={contributor.userId._id}>
             {contributor?.userId?.fullName}
