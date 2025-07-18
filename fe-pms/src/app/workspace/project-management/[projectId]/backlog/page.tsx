@@ -40,6 +40,7 @@ export default function Backlog() {
       .getAxiosInstance()
       .get(url)
       .then((res) => res.data);
+
   const { data: epicData, error: epicError } = useSWR(
     `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
@@ -66,6 +67,9 @@ export default function Backlog() {
   const isLoading =
     !epicData || !taskData || !contributorData || !milestoneData;
   const isError = epicError || taskError || contributorError || milestoneError;
+
+  console.log("contributorData", contributorData);
+  console.log(" selectedAssignees", selectedAssignees);
 
   // Filtered tasks based on search criteria
   const filteredTasks = useMemo(() => {
@@ -171,8 +175,11 @@ export default function Backlog() {
         onChange={setSelectedAssignees}
         className="flex flex-col  gap-2"
       >
+        <Checkbox key="unassigned" value="unassigned">
+          Unassigned
+        </Checkbox>
         {contributorData?.data?.map((contributor: Contributor) => (
-          <Checkbox key={contributor._id} value={contributor._id}>
+          <Checkbox key={contributor._id} value={contributor.userId._id}>
             {contributor?.userId?.fullName}
           </Checkbox>
         ))}

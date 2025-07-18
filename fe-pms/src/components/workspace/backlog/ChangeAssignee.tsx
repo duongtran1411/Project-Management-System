@@ -28,7 +28,7 @@ const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
 
   const menuItems: MenuProps["items"] = [
     {
-      key: "unassigned",
+      key: "null",
       label: (
         <div className="flex items-center gap-3 p-2">
           <Avatar>U</Avatar>
