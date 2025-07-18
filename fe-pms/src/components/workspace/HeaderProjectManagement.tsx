@@ -54,7 +54,6 @@ const HeaderProjectManagement = () => {
     fetcherWithToken
   );
 
-  console.log("projectData", projectData?.data);
 
   const menuItems = [
     {
