@@ -22,6 +22,7 @@ import {
   FlagOutlined,
   ArrowDownOutlined,
   FileDoneOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
 import { updateAssigneeTask, updateTaskStatus } from "@/lib/services/task/task";
@@ -94,7 +95,7 @@ const BoardPage = () => {
     fetcher
   );
 
-  const { data: contributorData, error: contributorError } = useSWR(
+  const { data: contributorData } = useSWR(
     projectId
       ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
       : "",
@@ -281,10 +282,11 @@ const BoardPage = () => {
   return (
     <div className="p-6">
       <div className="flex items-center gap-3 mb-6">
-        <Input.Search
+        <Input
           placeholder="Search board"
           allowClear
-          className="w-[260px]"
+          className="w-[450px] h-[10px] board-search-input"
+          prefix={<SearchOutlined className="text-gray-400" />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -293,6 +295,7 @@ const BoardPage = () => {
           onOpenChange={setEpicOpen}
           popupRender={() => epicDropdown}
           trigger={["click"]}
+          className="board-epic-dropdown"
         >
           <Button className="flex items-center font-semibold text-gray-700">
             Epic <DownOutlined className="ml-1" />
@@ -500,6 +503,7 @@ const BoardPage = () => {
                                       },
                                     }}
                                     trigger={["click"]}
+                                    className="board-assignee-dropdown"
                                   >
                                     <Tooltip
                                       title={`Assignee: ${

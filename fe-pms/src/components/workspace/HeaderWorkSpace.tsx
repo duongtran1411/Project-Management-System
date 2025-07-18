@@ -109,6 +109,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
+              className="header-workspace-dropdown"
             >
               <Space className="cursor-pointer">
                 <Avatar src={avatar} />

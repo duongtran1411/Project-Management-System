@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Alert, Menu, Spin } from "antd";
+import { Alert, Image, Menu, Spin } from "antd";
 import {
   AppstoreOutlined,
   ClockCircleOutlined,
@@ -122,10 +122,12 @@ const HeaderProjectManagement = () => {
       ) : (
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center">
-            <img
-              src="/project.png"
+            <Image
+              src={projectData?.data?.image || "/project.png"}
               alt="logo"
-              className="ml-3 rounded-sm w-7 h-7"
+              // className="ml-3 rounded-sm w-7 h-7"
+              width={28}
+              height={28}
             />
             <span className="text-base font-bold text-gray-800">
               {projectData?.data?.name || "Project Management"}
