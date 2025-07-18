@@ -1,10 +1,10 @@
-import { Endpoints } from "@/lib/endpoints";
-import axiosService from "../axios.service";
 import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
-import { Task, TaskModel } from "@/types/types";
+import { Endpoints } from "@/lib/endpoints";
+import { TaskModel } from "@/types/types";
+import axiosService from "../axios.service";
 
 export const createTask = async (task: TaskModel) => {
   try {
@@ -39,15 +39,18 @@ export const getTasksByProject = async (
   }
 };
 
-export const updateTask = async (taskId: string, task: Task) => {
+
+
+
+export const updateTaskStatus = async (taskId: string, status: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .put(Endpoints.Task.UPDATE_TASK(taskId), task);
+      .put(Endpoints.Task.UPDATE_TASK(taskId), { status }); 
 
     if (response.data?.success) {
-      showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
-      return response?.data.data;
+      showSuccessToast("Cập nhật trạng thái status thành công!");
+      return response.data.data;
     } else {
       throw new Error(response.data?.message || "Cập nhật thất bại");
     }
@@ -75,6 +78,25 @@ export const getTasksByAssignee = async (
     return null;
   }
 };
+
+
+export const getTasksByEpic = async (
+  epicId: string
+): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_BY_EPIC(epicId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy danh sách task theo Epic!";
+    showErrorToast(message);
+    return null;
+  }
+};
+
 
 
 
