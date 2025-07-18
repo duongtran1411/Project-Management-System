@@ -1,9 +1,8 @@
-import Link from 'next/link'
-import HeaderFeaturedNav from './HeaderFeaturedNav'
-import HeaderNotificationNav from './HeaderNotificationNav'
-import HeaderProfileNav from './HeaderProfileNav'
-import HeaderSidebarToggler from './HeaderSidebarToggler'
-import BreadcrumbAnt from '../Breadcrumb/Breadcrumb'
+import Link from "next/link";
+import BreadcrumbAnt from "../Breadcrumb/Breadcrumb";
+import HeaderFeaturedNav from "./HeaderFeaturedNav";
+import HeaderProfileNav from "./HeaderProfileNav";
+import HeaderSidebarToggler from "./HeaderSidebarToggler";
 
 export default function Header() {
   return (
@@ -27,7 +26,7 @@ export default function Header() {
         </div>
       </div>
       <div className="header-divider border-top my-2 mx-sm-n2" />
-        <BreadcrumbAnt />
+      <BreadcrumbAnt />
     </header>
-  )
+  );
 }
