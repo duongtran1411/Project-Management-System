@@ -187,7 +187,7 @@ export default function Backlog() {
         <Input
           placeholder="Search tasks..."
           prefix={<SearchOutlined className="text-gray-400" />}
-          className=" w-[184px] h-[32px] border-gray-400"
+          className="w-[450px] h-[10px] board-search-input"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />

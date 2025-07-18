@@ -59,6 +59,7 @@ const ChangePriority: React.FC<Props> = ({ taskId, priority, mutateTask }) => {
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      className="priority-dropdown"
     >
       <Tag color={currentOption?.color || "orange"} className="cursor-pointer">
         <span className="flex items-center gap-1">
