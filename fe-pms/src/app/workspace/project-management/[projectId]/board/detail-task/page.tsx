@@ -37,6 +37,7 @@ import {
   updateAssigneeTask,
   updateDescriptionTask,
   updateEpicTask,
+  updateTaskDate,
 } from "@/lib/services/task/task";
 import { Assignee } from "@/models/assignee/assignee";
 import { Epic } from "@/models/epic/epic";
@@ -226,6 +227,17 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
         showSuccessToast(response.message);
         setEpic(response.data.epic);
       }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const updateDateTask = async () => {
+    try {
+      // const response = await updateTaskDate(task._id ? task._id : '',)
     } catch (error: any) {
       const message =
         error?.response?.data?.message || "Không thể lấy gán task đã giao!";
@@ -555,8 +567,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 <DatePicker
                   value={task.dueDate ? dayjs(task.dueDate) : undefined}
                   disabledDate={(current) => {
-                    if (!task.startDate) return false; 
-                    return current.isBefore(dayjs(task.startDate), "day"); 
+                    if (!task.startDate) return false;
+                    return current.isBefore(dayjs(task.startDate), "day");
                   }}
                 />
               </Space>
