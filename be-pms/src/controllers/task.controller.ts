@@ -1,23 +1,29 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import taskService from "../services/task.service";
+import { Server } from "socket.io";
 
 export class TaskController {
+  private io: Server | null = null;
+
+  setSocketIO(io: Server) {
+    this.io = io;
+    taskService.setSocketIO(io);
+  }
+
   createTask = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const taskData = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!;
 
       const task = await taskService.createTask(taskData, user);
+
+      if (this.io) {
+        this.io.emit("task-created", {
+          task,
+          projectId: taskData.projectId,
+        });
+      }
 
       res.status(201).json({
         success: true,
@@ -102,16 +108,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!; // User is guaranteed to exist due to auth middleware
 
       const task = await taskService.updateTask(id, updateData, user);
 
@@ -258,16 +255,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!; // User is guaranteed to exist due to auth middleware
 
       if (!status) {
         res.status(400).json({
@@ -312,16 +300,7 @@ export class TaskController {
     try {
       const { id } = req.params;
       const { priority } = req.body;
-      const user = req.user;
-
-      if (!user) {
-        res.status(401).json({
-          success: false,
-          message: "Không có quyền truy cập",
-          statusCode: 401,
-        });
-        return;
-      }
+      const user = req.user!; // User is guaranteed to exist due to auth middleware
 
       if (!priority) {
         res.status(400).json({
@@ -385,6 +364,354 @@ export class TaskController {
       res.status(400).json({
         success: false,
         message: error.message || "Xóa nhiều task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskName = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { name } = req.body;
+      const user = req.user!;
+
+      if (!name) {
+        res.status(400).json({
+          success: false,
+          message: "Tên task là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskName(id, name, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật tên task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task name error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật tên task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskDescription = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { description } = req.body;
+      const user = req.user!;
+
+      if (!description) {
+        res.status(400).json({
+          success: false,
+          message: "Mô tả task là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskDescription(
+        id,
+        description,
+        user
+      );
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật mô tả task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task description error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật mô tả task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskAssignee = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { assignee } = req.body;
+      const user = req.user!;
+
+      if (!assignee) {
+        res.status(400).json({
+          success: false,
+          message: "Người được giao là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskAssignee(id, assignee, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật người được giao task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task assignee error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật người được giao task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskReporter = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { reporter } = req.body;
+      const user = req.user!;
+
+      if (!reporter) {
+        res.status(400).json({
+          success: false,
+          message: "Người báo cáo là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskReporter(id, reporter, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật người báo cáo task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task reporter error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật người báo cáo task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskEpic = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { epic } = req.body;
+      const user = req.user!;
+
+      if (!epic) {
+        res.status(400).json({
+          success: false,
+          message: "Epic là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskEpic(id, epic, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật epic task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task epic error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật epic task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskMilestone = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { milestone } = req.body;
+      const user = req.user!;
+
+      if (!milestone) {
+        res.status(400).json({
+          success: false,
+          message: "Milestone là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskMilestone(id, milestone, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật milestone task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task milestone error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật milestone task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskDates = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { startDate, dueDate } = req.body;
+      const user = req.user!;
+
+      const task = await taskService.updateTaskDates(
+        id,
+        startDate,
+        dueDate,
+        user
+      );
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật ngày tháng task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task dates error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật ngày tháng task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  updateTaskLabels = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { labels } = req.body;
+      const user = req.user!;
+
+      if (!Array.isArray(labels)) {
+        res.status(400).json({
+          success: false,
+          message: "Labels phải là một mảng",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const task = await taskService.updateTaskLabels(id, labels, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật labels task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task labels error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật labels task thất bại",
         statusCode: 400,
       });
     }

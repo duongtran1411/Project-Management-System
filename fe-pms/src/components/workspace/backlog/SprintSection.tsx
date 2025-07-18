@@ -1,7 +1,6 @@
 "use client";
-import { Milestone, Task } from "@/types/types";
+import { Milestone, Task, User } from "@/types/types";
 import {
-  CloseOutlined,
   DeleteOutlined,
   DownOutlined,
   EllipsisOutlined,
@@ -9,7 +8,6 @@ import {
   RightOutlined,
 } from "@ant-design/icons";
 import {
-  Avatar,
   Button,
   Checkbox,
   CheckboxProps,
@@ -27,6 +25,9 @@ import {
   updateMilestone,
 } from "@/lib/services/milestone/milestone";
 import ChangeTask from "./ChangeTask";
+import ChangePriority from "./ChangePriority";
+import ChangeAssignee from "./ChangeAssignee";
+import { deleteTaskMultiple } from "@/lib/services/task/task";
 
 const items = [
   {
@@ -46,6 +47,8 @@ interface Props {
   showModal: (milestone: Milestone) => void;
   refreshData: () => void;
   mutateTask: () => void;
+  setSelectedTask: (task: Task | null) => void;
+  selectedTask: Task | null;
 }
 
 const SprintSection: React.FC<Props> = ({
@@ -55,6 +58,8 @@ const SprintSection: React.FC<Props> = ({
   showModal,
   refreshData,
   mutateTask,
+  setSelectedTask,
+  selectedTask,
 }) => {
   const columns: TableProps<Task>["columns"] = [
     {
@@ -72,11 +77,13 @@ const SprintSection: React.FC<Props> = ({
       dataIndex: "status",
       render: (status: string, record: Task) => {
         return (
-          <ChangeTask
-            taskId={record._id}
-            status={status}
-            mutateTask={mutateTask}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <ChangeTask
+              taskId={record._id}
+              status={status}
+              mutateTask={mutateTask}
+            />
+          </div>
         );
       },
     },
@@ -93,18 +100,28 @@ const SprintSection: React.FC<Props> = ({
     {
       title: "",
       dataIndex: "priority",
-      render: (priority) => <Tag color="orange">{priority}</Tag>,
+      render: (priority: string, record: Task) => {
+        return (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ChangePriority
+              taskId={record._id}
+              priority={priority}
+              mutateTask={mutateTask}
+            />
+          </div>
+        );
+      },
     },
     {
       title: "",
       dataIndex: "assignee",
-      render: (assignee) => (
-        <div className="flex rounded-full mx-3">
-          {assignee?.avatar ? (
-            <Avatar src={assignee?.avatar} />
-          ) : (
-            <Avatar>U</Avatar>
-          )}
+      render: (assignee: User, record: Task) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <ChangeAssignee
+            taskId={record._id}
+            assignee={assignee}
+            mutateTask={mutateTask}
+          />
         </div>
       ),
     },
@@ -187,13 +204,23 @@ const SprintSection: React.FC<Props> = ({
       setSelectedTaskIds(selectedRowKeys as string[]);
     },
   };
+  const handleDeleteTask = async () => {
+    try {
+      if (selectedTaskIds) await deleteTaskMultiple(selectedTaskIds);
+      setSelectedTaskIds([]);
+      await mutateTask();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
-    <>
+    <div>
       {milestoneData?.map((milestone: Milestone) => {
         const taskInMileStone = listTask?.filter(
           (task: Task) => task.milestones?._id === milestone._id
         );
+
         // allTaskIdsInMilestone là mảng chứa tất cả _id của task đang hiển thị
         const allTaskIdsInMilestone = taskInMileStone
           .map((task) => task._id)
@@ -211,7 +238,7 @@ const SprintSection: React.FC<Props> = ({
         return (
           <div
             key={milestone._id}
-            className="m-4 bg-gray-100 rounded-sm p-[6px]"
+            className="m-4 bg-gray-100 rounded-sm p-[15px]"
           >
             <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
               {/* Left */}
@@ -294,6 +321,12 @@ const SprintSection: React.FC<Props> = ({
                     size="small"
                     showHeader={false}
                     rowKey="_id"
+                    onRow={(record) => ({
+                      onClick: () => setSelectedTask(record),
+                    })}
+                    rowClassName={(record) =>
+                      selectedTask?._id === record._id ? "bg-blue-100" : ""
+                    }
                   />
                 ) : (
                   <div className="border border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
@@ -316,6 +349,7 @@ const SprintSection: React.FC<Props> = ({
         );
       })}
 
+      {/* Edit sprint */}
       <EditSprintModal
         open={editModalOpen}
         onCancel={() => setEditModalOpen(false)}
@@ -323,6 +357,7 @@ const SprintSection: React.FC<Props> = ({
         onUpdate={handleUpdate}
       />
 
+      {/* Confirm delete sprint */}
       <Modal
         title="Delete sprint"
         closable={{ "aria-label": "Custom Close Button" }}
@@ -339,14 +374,16 @@ const SprintSection: React.FC<Props> = ({
       {/* show when checkbop is checked */}
       {selectedTaskIds.length > 0 && (
         <div className="fixed bottom-4 left-4 right-4 bg-gray-700 border shadow-md rounded-md p-3 flex items-center justify-between z-50 w-max m-auto text-white">
-          <div className="flex gap-3">
+          <div
+            className="flex gap-3 hover:bg-gray-900 p-1 rounded-md cursor-pointer"
+            onClick={handleDeleteTask}
+          >
             <DeleteOutlined />
             <p>Delete task</p>
-            <CloseOutlined className="hover:bg-gray-900 p-1 rounded-md" />
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

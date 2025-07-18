@@ -1,6 +1,10 @@
 "use client";
 
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 import { Progress, Tooltip } from "antd";
+import { useParams } from "next/navigation";
+import useSWR from "swr";
 
 type Task = {
   key: string;
@@ -16,7 +20,19 @@ const tasks: Task[] = [
   { key: "SCRUM-8", title: "SRS Document", done: 100, inProgress: 0, toDo: 0 },
 ];
 
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
+
 export default function ProgressChartAnt() {
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const { data: statisticsEpic } = useSWR(
+    `${Endpoints.Statistics.STATISTIC_EPIC(projectId)}`,
+    fetcher
+  );
   return (
     <div className="w-full max-w-xl space-y-6">
       {/* Legend */}

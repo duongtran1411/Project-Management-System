@@ -1,41 +1,40 @@
 "use client";
-import React from "react";
-import { Button, Avatar, Space, Dropdown } from "antd";
-import { Constants } from "@/lib/constants";
-import { useEffect, useState } from "react";
-import { MenuProps } from "antd";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useAuth } from "@/lib/auth/auth-context";
 import { logout } from "@/lib/utils";
-import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { Avatar, Button, Dropdown, MenuProps, Space } from "antd";
+import { UserOutlined, LogoutOutlined, HomeOutlined } from "@ant-design/icons";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+
 const Header: React.FC = () => {
-  const [token, setToken] = useState("");
   const router = useRouter();
-  const [userName, setUserName] = useState<string>("");
-  const [avatar, setAvatar] = useState<string>("");
+  const { userInfo } = useAuth();
+  const avatar = userInfo?.avatar?.trim() || undefined;
+  const userName = userInfo?.fullname || "";
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Theo dõi scroll để thêm hiệu ứng
   useEffect(() => {
-    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (access_token) {
-      const decoded = jwtDecode<TokenPayload>(access_token);
-      setUserName(decoded.fullname);
-      setAvatar(decoded.avatar);
-      setToken(access_token);
-    }
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "workspace":
         router.push("/workspace");
-        console.log("Go to My Workspace");
         break;
       case "profile":
         router.push("/profile");
-        console.log("Go to Profile");
         break;
       case "logout":
         logout();
-        console.log("Logging out...");
         break;
     }
   };
@@ -44,10 +43,12 @@ const Header: React.FC = () => {
     {
       label: "My Workspace",
       key: "workspace",
+      icon: <HomeOutlined />,
     },
     {
       label: "Profile",
       key: "profile",
+      icon: <UserOutlined />,
     },
     {
       type: "divider",
@@ -55,33 +56,47 @@ const Header: React.FC = () => {
     {
       label: "Logout",
       key: "logout",
+      icon: <LogoutOutlined />,
+      danger: true,
     },
   ];
-  return (
-    <div className="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
-      <div className="flex items-center ">
-        <img src="/jira_icon.png" alt="Logo" className="h-8 w-8" />
-        <h1 className="ml-3 text-xl font-semibold text-gray-800">Hub</h1>
-      </div>
 
-      <div>
-        {token ? (
-          <Dropdown
-            menu={{ items, onClick: handleMenuClick }}
-            trigger={["click"]}
-          >
-            <Space className="cursor-pointer">
-              <Avatar src={avatar} />
-              <span className="text-gray-700">{userName}</span>
-            </Space>
-          </Dropdown>
-        ) : (
-          <Button type="primary" className="bg-blue-500 hover:bg-blue-600">
-            <Link href={"/authentication/login"}>Login</Link>
-          </Button>
-        )}
+  return (
+    <header
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50"
+          : "bg-white shadow-sm"
+      }`}
+    >
+      <div className="flex items-center justify-between px-6 py-4 w-full">
+        <div className="flex items-center">
+          <img src="/jira_icon.png" alt="Logo" className="h-8 w-8" />
+          <h1 className="ml-3 text-xl font-semibold text-gray-800">Hub</h1>
+        </div>
+
+        <div>
+          {userInfo ? (
+            <Dropdown
+              menu={{ items, onClick: handleMenuClick }}
+              trigger={["click"]}
+            >
+              <Space className="cursor-pointer">
+                <Avatar src={avatar} />
+                <span className="text-gray-700">{userName}</span>
+              </Space>
+            </Dropdown>
+          ) : (
+            <Button
+              type="primary"
+              className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 border-0"
+            >
+              <Link href={"/authentication/login"}>Get Started</Link>
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
+    </header>
   );
 };
 

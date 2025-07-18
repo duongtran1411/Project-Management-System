@@ -19,3 +19,4 @@ export {
   default as PasswordReset,
   IPasswordReset,
 } from "./password.reset.model";
+export { default as Notification, INotification } from "./notification.model";

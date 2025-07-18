@@ -64,28 +64,28 @@ router.get(
   statisticsController.getTaskPriorityStats
 );
 
-// /**
-//  * @openapi
-//  * /statistics/project/{projectId}/epics:
-//  *   get:
-//  *     summary: Lấy thống kê task theo epic
-//  *     tags: [Statistics]
-//  *     security: [bearerAuth: []]
-//  *     parameters:
-//  *       - in: path
-//  *         name: projectId
-//  *         required: true
-//  *         schema: { type: string }
-//  *         description: ID của dự án
-//  *     responses:
-//  *       200: { description: Lấy thống kê epic thành công }
-//  *       401: { description: Không có quyền truy cập }
-//  */
-// router.get(
-//   "/project/:projectId/epics",
-//   authenticate,
-//   statisticsController.getEpicTaskStats
-// );
+/**
+ * @openapi
+ * /statistics/project/{projectId}/epics:
+ *   get:
+ *     summary: Lấy thống kê task theo epic
+ *     tags: [Statistics]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của dự án
+ *     responses:
+ *       200: { description: Lấy thống kê epic thành công }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get(
+  "/project/:projectId/epics",
+  authenticate,
+  statisticsController.getEpicTaskStats
+);
 
 /**
  * @openapi
@@ -162,5 +162,6 @@ router.get(
   authenticate,
   statisticsController.searchTasks
 );
+
 
 export default router;

@@ -20,9 +20,19 @@ export class Endpoints {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
+    DELETE_TASKS: "task/bulk-delete",
     GET_BY_ASSIGNEE: (userId: string) => `task/assignee/${userId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
     GET_BY_EPIC: (epicId: string) => `task/epic/${epicId}`,
+    UPDATE_STATUS: (taskId: string) => `task/${taskId}/status`,
+    UPDATE_PRIORITY: (taskId: string) => `task/${taskId}/priority`,
+    UPDATE_ASSIGNEE: (taskId: string) => `task/${taskId}/assignee`,
+    UPDATE_EPIC: (taskId: string) => `task/${taskId}/epic`,
+    UPDATE_DATE: (taskId: string) => `task/${taskId}/dates`,
+    UPDATE_REPORTER: (taskId: string) => `task/${taskId}/reporter`,
+    UPDATE_MILESTONE: (taskId: string) => `task/${taskId}/milestone`,
+    UPDATE_NAME: (taskId: string) => `task/${taskId}/name`,
+    UPDATE_DESCRIPTION: (taskId: string) => `task/${taskId}/description`,
   };
 
   static readonly Milestone = {
@@ -42,6 +52,9 @@ export class Endpoints {
   static readonly ProjectContributor = {
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
+    CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
+    GET_USER_BY_PROJECT: (projectId: string) =>
+      `project-contributor/project/${projectId}/users`,
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
@@ -62,5 +75,21 @@ export class Endpoints {
       `statistics/project/${projectId}/epics`,
     STATISTIC_CONTRIBUTOR: (projectId: string) =>
       `statistics/project/${projectId}/contributors`,
+  };
+
+  static readonly Comment = {
+    GET_COMMENT_BY_TASK: (taskId: string) => `comment/${taskId}`,
+    CREATE_COMMENT: "comment",
+  };
+
+  static readonly Notification = {
+    GET_NOTIFICATIONS: "notification",
+    GET_STATS: "notification/stats",
+    MARK_AS_READ: (notificationId: string) =>
+      `notification/${notificationId}/read`,
+    MARK_ALL_AS_READ: "notification/mark-all-read",
+    ARCHIVE: (notificationId: string) =>
+      `notification/${notificationId}/archive`,
+    DELETE: (notificationId: string) => `notification/${notificationId}`,
   };
 }
