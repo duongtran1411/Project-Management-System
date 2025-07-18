@@ -1,6 +1,9 @@
 import { Router } from "express";
 import taskController from "../controllers/task.controller";
-import { authenticate } from "../middlewares/auth.middleware";
+import {
+  authenticate,
+  authorizeProjectRole,
+} from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -156,7 +159,12 @@ router.get("/:id", authenticate, taskController.getTaskById);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.put("/:id", authenticate, taskController.updateTask);
+router.put(
+  "/:id",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTask
+);
 
 /**
  * @openapi
@@ -372,7 +380,12 @@ router.patch("/:id/status", authenticate, taskController.updateTaskStatus);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/priority", authenticate, taskController.updateTaskPriority);
+router.patch(
+  "/:id/priority",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskPriority
+);
 
 /**
  * @openapi
@@ -402,7 +415,12 @@ router.patch("/:id/priority", authenticate, taskController.updateTaskPriority);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/name", authenticate, taskController.updateTaskName);
+router.patch(
+  "/:id/name",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskName
+);
 
 /**
  * @openapi
@@ -435,6 +453,7 @@ router.patch("/:id/name", authenticate, taskController.updateTaskName);
 router.patch(
   "/:id/description",
   authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskDescription
 );
 
@@ -466,7 +485,12 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/assignee", authenticate, taskController.updateTaskAssignee);
+router.patch(
+  "/:id/assignee",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskAssignee
+);
 
 /**
  * @openapi
@@ -496,7 +520,12 @@ router.patch("/:id/assignee", authenticate, taskController.updateTaskAssignee);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/reporter", authenticate, taskController.updateTaskReporter);
+router.patch(
+  "/:id/reporter",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskReporter
+);
 
 /**
  * @openapi
@@ -526,7 +555,12 @@ router.patch("/:id/reporter", authenticate, taskController.updateTaskReporter);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/epic", authenticate, taskController.updateTaskEpic);
+router.patch(
+  "/:id/epic",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskEpic
+);
 
 /**
  * @openapi
@@ -559,6 +593,7 @@ router.patch("/:id/epic", authenticate, taskController.updateTaskEpic);
 router.patch(
   "/:id/milestone",
   authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskMilestone
 );
 
@@ -590,7 +625,12 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/dates", authenticate, taskController.updateTaskDates);
+router.patch(
+  "/:id/dates",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskDates
+);
 
 /**
  * @openapi
@@ -622,6 +662,11 @@ router.patch("/:id/dates", authenticate, taskController.updateTaskDates);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/labels", authenticate, taskController.updateTaskLabels);
+router.patch(
+  "/:id/labels",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTaskLabels
+);
 
 export default router;
