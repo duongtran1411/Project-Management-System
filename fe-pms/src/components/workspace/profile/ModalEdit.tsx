@@ -6,10 +6,6 @@ import { UploadOutlined } from "@ant-design/icons";
 import { Button, Form, FormInstance, Image, Input, Modal, Upload } from "antd";
 import { useState } from "react";
 
-const CLOUDINARY_UPLOAD_URL =
-  "https://api.cloudinary.com/v1_1/dbvv3pnpo/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = "project-hub";
-
 interface Props {
   userId: string;
   mutate: () => void;
@@ -31,13 +27,25 @@ export const ModalEdit: React.FC<Props> = ({
   const { setUserInfo } = useAuth();
   const [editLoading, setEditLoading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+
+  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  const cloudURL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+
+  console.log("preset, cloudURL", preset, cloudURL);
+
+  if (!preset || !cloudURL) {
+    throw new Error(
+      "Missing CLOUDINARY_UPLOAD_PRESET or CLOUDINARY_UPLOAD_URL"
+    );
+  }
+
   const handleAvatarUpload = async (file: File) => {
     setAvatarUploading(true);
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("upload_preset", preset);
 
-    const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+    const res = await fetch(cloudURL, {
       method: "POST",
       body: formData,
     });
