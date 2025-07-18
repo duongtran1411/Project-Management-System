@@ -40,28 +40,6 @@ export const getTasksByProject = async (
 };
 
 
-
-
-export const updateTaskStatus = async (taskId: string, status: string) => {
-  try {
-    const response = await axiosService
-      .getAxiosInstance()
-      .put(Endpoints.Task.UPDATE_TASK(taskId), { status }); 
-
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật trạng thái status thành công!");
-      return response.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
-    }
-  } catch (error: any) {
-    const message =
-      error?.response?.data?.message || "Lỗi khi cập nhật trạng thái task!";
-    showErrorToast(message);
-    throw error;
-  }
-};
-
 export const updateTaskStatus = async (taskId: string, status: string) => {
   try {
     const response = await axiosService
