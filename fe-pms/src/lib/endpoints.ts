@@ -23,6 +23,7 @@ export class Endpoints {
     DELETE_TASKS: "task/bulk-delete",
     GET_BY_ASSIGNEE: (userId: string) => `task/assignee/${userId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
+    GET_BY_EPIC: (epicId: string) => `task/epic/${epicId}`,
     UPDATE_STATUS: (taskId: string) => `task/${taskId}/status`,
     UPDATE_PRIORITY: (taskId: string) => `task/${taskId}/priority`,
     UPDATE_ASSIGNEE: (taskId: string) => `task/${taskId}/assignee`,
