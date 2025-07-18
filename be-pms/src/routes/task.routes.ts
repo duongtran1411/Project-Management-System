@@ -457,9 +457,11 @@ router.patch(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [assignee]
  *             properties:
- *               assignee: { type: string }
+ *               assignee:
+ *                 type: string
+ *                 nullable: true
+ *                 description: ID của người được giao task. Gửi null để hủy giao task
  *     responses:
  *       200: { description: Cập nhật người được giao task thành công }
  *       404: { description: Không tìm thấy task }

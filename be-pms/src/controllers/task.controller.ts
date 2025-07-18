@@ -477,16 +477,17 @@ export class TaskController {
       const { assignee } = req.body;
       const user = req.user!;
 
-      if (!assignee) {
-        res.status(400).json({
-          success: false,
-          message: "Người được giao là bắt buộc",
-          statusCode: 400,
-        });
-        return;
-      }
+      // Xử lý unassign khi assignee là null, undefined, hoặc string rỗng
+      const finalAssignee =
+        assignee === null || assignee === undefined || assignee === ""
+          ? null
+          : assignee;
 
-      const task = await taskService.updateTaskAssignee(id, assignee, user);
+      const task = await taskService.updateTaskAssignee(
+        id,
+        finalAssignee,
+        user
+      );
 
       if (!task) {
         res.status(404).json({
@@ -497,9 +498,13 @@ export class TaskController {
         return;
       }
 
+      const message = finalAssignee
+        ? "Cập nhật người được giao task thành công"
+        : "Hủy giao task thành công";
+
       res.status(200).json({
         success: true,
-        message: "Cập nhật người được giao task thành công",
+        message,
         data: task,
         statusCode: 200,
       });

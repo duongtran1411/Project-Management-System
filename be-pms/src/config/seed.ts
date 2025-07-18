@@ -86,10 +86,8 @@ export async function seedAdminUser() {
 }
 
 export async function seedAllRoles() {
-  console.log("🌱 Starting role seeding...");
   await seedAdminRole();
   await seedUserRole();
   await seedProjectAdminRole();
   await seedContributorRole();
-  console.log("✅ All roles seeded successfully!");
 }

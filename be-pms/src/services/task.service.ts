@@ -258,9 +258,42 @@ export class TaskService {
           );
         }
 
+        // Case 2: Unassign task (xóa assignee - assignee = null/undefined/empty string)
+        const assigneeValue = updateData.assignee?.toString();
+        const isUnassign = !assigneeValue || assigneeValue === "";
+
         if (
+          isUnassign &&
           oldTask.assignee &&
+          oldTask.assignee.toString() !== user._id.toString()
+        ) {
+          const notification = await NotificationService.createNotification({
+            recipientId: oldTask.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UNASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+
+          await this.emitNotificationEvent(
+            notification,
+            oldTask.assignee.toString()
+          );
+        }
+
+        // Case 3: Reassign task (thay đổi từ assignee cũ sang assignee mới)
+        if (
           updateData.assignee &&
+          oldTask.assignee &&
           oldTask.assignee.toString() !== updateData.assignee?.toString() &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
@@ -325,10 +358,7 @@ export class TaskService {
         });
       }
 
-      if (
-        updateData.assignee &&
-        oldTask.assignee?.toString() !== updateData.assignee?.toString()
-      ) {
+      if (oldTask.assignee?.toString() !== updateData.assignee?.toString()) {
         this.io.emit("task-assigned", {
           task,
           projectId: task.projectId,
@@ -559,7 +589,7 @@ export class TaskService {
 
   async updateTaskAssignee(
     taskId: string,
-    assignee: string,
+    assignee: string | null,
     user: any
   ): Promise<ITask | null> {
     const oldTask = await Task.findById(taskId);
@@ -583,6 +613,7 @@ export class TaskService {
 
     if (task && oldTask) {
       try {
+        // Case 1: Assign task (có assignee mới và khác với assignee cũ)
         if (
           assignee &&
           oldTask.assignee?.toString() !== assignee &&
@@ -608,7 +639,38 @@ export class TaskService {
           await this.emitNotificationEvent(notification, assignee);
         }
 
+        // Case 2: Unassign task (xóa assignee - assignee = null/undefined)
         if (
+          !assignee &&
+          oldTask.assignee &&
+          oldTask.assignee.toString() !== user._id.toString()
+        ) {
+          const notification = await NotificationService.createNotification({
+            recipientId: oldTask.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UNASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+
+          await this.emitNotificationEvent(
+            notification,
+            oldTask.assignee.toString()
+          );
+        }
+
+        // Case 3: Reassign task (thay đổi từ assignee cũ sang assignee mới)
+        if (
+          assignee &&
           oldTask.assignee &&
           oldTask.assignee.toString() !== assignee &&
           oldTask.assignee.toString() !== user._id.toString()
@@ -641,12 +703,15 @@ export class TaskService {
     }
 
     if (this.io && task && oldTask) {
-      this.io.emit("task-assigned", {
-        task,
-        projectId: task.projectId,
-        oldAssignee: oldTask.assignee,
-        newAssignee: assignee,
-      });
+      // Emit socket event cho cả assign và unassign
+      if (oldTask.assignee?.toString() !== assignee) {
+        this.io.emit("task-assigned", {
+          task,
+          projectId: task.projectId,
+          oldAssignee: oldTask.assignee,
+          newAssignee: assignee,
+        });
+      }
     }
 
     return task;
