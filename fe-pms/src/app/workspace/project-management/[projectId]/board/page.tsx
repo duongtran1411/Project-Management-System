@@ -94,7 +94,7 @@ const BoardPage = () => {
     fetcher
   );
 
-  const { data: contributorData, error: contributorError } = useSWR(
+  const { data: contributorData } = useSWR(
     projectId
       ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
       : "",

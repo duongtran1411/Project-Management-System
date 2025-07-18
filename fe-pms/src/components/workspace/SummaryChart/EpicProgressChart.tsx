@@ -33,6 +33,8 @@ export default function ProgressChartAnt() {
     `${Endpoints.Statistics.STATISTIC_EPIC(projectId)}`,
     fetcher
   );
+
+  console.log(statisticsEpic);
   return (
     <div className="w-full max-w-xl space-y-6">
       {/* Legend */}
