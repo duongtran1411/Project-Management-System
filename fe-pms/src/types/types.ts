@@ -1,18 +1,20 @@
+import { Assignee } from "@/models/assignee/assignee";
+import { Epic } from "@/models/epic/epic";
+
 export interface Task {
   _id?: string;
   name?: string;
   description?: string;
   status?: string;
   priority?: string;
-  assignee?: {
+  assignee?: Assignee
+  epic?: Epic
+  reporter?: {
     _id: string;
-    name?: string;
     email?: string;
-  };
-  epic?: {
-    _id: string;
-    name: string;
-  };
+    avatar?: string;
+    fullName?: string;
+  }
   startDate?: string;
   dueDate?: string;
   milestones?: {
@@ -33,11 +35,6 @@ export interface Task {
   };
   updatedAt?: string;
   createdAt?: string;
-}
-
-export interface Epic {
-  _id: string;
-  name: string;
 }
 
 export interface Milestone {
@@ -111,6 +108,21 @@ export interface Role {
   createdAt?: Date;
 }
 
+export interface User {
+  _id: string;
+  fullName: string;
+  email: string;
+  avatar: string;
+  status: "ACTIVE" | "INACTIVE" | string;
+  failedLoginAttempts: number;
+  verified: boolean;
+  role: Role;
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
 export interface ProjectRole {
   _id?: string;
   name: string;
@@ -182,9 +194,8 @@ export interface TaskContributorStatistic {
   contributorStats: ContributorStats[];
 }
 
-
 export interface AssignedTaskItem {
-   _id: string;
+  _id: string;
   name: string;
   status: "TO DO" | "IN PROGRESS" | "DONE";
   projectId: {
@@ -199,4 +210,3 @@ export interface InviteMultiple {
   projectId: string;
   projectRoleId: string;
 }
-

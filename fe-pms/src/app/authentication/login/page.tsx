@@ -1,5 +1,5 @@
 "use client";
-import { Form, Input, Flex, Button, Checkbox } from "antd";
+import { Form, Input, Flex, Button, Checkbox, Typography } from "antd";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { GoogleCredentialResponse, GoogleLogin } from "@react-oauth/google";
@@ -12,13 +12,16 @@ import { TokenPayload } from "@/models/user/TokenPayload";
 import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/auth-context";
+
+const { Title, Text } = Typography;
 
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorLogin, setErrorLogin] = useState<string>("");
   const router = useRouter();
+  const { loginSuccess } = useAuth();
   //login
   const onFinish = async () => {
     setLoading(true);
@@ -38,6 +41,9 @@ export default function Page() {
 
           //Lưu thông tin người dùng
           localStorage.setItem("currentUser", JSON.stringify(decoded));
+
+          // Cập nhật auth context
+          loginSuccess(token);
 
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
           router.replace(decoded.role === "ADMIN" ? "/admin" : "/");
@@ -64,7 +70,9 @@ export default function Page() {
   };
 
   //login with google
-  const handleLoginGoogle = async (credentialReponse: GoogleCredentialResponse) => {
+  const handleLoginGoogle = async (
+    credentialReponse: GoogleCredentialResponse
+  ) => {
     setLoading(true);
     try {
       const credential = credentialReponse.credential;
@@ -78,11 +86,14 @@ export default function Page() {
         const token = response.data.access_token;
         const refresh_token = response.data.refresh_token;
         localStorage.setItem(Constants.API_TOKEN_KEY, token);
-        loginSuccess(token);
+        localStorage.setItem(Constants.API_REFRESH_TOKEN_KEY, refresh_token);
         if (token) {
           const decoded = jwtDecode<TokenPayload>(token);
 
           localStorage.setItem("currentUser", JSON.stringify(decoded));
+
+          // Cập nhật auth context
+          loginSuccess(token);
 
           localStorage.setItem(Constants.API_FIRST_LOGIN, "true");
 
@@ -174,58 +185,73 @@ export default function Page() {
             </div>
           </div>
         </div>
+      </div>
 
-        <Form.Item
-          name="email"
-          rules={[
-            { required: true, message: "Please input your email!" },
-            { type: "email", message: "Email must be include @example.com!" },
-          ]}>
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="Email"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[{ required: true, message: "Please input your Password!" }]}>
-          <Input
-            prefix={<LockOutlined />}
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Flex justify="space-between" align="center">
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Remember me</Checkbox>
+      {/* Right Side - Login Form */}
+      <div className="login-form-section">
+        <div className="form-container">
+          <Form onFinish={onFinish} layout="vertical">
+            <Form.Item
+              name="email"
+              rules={[
+                { required: true, message: "Please input your email!" },
+                {
+                  type: "email",
+                  message: "Email must be include @example.com!",
+                },
+              ]}
+            >
+              <Input
+                prefix={<UserOutlined />}
+                placeholder="Email"
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </Form.Item>
-            <Link
-              href={'/authentication/forgot-password'}
-              className="text-sm text-blue-500 hover:decoration-solid hover:underline">
-              Forgot password?
-            </Link>
-          </Flex>
-        </Form.Item>
+            <Form.Item
+              name="password"
+              rules={[
+                { required: true, message: "Please input your Password!" },
+              ]}
+            >
+              <Input
+                prefix={<LockOutlined />}
+                type="password"
+                placeholder="Password"
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Form.Item>
+            <Form.Item>
+              <Flex justify="space-between" align="center">
+                <Form.Item name="remember" valuePropName="checked" noStyle>
+                  <Checkbox>Remember me</Checkbox>
+                </Form.Item>
+                <Link
+                  href={"/authentication/forgot-password"}
+                  className="text-sm text-blue-500 hover:decoration-solid hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </Flex>
+            </Form.Item>
 
-        <Form.Item>
-          <Button block type="primary" htmlType="submit" className="mb-2">
-            Log in
-          </Button>
+            <Form.Item>
+              <Button block type="primary" htmlType="submit" className="mb-2">
+                Log in
+              </Button>
 
-          <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              setLoading(true); // Đảm bảo bật spinner ngay lập tức
-              handleLoginGoogle(credentialResponse);
-            }}
-            onError={() => {
-              showErrorToast("Đăng nhập Google thất bại");
-            }}
-          />
-        </Form.Item>
-      </Form>
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  setLoading(true); // Đảm bảo bật spinner ngay lập tức
+                  handleLoginGoogle(credentialResponse);
+                }}
+                onError={() => {
+                  showErrorToast("Đăng nhập Google thất bại");
+                }}
+              />
+            </Form.Item>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 }

@@ -45,11 +45,11 @@ const HeaderProjectManagement = () => {
   } = useSWR(
     token
       ? [
-        `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Project.GET_BY_ID(
-          projectId || ""
-        )}`,
-        token,
-      ]
+          `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Project.GET_BY_ID(
+            projectId || ""
+          )}`,
+          token,
+        ]
       : null,
     fetcherWithToken
   );
@@ -93,7 +93,7 @@ const HeaderProjectManagement = () => {
       key: "List",
       label: "List",
       icon: <BarsOutlined />,
-      url: `/workspace/project-management/${projectId}/list`
+      url: `/workspace/project-management/${projectId}/list`,
     },
   ];
 

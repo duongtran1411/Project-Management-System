@@ -20,8 +20,19 @@ export class Endpoints {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
+    DELETE_TASKS: "task/bulk-delete",
     GET_BY_ASSIGNEE: (userId: string) => `task/assignee/${userId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
+    GET_BY_EPIC: (epicId: string) => `task/epic/${epicId}`,
+    UPDATE_STATUS: (taskId: string) => `task/${taskId}/status`,
+    UPDATE_PRIORITY: (taskId: string) => `task/${taskId}/priority`,
+    UPDATE_ASSIGNEE: (taskId: string) => `task/${taskId}/assignee`,
+    UPDATE_EPIC: (taskId: string) => `task/${taskId}/epic`,
+    UPDATE_DATE: (taskId: string) => `task/${taskId}/dates`,
+    UPDATE_REPORTER: (taskId: string) => `task/${taskId}/reporter`,
+    UPDATE_MILESTONE: (taskId: string) => `task/${taskId}/milestone`,
+    UPDATE_NAME: (taskId: string) => `task/${taskId}/name`,
+    UPDATE_DESCRIPTION: (taskId: string) => `task/${taskId}/description`,
   };
 
   static readonly Milestone = {

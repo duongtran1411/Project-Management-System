@@ -25,9 +25,7 @@ export default function Page() {
   const [name, setName] = useState<string>("");
   const router = useRouter();
   const { userInfo } = useAuth();
-
   useEffect(() => {
-    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
     if (userInfo && justLoggedIn === "true") {
       setName(userInfo?.fullname);
@@ -46,6 +44,7 @@ export default function Page() {
   }, [userInfo?.fullname]);
 
   const handleContinue = () => {
+    const accessToken = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (accessToken) {
       router.push("/workspace");
     } else {

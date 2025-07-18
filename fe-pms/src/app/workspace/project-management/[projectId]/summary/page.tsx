@@ -7,7 +7,6 @@ import {
   CheckCircleOutlined,
   FileSyncOutlined,
   SnippetsOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 
 import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTask";
@@ -17,67 +16,19 @@ import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart
 import { useParams } from "next/navigation";
 import { TaskStatistic } from "@/types/types";
 import { getTaskStatistic } from "@/lib/services/statistics/statistics";
-
-// Sample data (from backlog)
-const tasks = [
-  {
-    key: "SCRUM-101",
-    name: "Implement login API",
-    epic: "Authentication",
-    status: "TO DO",
-    assignee: "Trần Đại Dương",
-  },
-  {
-    key: "SCRUM-102",
-    name: "Build user dashboard",
-    epic: "User Interface",
-    status: "IN PROGRESS",
-    assignee: "Hoàng Thị Hương Giang",
-  },
-  {
-    key: "SCRUM-103",
-    name: "Create project API",
-    epic: "Project Management",
-    status: "DONE",
-    assignee: "Nguyễn Thái Sơn",
-  },
-
-  {
-    key: "SCRUM-105",
-    name: "Optimize database queries",
-    epic: "Performance",
-    status: "IN PROGRESS",
-    assignee: "Lê Văn Việt",
-  },
-
-  {
-    key: "SCRUM-105",
-    name: "Create user profile page",
-    epic: "Performance",
-    status: "IN PROGRESS",
-    assignee: "UnAssigned",
-  },
-];
-
-// Assignee breakdown
-const assigneeMap: Record<string, number> = {};
-tasks.forEach((t) => {
-  assigneeMap[t.assignee] = (assigneeMap[t.assignee] || 0) + 1;
-});
-const assigneeData = Object.entries(assigneeMap).map(([name, count]) => ({
-  name,
-  count,
-}));
+import axiosService from "@/lib/services/axios.service";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
 
 const assigneeColumns = [
   {
     title: "Assignee",
-    dataIndex: "name",
-    key: "name",
-    render: (name: string) => (
+    dataIndex: "assignee",
+    key: "assignee",
+    render: (_: any, record: any) => (
       <span className="flex items-center gap-2">
-        <Avatar icon={<UserOutlined />} size="small" />
-        {name}
+        <Avatar src={record.avatar} />
+        <span>{record.fullName}</span>
       </span>
     ),
   },
@@ -89,6 +40,12 @@ const assigneeColumns = [
   },
 ];
 
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
+
 export default function SummaryPage() {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -97,6 +54,11 @@ export default function SummaryPage() {
   const [doneTasks, setDoneTasks] = useState<number>();
   const [inProgressTasks, setInProgressTasks] = useState<number>();
   const [todoTasks, setTodoTasks] = useState<number>();
+
+  const { data: statisticsContributor } = useSWR(
+    `${Endpoints.Statistics.STATISTIC_CONTRIBUTOR(projectId)}`,
+    fetcher
+  );
 
   useEffect(() => {
     const fetch = async (projectId: string) => {
@@ -227,7 +189,7 @@ export default function SummaryPage() {
             </span>
             <Table
               columns={assigneeColumns}
-              dataSource={assigneeData}
+              dataSource={statisticsContributor?.contributorStats}
               pagination={false}
               size="small"
               rowKey="name"

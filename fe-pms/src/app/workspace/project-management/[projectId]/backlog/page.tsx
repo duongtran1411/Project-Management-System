@@ -1,33 +1,28 @@
 "use client";
 import {
+  Alert,
   Avatar,
   Button,
   Checkbox,
   Dropdown,
   Input,
   Space,
-  Tag,
   Spin,
-  Alert,
+  Tag,
 } from "antd";
 
-import { DownOutlined, SearchOutlined } from "@ant-design/icons";
-import React, { useState, useMemo, useEffect } from "react";
-import useSWR from "swr";
-import { Endpoints } from "@/lib/endpoints";
-import {
-  Contributor,
-  CreateMilestone,
-  Epic,
-  Milestone,
-  Task,
-} from "@/types/types";
-import SprintSection from "@/components/workspace/backlog/SprintSection";
-import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
-import { createMilestone } from "@/lib/services/milestone/milestone";
-import { useParams } from "next/navigation";
+import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
+import SprintSection from "@/components/workspace/backlog/SprintSection";
+import TaskDetail from "@/components/workspace/backlog/TaskDetail";
+import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
+import { createMilestone } from "@/lib/services/milestone/milestone";
+import { Contributor, CreateMilestone, Milestone, Task } from "@/types/types";
+import { DownOutlined, SearchOutlined } from "@ant-design/icons";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 
 export default function Backlog() {
   const params = useParams();
@@ -38,6 +33,7 @@ export default function Backlog() {
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [listTask, setListTask] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const fetcher = (url: string) =>
     axiosService
@@ -54,7 +50,6 @@ export default function Backlog() {
     error: taskError,
     mutate: mutateTask,
   } = useSWR(`${Endpoints.Task.GET_BY_PROJECT(projectId)}`, fetcher);
-  console.log("task data", taskData);
 
   const { data: contributorData, error: contributorError } = useSWR(
     `${Endpoints.User.GET_BY_PROJECT(projectId)}`,
@@ -102,8 +97,6 @@ export default function Backlog() {
   useEffect(() => {
     if (filteredTasks) setListTask(filteredTasks);
   }, [filteredTasks]);
-
-  console.log("list task", listTask);
 
   // Clear all filters
   const clearFilters = () => {
@@ -163,7 +156,7 @@ export default function Backlog() {
         onChange={setSelectedEpics}
         className="flex flex-col gap-2 "
       >
-        {epicData?.data?.map((epic: Epic) => (
+        {epicData?.data?.map((epic: any) => (
           <Checkbox key={epic._id} value={epic._id}>
             {epic.name}
           </Checkbox>
@@ -188,7 +181,7 @@ export default function Backlog() {
   );
 
   return (
-    <div className="min-h-screen p-6 bg-white ">
+    <div className="max-h-screen p-6 bg-white ">
       <div className="top-0 left-0 right-0 flex items-center gap-3 mb-4">
         {/* Search */}
         <Input
@@ -247,51 +240,56 @@ export default function Backlog() {
       </div>
 
       {/* Sprint Section */}
-      <SprintSection
-        milestoneData={milestoneData?.data}
-        listTask={listTask}
-        taskData={taskData?.data}
-        showModal={showModal}
-        refreshData={mutate}
-        mutateTask={mutateTask}
-      />
+      <div className="flex h-full w-full">
+        <div className="overflow-y-auto max-h-[600px] w-full flex-1">
+          <SprintSection
+            milestoneData={milestoneData?.data}
+            listTask={listTask}
+            taskData={taskData?.data}
+            showModal={showModal}
+            refreshData={mutate}
+            mutateTask={mutateTask}
+            setSelectedTask={setSelectedTask}
+            selectedTask={selectedTask}
+          />
+          {/* Backlog Section */}
+          <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
+            <div className="flex items-center justify-between rounded-t-md ">
+              {/* Left */}
+              <div className="flex items-center gap-2">
+                <DownOutlined className="text-sm" />
 
-      {/* Backlog Section */}
-      <div className="m-4 bg-gray-100 rounded-sm p-[6px]">
-        <div className="flex items-center justify-between p-2 rounded-t-md ">
-          {/* Left */}
-          <div className="flex items-center gap-2">
-            <DownOutlined className="text-sm" />
-
-            <h3 className="font-semibold">Backlog </h3>
-            <span className="ml-2 text-sm text-gray-500">(0 work items)</span>
-          </div>
-          {/* Right */}
-          <div className="flex items-center gap-2 ">
-            <div className="flex items-center ">
-              <Tag color="default" className="w-6 p-0 text-center">
-                0
-              </Tag>
-              <Tag color="blue" className="w-6 p-0 text-center">
-                0
-              </Tag>
-              <Tag color="green" className="w-6 p-0 text-center">
-                0
-              </Tag>
+                <h3 className="font-semibold">Backlog </h3>
+                <span className="ml-2 text-sm text-gray-500">
+                  (0 work items)
+                </span>
+              </div>
+              {/* Right */}
+              <div className="flex items-center gap-2 ">
+                <div className="flex items-center ">
+                  <Tag color="default" className="w-6 p-0 text-center">
+                    0
+                  </Tag>
+                  <Tag color="blue" className="w-6 p-0 text-center">
+                    0
+                  </Tag>
+                  <Tag color="green" className="w-6 p-0 text-center">
+                    0
+                  </Tag>
+                </div>
+                <Button
+                  type="default"
+                  className="font-semibold text-gray-600"
+                  onClick={() => setOpenCreateModal(true)}
+                >
+                  Create sprint
+                </Button>
+              </div>
             </div>
-            <Button
-              type="default"
-              className="font-semibold text-gray-600"
-              onClick={() => setOpenCreateModal(true)}
-            >
-              Create sprint
-            </Button>
-          </div>
-        </div>
-        <div className="border border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
-          Your backlog is empty.
-        </div>
-        {/* <Button
+            <div className="border border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
+              Your backlog is empty.
+            </div>
+            {/* <Button
           type="text"
           className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
         >
@@ -300,7 +298,19 @@ export default function Backlog() {
             <PlusOutlined /> Create
           </span>
         </Button> */}
+          </div>
+        </div>
+        {selectedTask && (
+          <div className="w-[400px] overflow-y-auto max-h-[600px] bg-white shadow-lg p-2  border-l border-gray-200">
+            <TaskDetail
+              task={selectedTask}
+              onClose={() => setSelectedTask(null)}
+              mutateTask={mutateTask}
+            />
+          </div>
+        )}
       </div>
+
       {selectedMilestone && (
         <ModalCreateTask
           projectId={projectId}

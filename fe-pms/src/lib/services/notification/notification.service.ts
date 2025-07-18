@@ -67,13 +67,11 @@ export const markNotificationAsRead = async (
   }
 };
 
-export const markAllNotificationsAsRead = async (userId: string) => {
+export const markAllNotificationsAsRead = async () => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .patch(Endpoints.Notification.MARK_ALL_AS_READ, {
-        userId,
-      });
+      .patch(Endpoints.Notification.MARK_ALL_AS_READ);
 
     return response.data.data;
   } catch (error: any) {
