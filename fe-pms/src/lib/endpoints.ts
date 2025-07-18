@@ -4,12 +4,15 @@ export class Endpoints {
     LOGIN: "auth/login",
     LOGIN_WITH_GOOGLE: "auth/google-login",
     FORGOT_PASSWORD: "auth/forgot-password",
+    CHANGE_PASSWORD: "auth/change-password",
   };
 
   static readonly User = {
     GET_ALL: "user",
     GET_BY_PROJECT: (projectId: string) =>
       `project-contributor/project/${projectId}`,
+    UPDATE: (userId: string) => `user/${userId}/updateProfile`,
+    GET_BY_ID: (userId: string) => `user/${userId}`,
   };
 
   static readonly Epic = {

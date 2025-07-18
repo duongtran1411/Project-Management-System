@@ -10,6 +10,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   userInfo: TokenPayload | null;
   loginSuccess: (token: string) => void;
+  setUserInfo: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,7 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userInfo,loginSuccess }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, userInfo, loginSuccess, setUserInfo }}
+    >
       {children}
     </AuthContext.Provider>
   );
