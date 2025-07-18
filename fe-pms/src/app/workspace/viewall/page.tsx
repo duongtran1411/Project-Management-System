@@ -93,7 +93,6 @@ const ProjectTable = () => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
       const decoded = jwtDecode<TokenPayload>(access_token);
-      console.log("decode", decoded);
       setUserId(decoded.userId);
     }
   }, []);
