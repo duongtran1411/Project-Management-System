@@ -261,7 +261,7 @@ export class ProjectContributorService {
         select: "name icon projectType projectLead",
         populate: {
           path: "projectLead",
-          select: "fullName email",
+          select: "fullName email avatar",
         },
       })
       .select("projectId")
