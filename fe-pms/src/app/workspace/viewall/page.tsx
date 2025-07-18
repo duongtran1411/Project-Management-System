@@ -1,7 +1,15 @@
 // components/ProjectTable.tsx
 "use client";
 
-import { Input, Table, Button, Pagination, TableProps } from "antd";
+import {
+  Input,
+  Table,
+  Button,
+  Pagination,
+  TableProps,
+  Spin,
+  Alert,
+} from "antd";
 import { StarOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
@@ -113,8 +121,23 @@ const ProjectTable = () => {
     }
   }, [projectList, searchTerm]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" tip="Loading...">
+          <div className="p-10" />
+        </Spin>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Alert message="Error" description={error.message} type="error" />
+      </div>
+    );
+  }
 
   const handleCreateProject = () => {
     router.push("/create-project");

@@ -25,10 +25,6 @@ export default function Page() {
   const [name, setName] = useState<string>("");
   const router = useRouter();
   const { userInfo } = useAuth();
-<<<<<<< HEAD
-=======
-
->>>>>>> 1e014c8cb314a67531a088a2679b21d34aad1f19
   useEffect(() => {
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
     if (userInfo && justLoggedIn === "true") {

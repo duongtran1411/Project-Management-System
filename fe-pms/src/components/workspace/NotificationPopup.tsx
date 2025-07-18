@@ -121,13 +121,9 @@ const NotificationPopup: React.FC = () => {
         userId
       );
       if (updatedNotification) {
-        setNotifications((prev) =>
-          prev.map((notif) =>
-            notif._id === notificationId ? { ...notif, isRead: true } : notif
-          )
-        );
-        setDropdownOpen(true);
-        fetchStats();
+        // Refresh lại danh sách notifications để cập nhật UI
+        await fetchNotifications();
+        await fetchStats();
       }
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
@@ -135,16 +131,12 @@ const NotificationPopup: React.FC = () => {
   };
 
   const handleMarkAllAsRead = async () => {
-    if (!userId) return;
-
     try {
-      const result = await markAllNotificationsAsRead(userId);
+      const result = await markAllNotificationsAsRead();
       if (result) {
-        setNotifications((prev) =>
-          prev.map((notif) => ({ ...notif, isRead: true }))
-        );
-        setDropdownOpen(true);
-        fetchStats();
+        // Refresh lại danh sách notifications để cập nhật UI
+        await fetchNotifications();
+        await fetchStats();
       }
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);

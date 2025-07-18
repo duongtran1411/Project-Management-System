@@ -1,34 +1,28 @@
 "use client";
 import {
+  Alert,
   Avatar,
   Button,
   Checkbox,
   Dropdown,
   Input,
   Space,
-  Tag,
   Spin,
-  Alert,
+  Tag,
 } from "antd";
 
-import { DownOutlined, SearchOutlined } from "@ant-design/icons";
-import React, { useState, useMemo, useEffect } from "react";
-import useSWR from "swr";
-import { Endpoints } from "@/lib/endpoints";
-import {
-  Contributor,
-  CreateMilestone,
-  Epic,
-  Milestone,
-  Task,
-} from "@/types/types";
-import SprintSection from "@/components/workspace/backlog/SprintSection";
-import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
-import { createMilestone } from "@/lib/services/milestone/milestone";
-import { useParams } from "next/navigation";
-import axiosService from "@/lib/services/axios.service";
+import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
+import SprintSection from "@/components/workspace/backlog/SprintSection";
 import TaskDetail from "@/components/workspace/backlog/TaskDetail";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+import { createMilestone } from "@/lib/services/milestone/milestone";
+import { Contributor, CreateMilestone, Milestone, Task } from "@/types/types";
+import { DownOutlined, SearchOutlined } from "@ant-design/icons";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 
 export default function Backlog() {
   const params = useParams();
@@ -162,7 +156,7 @@ export default function Backlog() {
         onChange={setSelectedEpics}
         className="flex flex-col gap-2 "
       >
-        {epicData?.data?.map((epic: Epic) => (
+        {epicData?.data?.map((epic: any) => (
           <Checkbox key={epic._id} value={epic._id}>
             {epic.name}
           </Checkbox>
