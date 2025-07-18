@@ -3,7 +3,7 @@ import { Form, Input, Button } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { useState } from "react";
-import { forgotPassword } from "@/lib/services/authentication/auth";
+import { forgotPassword } from "@/lib/services/authentication/auth.service";
 import {
   showErrorToast,
   showSuccessToast,

@@ -1,6 +1,6 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { updateTaskReporter } from "@/lib/services/task/task";
+import { updateTaskReporter } from "@/lib/services/task/task.service";
 import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
 import useSWR from "swr";

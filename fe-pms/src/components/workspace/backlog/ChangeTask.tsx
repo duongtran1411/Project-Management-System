@@ -1,4 +1,4 @@
-import { updateTaskStatus } from "@/lib/services/task/task";
+import { updateTaskStatus } from "@/lib/services/task/task.service";
 
 import { Dropdown, MenuProps, Tag } from "antd";
 

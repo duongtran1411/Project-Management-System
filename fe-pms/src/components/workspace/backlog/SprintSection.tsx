@@ -1,5 +1,10 @@
 "use client";
-import { Milestone, Task, User } from "@/types/types";
+import {
+  deleteMilestone,
+  updateMilestone,
+} from "@/lib/services/milestone/milestone.service";
+import { deleteTaskMultiple } from "@/lib/services/task/task.service";
+import { formatDate } from "@/lib/utils";
 import {
   DeleteOutlined,
   DownOutlined,
@@ -17,17 +22,14 @@ import {
   TableProps,
   Tag,
 } from "antd";
-import { formatDate } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import EditSprintModal from "./EditSprintModal";
-import {
-  deleteMilestone,
-  updateMilestone,
-} from "@/lib/services/milestone/milestone";
-import ChangeTask from "./ChangeTask";
-import ChangePriority from "./ChangePriority";
 import ChangeAssignee from "./ChangeAssignee";
-import { deleteTaskMultiple } from "@/lib/services/task/task";
+import ChangeEpic from "./ChangeEpic";
+import ChangePriority from "./ChangePriority";
+import ChangeTask from "./ChangeTask";
+import EditSprintModal from "./EditSprintModal";
+import { Task } from "@/models/task/task.model";
+import { Milestone } from "@/models/milestone/milestone.model";
 
 const items = [
   {
@@ -70,7 +72,17 @@ const SprintSection: React.FC<Props> = ({
     {
       title: "",
       dataIndex: "epic",
-      render: (epic) => (epic ? <Tag color="purple">{epic?.name}</Tag> : <></>),
+      render: (epic: any, record: Task) => {
+        return (
+          <div onClick={(e) => e.stopPropagation()}>
+            <ChangeEpic
+              taskId={record._id}
+              epic={epic?.name}
+              mutateTask={mutateTask}
+            />
+          </div>
+        );
+      },
     },
     {
       title: "",
@@ -115,7 +127,7 @@ const SprintSection: React.FC<Props> = ({
     {
       title: "",
       dataIndex: "assignee",
-      render: (assignee: User, record: Task) => (
+      render: (assignee: any, record: Task) => (
         <div onClick={(e) => e.stopPropagation()}>
           <ChangeAssignee
             taskId={record._id}

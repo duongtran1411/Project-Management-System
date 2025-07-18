@@ -1,4 +1,4 @@
-import { RequestResponse } from './RequestResponse';
+import { RequestResponse } from "./RequestResponse";
 
 export default class SuccessResponse extends RequestResponse {
   message: string;

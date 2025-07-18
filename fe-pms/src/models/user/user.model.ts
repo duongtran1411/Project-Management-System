@@ -1,14 +1,16 @@
+import { Role } from "../role/role.model";
+
 export interface User {
   _id: string;
   fullName: string;
   email: string;
   avatar: string;
-  status: string;
+  status: "ACTIVE" | "INACTIVE" | string;
   failedLoginAttempts: number;
   verified: boolean;
-  role: string;
+  role: Role;
   lastLogin: string;
   createdAt: string;
   updatedAt: string;
-  phone?: string;
+  __v: number;
 }

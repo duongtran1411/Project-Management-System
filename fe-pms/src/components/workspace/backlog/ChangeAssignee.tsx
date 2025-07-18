@@ -1,14 +1,13 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { updateTaskAssignee } from "@/lib/services/task/task";
-import { User } from "@/types/types";
+import { updateTaskAssignee } from "@/lib/services/task/task.service";
 import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 
 interface Props {
   taskId: string | undefined;
-  assignee: User;
+  assignee: any;
   mutateTask: () => void;
 }
 
@@ -18,7 +17,7 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
+const ChangeAssignee: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
   const params = useParams();
   const projectId = params.projectId as string;
   const { data: contributorData } = useSWR(
@@ -50,7 +49,8 @@ const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
-        await updateTaskAssignee(taskId, key);
+        const assigneeId = key === "null" ? null : key;
+        await updateTaskAssignee(taskId, assigneeId);
         await mutateTask();
       }
     } catch (e) {
@@ -73,4 +73,4 @@ const ChangeTask: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
     </Dropdown>
   );
 };
-export default ChangeTask;
+export default ChangeAssignee;

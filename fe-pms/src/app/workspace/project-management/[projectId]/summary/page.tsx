@@ -14,11 +14,12 @@ import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumn
 import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
 import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
 import { useParams } from "next/navigation";
-import { TaskStatistic } from "@/types/types";
-import { getTaskStatistic } from "@/lib/services/statistics/statistics";
+
+import { getTaskStatistic } from "@/lib/services/statistics/statistics.service";
 import axiosService from "@/lib/services/axios.service";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
+import { TaskStatistic } from "@/models/statistic/statistic.model";
 
 const assigneeColumns = [
   {
@@ -68,14 +69,15 @@ export default function SummaryPage() {
           // Statistics
           const total = response.totalTasks;
           const done =
-            response.taskStatusStats.find((t) => t.status === "DONE")?.count ||
-            0;
-          const inProgress =
-            response.taskStatusStats.find((t) => t.status === "IN_PROGRESS")
+            response.taskStatusStats.find((t: any) => t.status === "DONE")
               ?.count || 0;
+          const inProgress =
+            response.taskStatusStats.find(
+              (t: any) => t.status === "IN_PROGRESS"
+            )?.count || 0;
           const todo =
-            response.taskStatusStats.find((t) => t.status === "TO_DO")?.count ||
-            0;
+            response.taskStatusStats.find((t: any) => t.status === "TO_DO")
+              ?.count || 0;
           setTotalTasks(total);
           setDoneTasks(done);
           setInProgressTasks(inProgress);

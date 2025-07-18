@@ -25,8 +25,10 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
-import { updateAssigneeTask, updateTaskStatus } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import {
+  updateAssigneeTask,
+  updateTaskStatus,
+} from "@/lib/services/task/task.service";
 import { useParams } from "next/navigation";
 import {
   DragDropContext,
@@ -38,11 +40,12 @@ import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import useSWR, { mutate } from "swr";
 import { format } from "date-fns";
-import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
+import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
 import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
+import { Task } from "@/models/task/task.model";
 
 const fetcher = (url: string) =>
   axiosService

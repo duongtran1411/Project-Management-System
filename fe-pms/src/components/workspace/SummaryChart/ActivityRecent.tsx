@@ -1,7 +1,7 @@
 "use client";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { Task } from "@/types/types";
+import { Task } from "@/models/task/task.model";
 import { CheckSquareOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { Tag, Avatar, Spin } from "antd";
 import { useParams } from "next/navigation";

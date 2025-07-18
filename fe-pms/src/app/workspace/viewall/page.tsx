@@ -18,7 +18,7 @@ import useSWR from "swr";
 import { useEffect, useState } from "react";
 import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 

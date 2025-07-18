@@ -4,7 +4,7 @@ import { Alert, Spin, notification } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import type { NotificationArgsProps } from "antd";
-import { confirmInvite } from "@/lib/services/projectContributor/projectContributor";
+import { confirmInvite } from "@/lib/services/projectContributor/projectContributor.service";
 
 type NotificationPlacement = NotificationArgsProps["placement"];
 

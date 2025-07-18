@@ -17,12 +17,14 @@ import SprintSection from "@/components/workspace/backlog/SprintSection";
 import TaskDetail from "@/components/workspace/backlog/TaskDetail";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { createMilestone } from "@/lib/services/milestone/milestone";
-import { Contributor, CreateMilestone, Milestone, Task } from "@/types/types";
+import { createMilestone } from "@/lib/services/milestone/milestone.service";
 import { DownOutlined, SearchOutlined } from "@ant-design/icons";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
+import { Task } from "@/models/task/task.model";
+import { CreateMilestone, Milestone } from "@/models/milestone/milestone.model";
+import { Contributor } from "@/models/contributor/contributor.model";
 
 export default function Backlog() {
   const params = useParams();
@@ -67,9 +69,6 @@ export default function Backlog() {
   const isLoading =
     !epicData || !taskData || !contributorData || !milestoneData;
   const isError = epicError || taskError || contributorError || milestoneError;
-
-  console.log("contributorData", contributorData);
-  console.log(" selectedAssignees", selectedAssignees);
 
   // Filtered tasks based on search criteria
   const filteredTasks = useMemo(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth/auth-context";
-import { updateUser } from "@/lib/services/user/user";
+import { updateUser } from "@/lib/services/user/user.service";
 import { UploadOutlined } from "@ant-design/icons";
 import { Button, Form, FormInstance, Image, Input, Modal, Upload } from "antd";
 import { useState } from "react";

@@ -1,6 +1,6 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "../axios.service";
-import { TaskStatistic } from "@/types/types";
+import { TaskStatistic } from "@/models/statistic/statistic.model";
 
 export const getTaskStatistic = async (
   projectId: string
