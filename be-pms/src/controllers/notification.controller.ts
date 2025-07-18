@@ -2,8 +2,16 @@ import { Response } from "express";
 import NotificationService from "../services/notification.service";
 import { CreateNotificationData } from "../models/notification.model";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { io } from "../server";
 
 class NotificationController {
+  constructor() {
+    // Initialize socket.io integration if needed
+    if (io) {
+      console.log("Socket.io initialized for notification controller");
+    }
+  }
+
   async getNotifications(req: AuthRequest, res: Response) {
     try {
       const userId = req.user?.id;

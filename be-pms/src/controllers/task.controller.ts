@@ -2,9 +2,17 @@ import { Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import taskService from "../services/task.service";
 import { Server } from "socket.io";
+import { io } from "../server";
 
 export class TaskController {
   private io: Server | null = null;
+
+  constructor() {
+    this.io = io;
+    if (this.io) {
+      taskService.setSocketIO(this.io);
+    }
+  }
 
   setSocketIO(io: Server) {
     this.io = io;
