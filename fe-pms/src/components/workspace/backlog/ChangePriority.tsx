@@ -1,4 +1,4 @@
-import { updatePriorityTask } from "@/lib/services/task/task";
+import { updatePriorityTask } from "@/lib/services/task/task.service";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,

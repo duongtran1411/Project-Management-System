@@ -2,9 +2,9 @@
 import { ModalEdit } from "@/components/workspace/profile/ModalEdit";
 import { Constants } from "@/lib/constants";
 import { Endpoints } from "@/lib/endpoints";
-import { changePassword } from "@/lib/services/authentication/auth";
+import { changePassword } from "@/lib/services/authentication/auth.service";
 import axiosService from "@/lib/services/axios.service";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 import {
   LockOutlined,
   MailOutlined,

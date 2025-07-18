@@ -36,7 +36,7 @@ export default function ProgressChartAnt() {
       </div>
 
       {/* Tasks */}
-      {statisticsEpic.data.epicStats.map((task: any) => (
+      {statisticsEpic?.data?.epicStats.map((task: any) => (
         <div key={task.name}>
           <div className="flex items-center gap-2 font-semibold">
             <span className="text-purple-500">⚡</span>

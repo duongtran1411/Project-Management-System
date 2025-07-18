@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateMilestone } from "@/types/types";
+import { CreateMilestone } from "@/models/milestone/milestone.model";
 import { Modal, Form, Input, DatePicker } from "antd";
 
 const { TextArea } = Input;

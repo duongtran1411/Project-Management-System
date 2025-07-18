@@ -4,7 +4,7 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
-import { CreateMilestone, Milestone } from "@/types/types";
+import { CreateMilestone, Milestone } from "@/models/milestone/milestone.model";
 
 export const updateMilestone = async (milestone: Milestone) => {
   try {

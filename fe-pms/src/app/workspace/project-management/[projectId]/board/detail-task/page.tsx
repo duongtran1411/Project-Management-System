@@ -12,12 +12,13 @@ import {
   updateAssigneeTask,
   updateDescriptionTask,
   updateEpicTask,
-} from "@/lib/services/task/task";
-import { Assignee } from "@/models/assignee/assignee";
+} from "@/lib/services/task/task.service";
+import { Assignee } from "@/models/assignee/assignee.model";
 import { Comment } from "@/models/comment/comment";
-import { Epic } from "@/models/epic/epic";
-import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
-import { Task } from "@/types/types";
+import { Epic } from "@/models/epic/epic.model";
+import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
+import { Task } from "@/models/task/task.model";
+
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,

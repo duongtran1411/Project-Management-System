@@ -3,7 +3,7 @@ import { useContext, createContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Constants } from "../constants";
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { isTokenValid } from "@/helpers/auth/checktoken";
 
 interface AuthContextType {
