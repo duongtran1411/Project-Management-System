@@ -4,8 +4,8 @@ import { updateTaskDate } from "@/lib/services/task/task.service";
 
 import dayjs from "dayjs";
 
-import { Task } from "@/models/task/task.model";
 import { DatePicker } from "antd";
+import { Task } from "@/models/task/task.model";
 
 interface Props {
   task: Task;
@@ -15,6 +15,8 @@ interface Props {
   setIsPickingDueDate: React.Dispatch<React.SetStateAction<any>>;
   startDate: string | null;
   mutateTask: () => void;
+  dateError: string | null;
+  setDateError: React.Dispatch<React.SetStateAction<any>>;
 }
 
 export const ChangeDueDate: React.FC<Props> = ({
@@ -25,6 +27,8 @@ export const ChangeDueDate: React.FC<Props> = ({
   setIsPickingDueDate,
   startDate,
   mutateTask,
+  dateError,
+  setDateError,
 }) => {
   const handleDueDateUpdate = async (date: string) => {
     try {
@@ -39,6 +43,20 @@ export const ChangeDueDate: React.FC<Props> = ({
     }
   };
 
+  const handleDateChange = (date: any, dateString: string | string[]) => {
+    const pickedDate = Array.isArray(dateString) ? dateString[0] : dateString;
+    if (startDate && dayjs(pickedDate).isBefore(dayjs(startDate))) {
+      setDateError("Due date must be after start date");
+      setDueDate(task?.dueDate || null);
+    } else {
+      setDateError(null);
+      if (typeof pickedDate === "string") {
+        setDueDate(pickedDate);
+        handleDueDateUpdate(pickedDate);
+      }
+      setIsPickingDueDate(false);
+    }
+  };
   return (
     <div className="mb-4">
       {!isPickingDueDate && (
@@ -68,6 +86,9 @@ export const ChangeDueDate: React.FC<Props> = ({
               return current && current.isBefore(dayjs(startDate), "day");
             }}
           />
+          {dateError && (
+            <div className="text-red-500 text-xs mt-1">{dateError}</div>
+          )}
         </div>
       )}
     </div>

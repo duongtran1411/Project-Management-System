@@ -15,6 +15,8 @@ interface Props {
   setIsPickingDueDate: React.Dispatch<React.SetStateAction<any>>;
   startDate: string | null;
   mutateTask: () => void;
+  dateError: string | null;
+  setDateError: React.Dispatch<React.SetStateAction<any>>;
 }
 
 export const ChangeDueDate: React.FC<Props> = ({

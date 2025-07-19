@@ -27,6 +27,8 @@ export const ChangeStartDate: React.FC<Props> = ({
   setIsPickingStartDate,
   dueDate,
   mutateTask,
+  dateError,
+  setDateError,
 }) => {
   const handleStartDateUpdate = async (date: string) => {
     try {
@@ -71,6 +73,9 @@ export const ChangeStartDate: React.FC<Props> = ({
               return current && current.isAfter(dayjs(dueDate), "day");
             }}
           />
+          {dateError && (
+            <div className="text-red-500 text-xs mt-1">{dateError}</div>
+          )}
         </div>
       )}
     </div>

@@ -23,6 +23,7 @@ export const ChangeDescription: React.FC<Props> = ({
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [lastSavedDescription, setLastSavedDescription] = useState(description);
 
+  // Chỉ update lastSavedDescription khi task đổi (tức là description prop đổi do task đổi)
   useEffect(() => {
     setLastSavedDescription(description);
     setDescription(description);

@@ -11,6 +11,7 @@ import {
   EllipsisOutlined,
   PlusOutlined,
   RightOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -221,10 +222,14 @@ const SprintSection: React.FC<Props> = ({
       if (selectedTaskIds) await deleteTaskMultiple(selectedTaskIds);
       setSelectedTaskIds([]);
       await mutateTask();
+      setIsDeleteTaskModalOpen(false); // Đóng modal sau khi xóa
     } catch (error) {
       console.log(error);
     }
   };
+
+  // State cho modal xác nhận xóa task
+  const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
 
   return (
     <div>
@@ -300,9 +305,9 @@ const SprintSection: React.FC<Props> = ({
                     }
                   </Tag>
                 </div>
-                {/* <Button type="default" className="font-semibold text-gray-600">
+                <Button type="default" className="font-semibold text-gray-600">
                   Complete sprint
-                </Button> */}
+                </Button>
                 <Dropdown
                   menu={{
                     items: items.map((item) => ({
@@ -371,7 +376,16 @@ const SprintSection: React.FC<Props> = ({
 
       {/* Confirm delete sprint */}
       <Modal
-        title="Delete sprint"
+        title={
+          <span className="flex items-center gap-2">
+            <WarningOutlined
+              style={{
+                color: "#ff4d4f",
+              }}
+            />
+            Delete Sprint
+          </span>
+        }
         closable={{ "aria-label": "Custom Close Button" }}
         open={isModalOpen}
         onOk={handleOk}
@@ -388,13 +402,32 @@ const SprintSection: React.FC<Props> = ({
         <div className="fixed bottom-4 left-4 right-4 bg-gray-700 border shadow-md rounded-md p-3 flex items-center justify-between z-50 w-max m-auto text-white">
           <div
             className="flex gap-3 hover:bg-gray-900 p-1 rounded-md cursor-pointer"
-            onClick={handleDeleteTask}
+            onClick={() => setIsDeleteTaskModalOpen(true)}
           >
             <DeleteOutlined />
             <p>Delete task</p>
           </div>
         </div>
       )}
+
+      {/* Modal xác nhận xóa task */}
+      <Modal
+        title={
+          <span className="flex items-center gap-2">
+            <WarningOutlined
+              style={{
+                color: "#ff4d4f",
+              }}
+            />
+            Delete task
+          </span>
+        }
+        open={isDeleteTaskModalOpen}
+        onOk={handleDeleteTask}
+        onCancel={() => setIsDeleteTaskModalOpen(false)}
+      >
+        <p>Are you sure you want to delete {selectedTaskIds.length} task(s)?</p>
+      </Modal>
     </div>
   );
 };

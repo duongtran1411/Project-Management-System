@@ -23,10 +23,12 @@ export const ChangeDescription: React.FC<Props> = ({
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [lastSavedDescription, setLastSavedDescription] = useState(description);
 
+  // Chỉ update lastSavedDescription khi task đổi (tức là description prop đổi do task đổi)
   useEffect(() => {
     setLastSavedDescription(description);
-    setDescription(description);
-  }, [task._id]);
+    setDescription(description); // đồng bộ lại state nếu cần
+    // eslint-disable-next-line
+  }, [task._id]); // hoặc [description] nếu chắc chắn chỉ đổi khi task đổi
 
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
@@ -38,7 +40,7 @@ export const ChangeDescription: React.FC<Props> = ({
         mutateTask();
         if (response) {
           setDescription(response.description);
-          setLastSavedDescription(response.description);
+          setLastSavedDescription(response.description); // chỉ update ở đây
         }
       }
     } catch (error) {

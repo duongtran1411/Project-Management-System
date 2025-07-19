@@ -158,16 +158,16 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
         {/* Create and Update Time */}
         <div className="mt-4 mb-2">
-          <p className="text-[13px] p-1 ml-2 text-gray-500">
+          <p className="text-[13px] p-1 ml-2 text-gray-600">
             Created at: {formatDateTime(task?.createdAt || "")}
           </p>
-          <p className="text-[13px] p-1 ml-2 text-gray-500">
+          <p className="text-[13px] p-1 ml-2 text-gray-600">
             Updated at: {formatDateTime(task?.updatedAt || "")}
           </p>
         </div>
 
         {/* Activity (Comments) */}
-        <div className="pt-4">
+        <div className="pt-4 border-t">
           <h3 className="mb-2 font-semibold text-md">Activity</h3>
 
           {/* Tabs */}

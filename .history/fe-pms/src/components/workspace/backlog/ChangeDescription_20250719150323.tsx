@@ -25,8 +25,7 @@ export const ChangeDescription: React.FC<Props> = ({
 
   useEffect(() => {
     setLastSavedDescription(description);
-    setDescription(description);
-  }, [task._id]);
+  }, [description]);
 
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
@@ -36,6 +35,7 @@ export const ChangeDescription: React.FC<Props> = ({
       if (description) {
         const response = await updateTaskDescription(task._id, description);
         mutateTask();
+        console.log("response update description", response);
         if (response) {
           setDescription(response.description);
           setLastSavedDescription(response.description);

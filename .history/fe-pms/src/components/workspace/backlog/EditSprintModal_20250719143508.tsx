@@ -1,9 +1,11 @@
 "use client";
-import { DatePicker, Form, Input, Modal } from "antd";
+import { Modal, Form, Input, DatePicker } from "antd";
 
-import { Milestone } from "@/models/milestone/milestone.model";
-import dayjs from "dayjs";
 import { useEffect } from "react";
+import dayjs from "dayjs";
+import { mutate } from "swr";
+import { Endpoints } from "@/lib/endpoints";
+import { Milestone } from "@/models/milestone/milestone.model";
 
 const { TextArea } = Input;
 
@@ -42,7 +44,9 @@ const EditSprintModal: React.FC<EditSprintModalProps> = ({
         startDate: values.startDate.toISOString(),
         endDate: values.endDate.toISOString(),
       });
-
+      mutate(
+        `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.MILESTONE}`
+      );
       form.resetFields();
     });
   };

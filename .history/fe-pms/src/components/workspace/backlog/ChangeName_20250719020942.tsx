@@ -2,7 +2,6 @@
 
 import { updateTaskName } from "@/lib/services/task/task.service";
 import { Task } from "@/models/task/task.model";
-import { useState, useEffect } from "react";
 
 import { CloseOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
@@ -26,21 +25,11 @@ export const ChangeName: React.FC<Props> = ({
   setName,
   onClose,
 }) => {
-  const [lastSavedName, setLastSavedName] = useState(name);
-
-  useEffect(() => {
-    setLastSavedName(name);
-    setName(name);
-  }, [task._id]);
-
   const handleUpdateTaskName = async () => {
     if (!task._id) return;
     try {
       const response = await updateTaskName(task._id, name);
-      if (response?.name) {
-        setName(response.name);
-        setLastSavedName(response.name);
-      }
+      if (response?.name) setName(response.name);
       setIsEditingName(false);
       mutateTask();
     } catch (error) {
@@ -66,7 +55,7 @@ export const ChangeName: React.FC<Props> = ({
             <Button
               size="small"
               onClick={() => {
-                setName(lastSavedName || "");
+                setName(task.name || "");
                 setIsEditingName(false);
               }}
             >

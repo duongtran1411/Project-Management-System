@@ -4,7 +4,7 @@ import { updateTaskDescription } from "@/lib/services/task/task.service";
 import { Task } from "@/models/task/task.model";
 
 import { Button, Input } from "antd";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface Props {
   task: Task;
@@ -21,13 +21,6 @@ export const ChangeDescription: React.FC<Props> = ({
   mutateTask,
 }) => {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [lastSavedDescription, setLastSavedDescription] = useState(description);
-
-  useEffect(() => {
-    setLastSavedDescription(description);
-    setDescription(description);
-  }, [task._id]);
-
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
 
@@ -36,17 +29,15 @@ export const ChangeDescription: React.FC<Props> = ({
       if (description) {
         const response = await updateTaskDescription(task._id, description);
         mutateTask();
-        if (response) {
-          setDescription(response.description);
-          setLastSavedDescription(response.description);
-        }
+        console.log("response update description", response);
+        if (response) setDescription(response.description);
       }
     } catch (error) {
       console.log(error);
     }
   };
   const handleCancelDescription = () => {
-    setDescription(lastSavedDescription || "");
+    setDescription(task.description || "");
     setIsEditingDescription(false);
   };
   return (
