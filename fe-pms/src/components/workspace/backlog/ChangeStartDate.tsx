@@ -27,8 +27,6 @@ export const ChangeStartDate: React.FC<Props> = ({
   setIsPickingStartDate,
   dueDate,
   mutateTask,
-  dateError,
-  setDateError,
 }) => {
   const handleStartDateUpdate = async (date: string) => {
     try {
@@ -62,30 +60,17 @@ export const ChangeStartDate: React.FC<Props> = ({
                 ? dayjs(startDate)
                 : undefined
             }
-            onChange={(date, dateString) => {
-              const pickedDate = Array.isArray(dateString)
-                ? dateString[0]
-                : dateString;
-
-              if (dueDate && dayjs(pickedDate).isAfter(dayjs(dueDate))) {
-                setDateError("Start date must be before due date");
-                setStartDate(task?.startDate || null); // reset lại nếu sai
-              } else {
-                setDateError(null);
-                if (typeof pickedDate === "string") {
-                  setStartDate(pickedDate);
-                  handleStartDateUpdate(pickedDate);
-                }
-                setIsPickingStartDate(false);
-              }
-            }}
+            onChange={(dateString) =>
+              handleStartDateUpdate(dateString.toISOString())
+            }
             onOpenChange={(open) => {
               if (!open) setIsPickingStartDate(false);
             }}
+            disabledDate={(current) => {
+              if (!dueDate) return false;
+              return current && current.isAfter(dayjs(dueDate), "day");
+            }}
           />
-          {dateError && (
-            <div className="text-red-500 text-xs mt-1">{dateError}</div>
-          )}
         </div>
       )}
     </div>

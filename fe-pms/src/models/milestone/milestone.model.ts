@@ -5,6 +5,7 @@ export interface Milestone {
   endDate: string; // ISO date string
   goal: string;
   projectId: string;
+  status: "NOT_START" | "ACTIVE" | "COMPLETED";
 }
 export interface CreateMilestone {
   name: string;

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateTime } from "@/lib/utils";
+import { Task } from "@/models/task/task.model";
 import { Avatar, Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { ChangeDescription } from "./ChangeDescription";
@@ -7,7 +9,6 @@ import { ChangeDueDate } from "./ChangeDueDate";
 import { ChangeName } from "./ChangeName";
 import ChangeReporter from "./ChangeReporter";
 import { ChangeStartDate } from "./ChangeStartDate";
-import { Task } from "@/models/task/task.model";
 
 interface TaskDetailProps {
   task: Task | null;
@@ -130,8 +131,6 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                 startDate={startDate}
                 setDueDate={setDueDate}
                 dueDate={dueDate}
-                dateError={dateError}
-                setDateError={setDateError}
                 mutateTask={mutateTask}
                 isPickingDueDate={isPickingDueDate}
                 setIsPickingDueDate={setIsPickingDueDate}
@@ -157,8 +156,18 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
           </div>
         </div>
 
+        {/* Create and Update Time */}
+        <div className="mt-4 mb-2">
+          <p className="text-[13px] p-1 ml-2 text-gray-500">
+            Created at: {formatDateTime(task?.createdAt || "")}
+          </p>
+          <p className="text-[13px] p-1 ml-2 text-gray-500">
+            Updated at: {formatDateTime(task?.updatedAt || "")}
+          </p>
+        </div>
+
         {/* Activity (Comments) */}
-        <div className="pt-4 border-t">
+        <div className="pt-4">
           <h3 className="mb-2 font-semibold text-md">Activity</h3>
 
           {/* Tabs */}
