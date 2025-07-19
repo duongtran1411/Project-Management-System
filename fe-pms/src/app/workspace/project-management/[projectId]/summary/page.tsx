@@ -14,11 +14,12 @@ import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumn
 import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
 import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
 import { useParams } from "next/navigation";
-import { TaskStatistic } from "@/types/types";
-import { getTaskStatistic } from "@/lib/services/statistics/statistics";
+
+import { getTaskStatistic } from "@/lib/services/statistics/statistics.service";
 import axiosService from "@/lib/services/axios.service";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
+import { TaskStatistic } from "@/models/statistic/statistic.model";
 
 const assigneeColumns = [
   {
@@ -68,14 +69,15 @@ export default function SummaryPage() {
           // Statistics
           const total = response.totalTasks;
           const done =
-            response.taskStatusStats.find((t) => t.status === "DONE")?.count ||
-            0;
-          const inProgress =
-            response.taskStatusStats.find((t) => t.status === "IN_PROGRESS")
+            response.taskStatusStats.find((t: any) => t.status === "DONE")
               ?.count || 0;
+          const inProgress =
+            response.taskStatusStats.find(
+              (t: any) => t.status === "IN_PROGRESS"
+            )?.count || 0;
           const todo =
-            response.taskStatusStats.find((t) => t.status === "TO_DO")?.count ||
-            0;
+            response.taskStatusStats.find((t: any) => t.status === "TO_DO")
+              ?.count || 0;
           setTotalTasks(total);
           setDoneTasks(done);
           setInProgressTasks(inProgress);
@@ -153,7 +155,7 @@ export default function SummaryPage() {
       {/* Status Breakdown & Chart Placeholder */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
+          <Card className="!shadow !rounded-xl w-[567px] h-[320px]">
             <div className="mb-2 font-semibold">Status overview</div>
             <span className="mb-2 text-sm text-gray-500">
               Get a snapshot of the status of your work items.{" "}
@@ -172,7 +174,7 @@ export default function SummaryPage() {
       {/* Sprint/Report Section */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
+          <Card className="!shadow !rounded-xl w-[567px] h-[320px]">
             <div className="mb-2 font-semibold">Priority breakdown</div>
             <span className="mb-2 text-sm text-gray-500">
               Get a holistic view of how work is being prioritized.
@@ -182,7 +184,7 @@ export default function SummaryPage() {
           </Card>
         </Col>
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl">
+          <Card className="!shadow !rounded-xl h-[320px]">
             <div className="mb-2 font-semibold">Team workload</div>
             <span className="mb-2 text-sm text-gray-500">
               Monitor the capacity of your team.
@@ -192,7 +194,7 @@ export default function SummaryPage() {
               dataSource={statisticsContributor?.contributorStats}
               pagination={false}
               size="small"
-              rowKey="name"
+              rowKey="_id"
             />
           </Card>
         </Col>
@@ -202,7 +204,7 @@ export default function SummaryPage() {
       {/* Sprint/Report Section */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
+          <Card className="!shadow !rounded-xl w-[567px] height-[320px] overflow-auto">
             <div className="font-semibold mb-2">Epic progress</div>
             <span className="text-sm text-gray-500 mb-2">
               See how your epics are progressing at a glance.

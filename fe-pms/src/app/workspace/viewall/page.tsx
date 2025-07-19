@@ -1,15 +1,24 @@
 // components/ProjectTable.tsx
 "use client";
 
-import { Input, Table, Button, Pagination, TableProps } from "antd";
-import { StarOutlined } from "@ant-design/icons";
+import {
+  Input,
+  Table,
+  Button,
+  Pagination,
+  TableProps,
+  Spin,
+  Alert,
+  Avatar,
+} from "antd";
+import { SearchOutlined, StarOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
 import { useEffect, useState } from "react";
 import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 
@@ -55,17 +64,17 @@ const columns: TableProps<DataType>["columns"] = [
       <span className="text-gray-500">{text || "updating"}</span>
     ),
   },
-  // {
-  //   title: "Lead",
-  //   dataIndex: "lead",
-  //   key: "lead",
-  //   render: (lead) => (
-  //     <div className="flex items-center space-x-2">
-  //       <Avatar style={{ backgroundColor: lead.color }}>{lead.avatar}</Avatar>
-  //       <span>{lead.name}</span>
-  //     </div>
-  //   ),
-  // },
+  {
+    title: "Lead",
+    dataIndex: "projectLead",
+    key: "lead",
+    render: (lead) => (
+      <div className="flex items-center space-x-2">
+        <Avatar src={lead.avatar} />
+        <span>{lead.fullName}</span>
+      </div>
+    ),
+  },
   // {
   //   title: "Project URL",
   //   dataIndex: "url",
@@ -85,7 +94,6 @@ const ProjectTable = () => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
       const decoded = jwtDecode<TokenPayload>(access_token);
-      console.log("decode", decoded);
       setUserId(decoded.userId);
     }
   }, []);
@@ -113,8 +121,23 @@ const ProjectTable = () => {
     }
   }, [projectList, searchTerm]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" tip="Loading...">
+          <div className="p-10" />
+        </Spin>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Alert message="Error" description={error.message} type="error" />
+      </div>
+    );
+  }
 
   const handleCreateProject = () => {
     router.push("/create-project");
@@ -146,7 +169,8 @@ const ProjectTable = () => {
       <div className="flex gap-4 mb-4">
         <Input
           placeholder="Search projects"
-          className="w-64"
+          className="w-[450px] h-[10px] board-search-input"
+          prefix={<SearchOutlined className="text-gray-400" />}
           value={searchTerm}
           onChange={handleSearch}
         />

@@ -1,7 +1,7 @@
-import { Project } from "@/types/types";
 import axiosService from "../axios.service";
 import { Endpoints } from "@/lib/endpoints";
 import { showErrorToast } from "@/components/common/toast/toast";
+import { Project } from "@/models/project/project.model";
 
 export const createProject = async (project: Project) => {
   try {

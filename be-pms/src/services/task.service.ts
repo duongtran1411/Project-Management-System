@@ -1,12 +1,34 @@
 import { Server } from "socket.io";
 import Task, { ITask } from "../models/task.model";
 import NotificationService from "./notification.service";
+import {
+  emitNewNotification,
+  emitNotificationStatsUpdate,
+} from "../utils/socket";
 
 export class TaskService {
   private io: Server | null = null;
 
   setSocketIO(io: Server) {
     this.io = io;
+  }
+
+  private async emitNotificationEvent(notification: any, recipientId: string) {
+    try {
+      const populatedNotification =
+        await NotificationService.getNotificationById(
+          (notification._id as any).toString()
+        );
+      if (populatedNotification) {
+        emitNewNotification(populatedNotification, recipientId);
+        const stats = await NotificationService.getNotificationStats(
+          recipientId
+        );
+        emitNotificationStatsUpdate(recipientId, stats);
+      }
+    } catch (error) {
+      console.error("Failed to emit notification event:", error);
+    }
   }
 
   async createTask(taskData: Partial<ITask>, user: any): Promise<ITask> {
@@ -30,13 +52,12 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Create notifications for assignee and reporter
     try {
       if (
         taskData.assignee &&
         taskData.assignee.toString() !== user._id.toString()
       ) {
-        await NotificationService.createNotification({
+        const notification = await NotificationService.createNotification({
           recipientId: taskData.assignee.toString(),
           senderId: user._id.toString(),
           type: "TASK_ASSIGNED",
@@ -52,13 +73,18 @@ export class TaskService {
                 : undefined,
           },
         });
+
+        await this.emitNotificationEvent(
+          notification,
+          taskData.assignee.toString()
+        );
       }
 
       if (
         taskData.reporter &&
         taskData.reporter.toString() !== user._id.toString()
       ) {
-        await NotificationService.createNotification({
+        const notification = await NotificationService.createNotification({
           recipientId: taskData.reporter.toString(),
           senderId: user._id.toString(),
           type: "TASK_CREATED",
@@ -74,12 +100,16 @@ export class TaskService {
                 : undefined,
           },
         });
+
+        await this.emitNotificationEvent(
+          notification,
+          taskData.reporter.toString()
+        );
       }
     } catch (error) {
       console.error("Failed to create task notifications:", error);
     }
 
-    // Emit real-time event
     if (this.io) {
       this.io.emit("task-created", {
         task: populatedTask,
@@ -150,7 +180,6 @@ export class TaskService {
     updateData: Partial<ITask>,
     user: any
   ): Promise<ITask | null> {
-    // Get the old task data for comparison
     const oldTask = await Task.findById(taskId);
 
     const task = await Task.findByIdAndUpdate(
@@ -170,16 +199,14 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Create notifications for task updates
     if (task && oldTask) {
       try {
-        // Notify assignee about status changes
         if (
           updateData.status &&
           oldTask.status !== updateData.status &&
           task.assignee
         ) {
-          await NotificationService.createNotification({
+          const notification = await NotificationService.createNotification({
             recipientId: task.assignee.toString(),
             senderId: user._id.toString(),
             type: "TASK_STATUS_CHANGED",
@@ -196,15 +223,19 @@ export class TaskService {
               taskStatus: updateData.status,
             },
           });
+
+          await this.emitNotificationEvent(
+            notification,
+            task.assignee.toString()
+          );
         }
 
-        // Notify new assignee about assignment
         if (
           updateData.assignee &&
           oldTask.assignee?.toString() !== updateData.assignee?.toString() &&
           updateData.assignee.toString() !== user._id.toString()
         ) {
-          await NotificationService.createNotification({
+          const notification = await NotificationService.createNotification({
             recipientId: updateData.assignee.toString(),
             senderId: user._id.toString(),
             type: "TASK_ASSIGNED",
@@ -220,16 +251,23 @@ export class TaskService {
                   : undefined,
             },
           });
+
+          await this.emitNotificationEvent(
+            notification,
+            updateData.assignee.toString()
+          );
         }
 
-        // Notify old assignee about unassignment
+        // Case 2: Unassign task (xóa assignee - assignee = null/undefined/empty string)
+        const assigneeValue = updateData.assignee?.toString();
+        const isUnassign = !assigneeValue || assigneeValue === "";
+
         if (
+          isUnassign &&
           oldTask.assignee &&
-          updateData.assignee &&
-          oldTask.assignee.toString() !== updateData.assignee?.toString() &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
-          await NotificationService.createNotification({
+          const notification = await NotificationService.createNotification({
             recipientId: oldTask.assignee.toString(),
             senderId: user._id.toString(),
             type: "TASK_UNASSIGNED",
@@ -245,11 +283,45 @@ export class TaskService {
                   : undefined,
             },
           });
+
+          await this.emitNotificationEvent(
+            notification,
+            oldTask.assignee.toString()
+          );
         }
 
-        // Notify reporter about general updates
+        // Case 3: Reassign task (thay đổi từ assignee cũ sang assignee mới)
+        if (
+          updateData.assignee &&
+          oldTask.assignee &&
+          oldTask.assignee.toString() !== updateData.assignee?.toString() &&
+          oldTask.assignee.toString() !== user._id.toString()
+        ) {
+          const notification = await NotificationService.createNotification({
+            recipientId: oldTask.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UNASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+
+          await this.emitNotificationEvent(
+            notification,
+            oldTask.assignee.toString()
+          );
+        }
+
         if (task.reporter && task.reporter.toString() !== user._id.toString()) {
-          await NotificationService.createNotification({
+          const notification = await NotificationService.createNotification({
             recipientId: task.reporter.toString(),
             senderId: user._id.toString(),
             type: "TASK_UPDATE",
@@ -265,15 +337,18 @@ export class TaskService {
                   : undefined,
             },
           });
+
+          await this.emitNotificationEvent(
+            notification,
+            task.reporter.toString()
+          );
         }
       } catch (error) {
         console.error("Failed to create task update notifications:", error);
       }
     }
 
-    // Emit real-time events for specific changes
     if (this.io && task && oldTask) {
-      // Check for status change
       if (updateData.status && oldTask.status !== updateData.status) {
         this.io.emit("task-status-changed", {
           task,
@@ -283,11 +358,7 @@ export class TaskService {
         });
       }
 
-      // Check for assignment change
-      if (
-        updateData.assignee &&
-        oldTask.assignee?.toString() !== updateData.assignee?.toString()
-      ) {
+      if (oldTask.assignee?.toString() !== updateData.assignee?.toString()) {
         this.io.emit("task-assigned", {
           task,
           projectId: task.projectId,
@@ -296,7 +367,6 @@ export class TaskService {
         });
       }
 
-      // Emit general update event
       this.io.emit("task-updated", {
         task,
         projectId: task.projectId,
@@ -311,7 +381,6 @@ export class TaskService {
     const task = await Task.findById(taskId);
     const result = await Task.findByIdAndDelete(taskId);
 
-    // Emit real-time event
     if (this.io && result && task) {
       this.io.emit("task-deleted", {
         taskId,
@@ -407,7 +476,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for status change
     if (this.io && task && oldTask && oldTask.status !== status) {
       this.io.emit("task-status-changed", {
         task,
@@ -442,7 +510,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for priority change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -476,7 +543,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for name change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -510,7 +576,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for description change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -524,7 +589,7 @@ export class TaskService {
 
   async updateTaskAssignee(
     taskId: string,
-    assignee: string,
+    assignee: string | null,
     user: any
   ): Promise<ITask | null> {
     const oldTask = await Task.findById(taskId);
@@ -546,16 +611,15 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Create notifications for assignee changes
     if (task && oldTask) {
       try {
-        // Notify new assignee about assignment
+        // Case 1: Assign task (có assignee mới và khác với assignee cũ)
         if (
           assignee &&
           oldTask.assignee?.toString() !== assignee &&
           assignee !== user._id.toString()
         ) {
-          await NotificationService.createNotification({
+          const notification = await NotificationService.createNotification({
             recipientId: assignee,
             senderId: user._id.toString(),
             type: "TASK_ASSIGNED",
@@ -571,15 +635,17 @@ export class TaskService {
                   : undefined,
             },
           });
+
+          await this.emitNotificationEvent(notification, assignee);
         }
 
-        // Notify old assignee about unassignment
+        // Case 2: Unassign task (xóa assignee - assignee = null/undefined)
         if (
+          !assignee &&
           oldTask.assignee &&
-          oldTask.assignee.toString() !== assignee &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
-          await NotificationService.createNotification({
+          const notification = await NotificationService.createNotification({
             recipientId: oldTask.assignee.toString(),
             senderId: user._id.toString(),
             type: "TASK_UNASSIGNED",
@@ -595,20 +661,57 @@ export class TaskService {
                   : undefined,
             },
           });
+
+          await this.emitNotificationEvent(
+            notification,
+            oldTask.assignee.toString()
+          );
+        }
+
+        // Case 3: Reassign task (thay đổi từ assignee cũ sang assignee mới)
+        if (
+          assignee &&
+          oldTask.assignee &&
+          oldTask.assignee.toString() !== assignee &&
+          oldTask.assignee.toString() !== user._id.toString()
+        ) {
+          const notification = await NotificationService.createNotification({
+            recipientId: oldTask.assignee.toString(),
+            senderId: user._id.toString(),
+            type: "TASK_UNASSIGNED",
+            entityType: "Task",
+            entityId: (task._id as any).toString(),
+            metadata: {
+              taskName: task.name,
+              projectName:
+                typeof task.projectId === "object" &&
+                task.projectId !== null &&
+                "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
+            },
+          });
+
+          await this.emitNotificationEvent(
+            notification,
+            oldTask.assignee.toString()
+          );
         }
       } catch (error) {
         console.error("Failed to create assignee change notifications:", error);
       }
     }
 
-    // Emit real-time event for assignee change
     if (this.io && task && oldTask) {
-      this.io.emit("task-assigned", {
-        task,
-        projectId: task.projectId,
-        oldAssignee: oldTask.assignee,
-        newAssignee: assignee,
-      });
+      // Emit socket event cho cả assign và unassign
+      if (oldTask.assignee?.toString() !== assignee) {
+        this.io.emit("task-assigned", {
+          task,
+          projectId: task.projectId,
+          oldAssignee: oldTask.assignee,
+          newAssignee: assignee,
+        });
+      }
     }
 
     return task;
@@ -636,7 +739,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for reporter change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -670,7 +772,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for epic change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -704,7 +805,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for milestone change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -740,7 +840,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for dates change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -774,7 +873,6 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit real-time event for labels change
     if (this.io && task) {
       this.io.emit("task-updated", {
         task,
@@ -798,7 +896,6 @@ export class TaskService {
         const result = await Task.findByIdAndDelete(taskId);
         if (result) {
           success++;
-          // Emit real-time event for each deleted task
           if (this.io && task) {
             this.io.emit("task-deleted", {
               taskId,

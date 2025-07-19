@@ -148,6 +148,7 @@ export default function HeaderProfileNav() {
       menu={{ items: menuItems }}
       trigger={["click"]}
       overlayStyle={{ width: 240 }}
+      className="header-workspace-dropdown"
     >
       <div className="cursor-pointer d-flex align-items-center px-2">
         <Avatar icon={<UserOutlined />} size={32} />

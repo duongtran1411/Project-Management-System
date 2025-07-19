@@ -1,10 +1,11 @@
 "use client";
 
-import { updateTaskDate } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import { updateTaskDate } from "@/lib/services/task/task.service";
+
 import dayjs from "dayjs";
 
 import { DatePicker } from "antd";
+import { Task } from "@/models/task/task.model";
 
 interface Props {
   task: Task;

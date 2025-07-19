@@ -31,20 +31,29 @@ export class IpUtil {
 
     // Fallback to connection IP
     if (req.connection && req.connection.remoteAddress) {
-      return req.connection.remoteAddress;
+      const ip = req.connection.remoteAddress;
+      if (this.isValidIp(ip)) {
+        return ip;
+      }
     }
 
     // Fallback to socket IP
     if (req.socket && req.socket.remoteAddress) {
-      return req.socket.remoteAddress;
+      const ip = req.socket.remoteAddress;
+      if (this.isValidIp(ip)) {
+        return ip;
+      }
     }
 
     // Fallback to request IP
     if (req.ip) {
-      return req.ip;
+      if (this.isValidIp(req.ip)) {
+        return req.ip;
+      }
     }
 
-    return "unknown";
+    // Nếu không tìm thấy IP hợp lệ, trả về localhost
+    return "127.0.0.1";
   }
 
   /**
@@ -57,10 +66,14 @@ export class IpUtil {
     const ipv4Regex =
       /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
-    // IPv6 validation (simplified)
-    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+    // IPv6 validation (more comprehensive)
+    const ipv6Regex = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/;
 
-    return ipv4Regex.test(ip) || ipv6Regex.test(ip);
+    // Check for IPv4-mapped IPv6 addresses
+    const ipv4MappedRegex =
+      /^::ffff:(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+    return ipv4Regex.test(ip) || ipv6Regex.test(ip) || ipv4MappedRegex.test(ip);
   }
 
   /**

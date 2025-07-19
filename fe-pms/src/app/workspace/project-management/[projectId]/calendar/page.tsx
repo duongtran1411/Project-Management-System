@@ -8,8 +8,8 @@ import "../../../../../styles/globals.css";
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getTasksByProject } from "@/lib/services/task/task";
-import { TaskApiResponse } from "@/types/types";
+import { getTasksByProject } from "@/lib/services/task/task.service";
+import { TaskApiResponse } from "@/models/task/task.model";
 
 type RBCEvent = {
   title: string;
@@ -23,7 +23,6 @@ type MyEvent = RBCEvent & {
   sprint?: string;
   status?: string;
 };
-
 
 const locales = { "en-US": enUS };
 
@@ -59,7 +58,6 @@ function CustomEvent({ event }: { event: MyEvent }) {
   );
 }
 
-
 export default function Page() {
   const [calendarEvents, setCalendarEvents] = useState<MyEvent[]>([]);
   const { projectId } = useParams<{ projectId: string }>();
@@ -80,7 +78,9 @@ export default function Page() {
           let end: Date;
 
           if (isDone) {
-            const date = new Date(task.dueDate || task.startDate || fallbackDate);
+            const date = new Date(
+              task.dueDate || task.startDate || fallbackDate
+            );
             start = date;
             end = date;
           } else {
@@ -96,7 +96,6 @@ export default function Page() {
             status: task.status || "TO_DO",
           };
         });
-
 
         setCalendarEvents(events);
       }

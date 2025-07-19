@@ -2,12 +2,12 @@
 
 import { Avatar, Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
-import { Task } from "@/types/types";
-import ChangeReporter from "./ChangeReporter";
-import { ChangeName } from "./ChangeName";
 import { ChangeDescription } from "./ChangeDescription";
-import { ChangeStartDate } from "./ChangeStartDate";
 import { ChangeDueDate } from "./ChangeDueDate";
+import { ChangeName } from "./ChangeName";
+import ChangeReporter from "./ChangeReporter";
+import { ChangeStartDate } from "./ChangeStartDate";
+import { Task } from "@/models/task/task.model";
 
 interface TaskDetailProps {
   task: Task | null;

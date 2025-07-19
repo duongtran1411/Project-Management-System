@@ -1,10 +1,11 @@
 "use client";
 import { Modal, Form, Input, DatePicker } from "antd";
-import { Milestone } from "@/types/types";
+
 import { useEffect } from "react";
 import dayjs from "dayjs";
 import { mutate } from "swr";
 import { Endpoints } from "@/lib/endpoints";
+import { Milestone } from "@/models/milestone/milestone.model";
 
 const { TextArea } = Input;
 

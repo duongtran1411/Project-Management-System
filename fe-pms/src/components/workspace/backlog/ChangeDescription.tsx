@@ -1,7 +1,7 @@
 "use client";
 
-import { updateTaskDescription } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import { updateTaskDescription } from "@/lib/services/task/task.service";
+import { Task } from "@/models/task/task.model";
 
 import { Button, Input } from "antd";
 import { useState } from "react";
@@ -41,7 +41,7 @@ export const ChangeDescription: React.FC<Props> = ({
   };
   return (
     <div className="mb-4">
-      <h3 className="mb-2 text-lg font-semibold">Description</h3>
+      <h3 className="mb-2 text-lg font-semibold text-gray-600">Description</h3>
       {isEditingDescription ? (
         <div>
           <Input.TextArea

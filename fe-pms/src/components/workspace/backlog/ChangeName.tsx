@@ -1,7 +1,8 @@
 "use client";
 
-import { updateTaskName } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import { updateTaskName } from "@/lib/services/task/task.service";
+import { Task } from "@/models/task/task.model";
+
 import { CloseOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
 
@@ -36,7 +37,7 @@ export const ChangeName: React.FC<Props> = ({
     }
   };
   return (
-    <div className="flex items-center justify-between mb-8 text-sm text-gray-500">
+    <div className="flex items-center justify-between mb-8 text-sm text-gray-800">
       {/* Title */}
       {isEditingName ? (
         <div className="flex flex-col items-center gap-2 mb-2">

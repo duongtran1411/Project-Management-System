@@ -1,48 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  Tag,
-  Avatar,
-  Button,
-  Input,
-  Select,
-  Space,
-  Tooltip,
-  Dropdown,
-} from "antd";
-import {
-  UserOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
-  FlagOutlined,
-} from "@ant-design/icons";
-import { useParams } from "next/navigation";
-import axiosService from "@/lib/services/axios.service";
+import Spinner from "@/components/common/spinner/spin";
 import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
 import { Endpoints } from "@/lib/endpoints";
-import useSWR from "swr";
-import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
-import { Comment } from "@/models/comment/comment";
-import Spinner from "@/components/common/spinner/spin";
-import { Task } from "@/types/types";
+import axiosService from "@/lib/services/axios.service";
 import { createComment } from "@/lib/services/comment/comment.service";
-import { DatePicker } from "antd";
-import dayjs from "dayjs";
-import {
-  updateAssigneeTask,
-  updateDescriptionTask,
-  updateEpicTask,
-  updatePriorityTask,
-  updateTaskDate,
-  updateTaskName,
-} from "@/lib/services/task/task";
-import { Assignee } from "@/models/assignee/assignee";
-import { Epic } from "@/models/epic/epic";
+import { updateAssigneeTask, updateDescriptionTask, updateEpicTask, updatePriorityTask, updateTaskDate, updateTaskName } from "@/lib/services/task/task.service";
+import { Assignee } from "@/models/assignee/assignee.model";
+import { Comment } from "@/models/comment/comment";
+import { Epic } from "@/models/epic/epic.model";
+import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
+import { Task } from "@/models/task/task.model";
+import { ArrowDownOutlined, ArrowUpOutlined, FlagOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, DatePicker, Dropdown, Input, Modal, Select, Space, Tag, Tooltip } from "antd";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
+import dayjs from 'dayjs';
+ 
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
@@ -303,7 +281,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={1200}
-      styles={{ body: { padding: 0 } }}>
+      styles={{ body: { padding: 0 } }}
+    >
       <div className="flex">
         {/* Left section */}
         <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
@@ -353,7 +332,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   <Button
                     type="primary"
                     size="small"
-                    onClick={handleSaveDescription}>
+                    onClick={handleSaveDescription}
+                  >
                     Save
                   </Button>
                   <Button size="small" onClick={handleCancelDescription}>
@@ -364,7 +344,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             ) : (
               <div
                 onClick={() => setIsEditingDescription(true)}
-                className="cursor-pointer min-h-[50px]">
+                className="cursor-pointer min-h-[50px]"
+              >
                 {description ? (
                   <p className="text-gray-500">{description}</p>
                 ) : (
@@ -431,7 +412,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                       onClick={() => {
                         const mention = `@${e.userId.fullName} `;
                         setNewComment((prev) => prev + mention);
-                      }}>
+                      }}
+                    >
                       {e.userId.fullName}
                     </Button>
                   ))}
@@ -450,7 +432,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   type="primary"
                   size="small"
                   onClick={handleComment}
-                  disabled={!newComment.trim()}>
+                  disabled={!newComment.trim()}
+                >
                   Save
                 </Button>
                 <Button size="small" onClick={() => setNewComment("")}>
@@ -531,7 +514,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                           <Avatar
                             src={<UserOutlined />}
                             size="small"
-                            className="bg-gray-400"></Avatar>
+                            className="bg-gray-400"
+                          ></Avatar>
                           <div>
                             <p className="font-medium">Unassigned</p>
                           </div>
@@ -566,17 +550,20 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                     }
                   },
                 }}
-                trigger={["click"]}>
+                trigger={["click"]}
+              >
                 <Tooltip
                   title={`Assignee: ${assignee?.fullName || "Unassigned"}`}
-                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
+                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+                >
                   <Avatar
                     className={`cursor-pointer text-white ${
                       assignee?.fullName === "Unassigned" ? "bg-gray-400" : ""
                     }`}
                     size="default"
                     src={assignee?.avatar}
-                    onClick={(e) => e?.stopPropagation()}>
+                    onClick={(e) => e?.stopPropagation()}
+                  >
                     {assignee?.fullName?.[0] || <UserOutlined />}
                   </Avatar>
                   <p>{assignee?.fullName}</p>

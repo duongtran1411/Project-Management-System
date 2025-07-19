@@ -3,13 +3,14 @@ import { useContext, createContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Constants } from "../constants";
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { isTokenValid } from "@/helpers/auth/checktoken";
 
 interface AuthContextType {
   isLoggedIn: boolean;
   userInfo: TokenPayload | null;
   loginSuccess: (token: string) => void;
+  setUserInfo: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,7 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, userInfo,loginSuccess }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, userInfo, loginSuccess, setUserInfo }}
+    >
       {children}
     </AuthContext.Provider>
   );

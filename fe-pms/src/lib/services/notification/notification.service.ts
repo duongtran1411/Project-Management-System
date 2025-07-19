@@ -1,6 +1,6 @@
 import { showErrorToast } from "@/components/common/toast/toast";
 import { Endpoints } from "@/lib/endpoints";
-import { NotificationQuery } from "@/models/notification/notification";
+import { NotificationQuery } from "@/models/notification/notification.model";
 import axiosService from "../axios.service";
 
 export const getNotifications = async (query: NotificationQuery) => {
@@ -67,13 +67,11 @@ export const markNotificationAsRead = async (
   }
 };
 
-export const markAllNotificationsAsRead = async (userId: string) => {
+export const markAllNotificationsAsRead = async () => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .patch(Endpoints.Notification.MARK_ALL_AS_READ, {
-        userId,
-      });
+      .patch(Endpoints.Notification.MARK_ALL_AS_READ);
 
     return response.data.data;
   } catch (error: any) {
