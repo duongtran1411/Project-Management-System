@@ -22,10 +22,13 @@ import {
   FlagOutlined,
   ArrowDownOutlined,
   FileDoneOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
-import { updateAssigneeTask, updateTaskStatus } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import {
+  updateAssigneeTask,
+  updateTaskStatus,
+} from "@/lib/services/task/task.service";
 import { useParams } from "next/navigation";
 import {
   DragDropContext,
@@ -37,11 +40,13 @@ import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import useSWR, { mutate } from "swr";
 import { format } from "date-fns";
-import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
+import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
 import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
+import { Task } from "@/models/task/task.model";
+import { Epic } from "@/models/epic/epic.model";
 
 const fetcher = (url: string) =>
   axiosService
@@ -74,6 +79,7 @@ const BoardPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [epics, setEpics] = useState<Epic[]>([])
   const [contributor, setContributor] = useState<ProjectContributorTag[]>([]);
   const {
     data: taskData,
@@ -81,27 +87,33 @@ const BoardPage = () => {
     isLoading,
     mutate: taskMutate,
   } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
+    `${Endpoints.Task.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
 
   const { data: epicData, error: epicError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
+    `${Endpoints.Epic.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
 
-  const { data: contributorData, error: contributorError } = useSWR(
+  const { data: contributorData } = useSWR(
     projectId
       ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
       : "",
     fetcher
   );
 
-  const epicOptions = (epicData?.data || []).map((epic: any) => ({
+  useEffect(() => {
+    if (epicData) {
+      setEpics(epicData)
+    }
+  }, [epicData])
+
+  const epicOptions = (epics || []).map((epic: Epic) => ({
     label: epic.name,
     value: epic.name,
     id: epic._id,
@@ -157,7 +169,8 @@ const BoardPage = () => {
       {epicOptions.map((epic) => (
         <div
           key={epic.value}
-          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
+          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50"
+        >
           <Checkbox
             checked={selectedEpics.includes(epic.value)}
             onChange={() =>
@@ -166,7 +179,8 @@ const BoardPage = () => {
                   ? prev.filter((e) => e !== epic.value)
                   : [...prev, epic.value]
               )
-            }>
+            }
+          >
             <span className="font-medium">{epic.label}</span>
           </Checkbox>
         </div>
@@ -279,10 +293,11 @@ const BoardPage = () => {
   return (
     <div className="p-6">
       <div className="flex items-center gap-3 mb-6">
-        <Input.Search
+        <Input
           placeholder="Search board"
           allowClear
-          className="w-[260px]"
+          className="w-[450px] h-[10px] board-search-input"
+          prefix={<SearchOutlined className="text-gray-400" />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -290,7 +305,9 @@ const BoardPage = () => {
           open={epicOpen}
           onOpenChange={setEpicOpen}
           popupRender={() => epicDropdown}
-          trigger={["click"]}>
+          trigger={["click"]}
+          className="board-epic-dropdown"
+        >
           <Button className="flex items-center font-semibold text-gray-700">
             Epic <DownOutlined className="ml-1" />
           </Button>
@@ -301,7 +318,8 @@ const BoardPage = () => {
             setSearch("");
             setSelectedEpics([]);
           }}
-          className="font-semibold text-gray-600">
+          className="font-semibold text-gray-600"
+        >
           Clear Filters
         </Button>
       </div>
@@ -316,7 +334,8 @@ const BoardPage = () => {
                 key={col.status}
                 isDropDisabled={false}
                 isCombineEnabled={false}
-                ignoreContainerClipping={false}>
+                ignoreContainerClipping={false}
+              >
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
@@ -334,7 +353,8 @@ const BoardPage = () => {
                         <Button
                           type="text"
                           icon={<PlusOutlined />}
-                          className="!flex items-center">
+                          className="!flex items-center"
+                        >
                           Create
                         </Button>
                       )}
@@ -344,7 +364,8 @@ const BoardPage = () => {
                         <Draggable
                           draggableId={task._id ?? `${idx}`}
                           index={idx}
-                          key={task._id}>
+                          key={task._id}
+                        >
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
@@ -352,14 +373,15 @@ const BoardPage = () => {
                               {...provided.dragHandleProps}
                               key={task._id}
                               className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${snapshot.isDragging
-                                  ? "ring-2 ring-blue-400"
-                                  : ""
+                                ? "ring-2 ring-blue-400"
+                                : ""
                                 }`}
                               styles={{ body: { padding: "12px" } }}
                               onClick={() => {
                                 setSelectedTask(task);
                                 setIsModalOpen(true);
-                              }}>
+                              }}
+                            >
                               <div className="space-y-2">
                                 <p
                                   className={`text-gray-700 font-medium ${col.status === "DONE" ? "line-through" : ""
@@ -372,7 +394,8 @@ const BoardPage = () => {
                                       task.epic?.name
                                         ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
                                         : ""
-                                    }>
+                                    }
+                                  >
                                     {task.epic?.name}
                                   </span>
                                 </div>
@@ -438,7 +461,8 @@ const BoardPage = () => {
                                               <Avatar
                                                 src={<UserOutlined />}
                                                 size="small"
-                                                className="bg-gray-400"></Avatar>
+                                                className="bg-gray-400"
+                                              ></Avatar>
                                               <div>
                                                 <p className="font-medium">
                                                   Unassigned
@@ -460,7 +484,8 @@ const BoardPage = () => {
                                               <div className="flex items-center gap-2">
                                                 <Avatar
                                                   src={e.userId.avatar}
-                                                  size="small">
+                                                  size="small"
+                                                >
                                                   {e.userId.fullName[0]}
                                                 </Avatar>
                                                 <div>
@@ -483,19 +508,22 @@ const BoardPage = () => {
                                         }
                                       },
                                     }}
-                                    trigger={["click"]}>
+                                    trigger={["click"]}
+                                    className="board-assignee-dropdown"
+                                  >
                                     <Tooltip
                                       title={`Assignee: ${task.assignee?.fullName || "Unassigned"
                                         }`}>
                                       <Avatar
                                         className={`cursor-pointer text-white ${task.assignee?.fullName ===
-                                            "Unassigned"
-                                            ? "bg-gray-400"
-                                            : ""
+                                          "Unassigned"
+                                          ? "bg-gray-400"
+                                          : ""
                                           }`}
                                         size="default"
                                         src={task.assignee?.avatar}
-                                        onClick={(e) => e?.stopPropagation()}>
+                                        onClick={(e) => e?.stopPropagation()}
+                                      >
                                         {task.assignee?.fullName?.[0] || (
                                           <UserOutlined />
                                         )}

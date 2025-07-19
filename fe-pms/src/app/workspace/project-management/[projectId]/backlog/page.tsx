@@ -1,34 +1,30 @@
 "use client";
 import {
+  Alert,
   Avatar,
   Button,
   Checkbox,
   Dropdown,
   Input,
   Space,
-  Tag,
   Spin,
-  Alert,
+  Tag,
 } from "antd";
 
-import { DownOutlined, SearchOutlined } from "@ant-design/icons";
-import React, { useState, useMemo, useEffect } from "react";
-import useSWR from "swr";
-import { Endpoints } from "@/lib/endpoints";
-import {
-  Contributor,
-  CreateMilestone,
-  Epic,
-  Milestone,
-  Task,
-} from "@/types/types";
-import SprintSection from "@/components/workspace/backlog/SprintSection";
-import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
 import CreateSprintModal from "@/components/workspace/backlog/CreateSprintModal";
-import { createMilestone } from "@/lib/services/milestone/milestone";
-import { useParams } from "next/navigation";
-import axiosService from "@/lib/services/axios.service";
+import { ModalCreateTask } from "@/components/workspace/backlog/ModalCreateTask";
+import SprintSection from "@/components/workspace/backlog/SprintSection";
 import TaskDetail from "@/components/workspace/backlog/TaskDetail";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+import { createMilestone } from "@/lib/services/milestone/milestone.service";
+import { DownOutlined, SearchOutlined } from "@ant-design/icons";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
+import { Task } from "@/models/task/task.model";
+import { CreateMilestone, Milestone } from "@/models/milestone/milestone.model";
+import { Contributor } from "@/models/contributor/contributor.model";
 
 export default function Backlog() {
   const params = useParams();
@@ -46,6 +42,7 @@ export default function Backlog() {
       .getAxiosInstance()
       .get(url)
       .then((res) => res.data);
+
   const { data: epicData, error: epicError } = useSWR(
     `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
@@ -162,7 +159,7 @@ export default function Backlog() {
         onChange={setSelectedEpics}
         className="flex flex-col gap-2 "
       >
-        {epicData?.data?.map((epic: Epic) => (
+        {epicData?.data?.map((epic: any) => (
           <Checkbox key={epic._id} value={epic._id}>
             {epic.name}
           </Checkbox>
@@ -177,8 +174,11 @@ export default function Backlog() {
         onChange={setSelectedAssignees}
         className="flex flex-col  gap-2"
       >
+        <Checkbox key="unassigned" value="unassigned">
+          Unassigned
+        </Checkbox>
         {contributorData?.data?.map((contributor: Contributor) => (
-          <Checkbox key={contributor._id} value={contributor._id}>
+          <Checkbox key={contributor._id} value={contributor.userId._id}>
             {contributor?.userId?.fullName}
           </Checkbox>
         ))}
@@ -193,7 +193,7 @@ export default function Backlog() {
         <Input
           placeholder="Search tasks..."
           prefix={<SearchOutlined className="text-gray-400" />}
-          className=" w-[184px] h-[32px] border-gray-400"
+          className="w-[450px] h-[10px] board-search-input"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />

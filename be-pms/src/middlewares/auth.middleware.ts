@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model";
+import ProjectContributor from "../models/project.contributor.model";
+import ProjectRole from "../models/project.role.model";
+import Task from "../models/task.model";
 
 export interface AuthRequest extends Request {
   user?: any;
+  files?:
+    | Express.Multer.File[]
+    | { [fieldname: string]: Express.Multer.File[] };
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
@@ -58,5 +64,54 @@ export const authorize = (role: string) => {
     }
 
     next();
+  };
+};
+
+export const authorizeProjectRole = (requiredRole: string) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "Yêu cầu quyền truy cập" });
+      }
+
+      let projectId = req.params.projectId || req.body.projectId;
+
+      if (!projectId && req.params.taskId) {
+        const task = await Task.findById(req.params.taskId);
+        if (!task) {
+          return res.status(404).json({ message: "Task không tồn tại" });
+        }
+        projectId = task.projectId?.toString();
+      }
+
+      if (!projectId) {
+        return res
+          .status(400)
+          .json({ message: "Không xác định được projectId" });
+      }
+
+      const contributor = await ProjectContributor.findOne({
+        userId: req.user._id,
+        projectId,
+      });
+
+      if (!contributor) {
+        return res
+          .status(403)
+          .json({ message: "Bạn không tham gia project này" });
+      }
+
+      const projectRole = await ProjectRole.findById(contributor.projectRoleId);
+      if (!projectRole || projectRole.name !== requiredRole) {
+        return res
+          .status(403)
+          .json({ message: "Bạn không có quyền thực hiện hành động này" });
+      }
+
+      next();
+    } catch (error) {
+      console.error("authorizeProjectRole error:", error);
+      res.status(500).json({ message: "Lỗi phân quyền project" });
+    }
   };
 };

@@ -1,15 +1,15 @@
 "use client";
 import Footer from "@/components/homepage/Footer";
 import Header from "@/components/homepage/Header";
-import { Button, Typography, Card, Row, Col, Statistic, Space } from "antd";
 import {
-  TeamOutlined,
-  ProjectOutlined,
-  CheckCircleOutlined,
-  RocketOutlined,
   ArrowRightOutlined,
+  CheckCircleOutlined,
+  ProjectOutlined,
+  RocketOutlined,
   StarOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
+import { Button, Card, Col, Row, Space, Statistic, Typography } from "antd";
 import { useState } from "react";
 
 import { showSuccessToast } from "@/components/common/toast/toast";
@@ -224,6 +224,7 @@ export default function Page() {
         </div>
       </section>
 
+
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl px-4 mx-auto text-center sm:px-6 lg:px-8">
@@ -253,7 +254,8 @@ export default function Page() {
         </div>
       </section>
 
+
       <Footer />
-    </div>
+    </div >
   );
 }

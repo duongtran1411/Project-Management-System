@@ -1,6 +1,8 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import milestoneService from "../services/milestone.service";
+import { Milestone } from "../models";
+import { stat } from "fs";
 
 export class MilestoneController {
   createMilestone = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -287,6 +289,37 @@ export class MilestoneController {
       });
     }
   };
+
+  updateStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params
+      const {status} = req.body
+      const user = req.user
+      const milestone = await milestoneService.updateStatusMilestones(id, status,user)
+
+      if (!milestone) {
+        res.status(400).json({
+          status: 400,
+          success: true,
+          message: `Can not update milestone with id ${id}`
+        })
+      }
+
+      res.status(200).json({
+        status: 200,
+        success: true,
+        message: 'Update status milestone success',
+        data: milestone
+      })
+
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lấy danh sách milestone quá hạn thất bại",
+        statusCode: 400,
+      });
+    }
+  }
 }
 
 export default new MilestoneController();

@@ -31,7 +31,7 @@ const Header: React.FC = () => {
         router.push("/workspace");
         break;
       case "profile":
-        router.push("/profile");
+        router.push("/workspace/profile");
         break;
       case "logout":
         logout();

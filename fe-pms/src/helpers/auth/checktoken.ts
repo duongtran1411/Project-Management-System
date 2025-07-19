@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 export const isTokenValid = (token: string): boolean => {
   try {
     const decoded = jwtDecode<TokenPayload>(token);

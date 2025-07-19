@@ -1,14 +1,14 @@
 "use client";
 
-import { createTask } from "@/lib/services/task/task";
-import { FieldType, Milestone } from "@/types/types";
+import { createTask } from "@/lib/services/task/task.service";
+import { Milestone } from "@/models/milestone/milestone.model";
+import { FieldType } from "@/types/types";
 import { Form, FormProps, Input, Modal } from "antd";
 import TextArea from "antd/es/input/TextArea";
 
 interface Props {
   projectId: string;
   selectedMilestone: Milestone;
-  //setSelectedMilestone: React.Dispatch<React.SetStateAction<Milestone>>;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   mutateTask: () => void;

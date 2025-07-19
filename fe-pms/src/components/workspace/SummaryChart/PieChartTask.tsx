@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { Pie } from "@ant-design/charts";
-import { TaskStatistic } from "@/types/types";
 import { Spin } from "antd";
+import { TaskStatistic } from "@/models/statistic/statistic.model";
 
 interface Props {
   taskStatistic?: TaskStatistic;
