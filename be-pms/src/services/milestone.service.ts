@@ -1,5 +1,6 @@
 import Milestone, { IMilestone } from "../models/milestone.model";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { IUser } from "../models";
 
 export class MilestoneService {
   async createMilestone(
@@ -12,6 +13,7 @@ export class MilestoneService {
 
     const milestone = await Milestone.create({
       ...milestoneData,
+      status: 'FUTURE',
       createdBy: user._id,
       updatedBy: user._id,
     });
@@ -164,6 +166,23 @@ export class MilestoneService {
       .sort({ endDate: 1 });
 
     return milestones;
+  }
+
+  async updateStatusMilestones(id: string, status: string, user: IUser): Promise<IMilestone> {
+    const milestone = await Milestone.findByIdAndUpdate(
+      id,
+      {
+        status: status,
+        updatedBy: user._id
+      }, {
+      new: true
+    })
+
+    if (!milestone) {
+      throw new Error(`Can not update or find id ${id}`)
+    }
+
+    return milestone
   }
 }
 

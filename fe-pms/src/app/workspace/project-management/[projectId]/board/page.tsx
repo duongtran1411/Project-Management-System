@@ -46,6 +46,7 @@ import {
   showSuccessToast,
 } from "@/components/common/toast/toast";
 import { Task } from "@/models/task/task.model";
+import { Epic } from "@/models/epic/epic.model";
 
 const fetcher = (url: string) =>
   axiosService
@@ -78,6 +79,7 @@ const BoardPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [epics, setEpics] = useState<Epic[]>([])
   const [contributor, setContributor] = useState<ProjectContributorTag[]>([]);
   const {
     data: taskData,
@@ -85,14 +87,14 @@ const BoardPage = () => {
     isLoading,
     mutate: taskMutate,
   } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_PROJECT(
+    `${Endpoints.Task.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
   );
 
   const { data: epicData, error: epicError } = useSWR(
-    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Epic.GET_BY_PROJECT(
+    `${Endpoints.Epic.GET_BY_PROJECT(
       projectId
     )}`,
     fetcher
@@ -105,7 +107,13 @@ const BoardPage = () => {
     fetcher
   );
 
-  const epicOptions = (epicData?.data || []).map((epic: any) => ({
+  useEffect(()=>{
+   if(epicData) {
+    setEpics(epicData)
+   }
+  },[epicData])
+
+  const epicOptions = (epics || []).map((epic: Epic) => ({
     label: epic.name,
     value: epic.name,
     id: epic._id,
