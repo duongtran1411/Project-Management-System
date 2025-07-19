@@ -13,7 +13,7 @@ import {
 import {
   INotification,
   NotificationStats,
-} from "@/models/notification/notification";
+} from "@/models/notification/notification.model";
 import {
   BellOutlined,
   CheckCircleOutlined,

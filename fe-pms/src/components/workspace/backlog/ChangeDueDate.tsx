@@ -1,9 +1,10 @@
 "use client";
 
-import { updateTaskDate } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import { updateTaskDate } from "@/lib/services/task/task.service";
+
 import dayjs from "dayjs";
 
+import { Task } from "@/models/task/task.model";
 import { DatePicker } from "antd";
 
 interface Props {
@@ -14,8 +15,6 @@ interface Props {
   setIsPickingDueDate: React.Dispatch<React.SetStateAction<any>>;
   startDate: string | null;
   mutateTask: () => void;
-  dateError: string | null;
-  setDateError: React.Dispatch<React.SetStateAction<any>>;
 }
 
 export const ChangeDueDate: React.FC<Props> = ({
@@ -26,8 +25,6 @@ export const ChangeDueDate: React.FC<Props> = ({
   setIsPickingDueDate,
   startDate,
   mutateTask,
-  dateError,
-  setDateError,
 }) => {
   const handleDueDateUpdate = async (date: string) => {
     try {
@@ -41,6 +38,7 @@ export const ChangeDueDate: React.FC<Props> = ({
       console.error("Error updating start date:", error);
     }
   };
+
   return (
     <div className="mb-4">
       {!isPickingDueDate && (
@@ -61,29 +59,15 @@ export const ChangeDueDate: React.FC<Props> = ({
                 ? dayjs(dueDate)
                 : undefined
             }
-            onChange={(date, dateString) => {
-              const pickedDate = Array.isArray(dateString)
-                ? dateString[0]
-                : dateString;
-              if (startDate && dayjs(pickedDate).isBefore(dayjs(startDate))) {
-                setDateError("Due date must be after start date");
-                setDueDate(task?.dueDate || null);
-              } else {
-                setDateError(null);
-                if (typeof pickedDate === "string") {
-                  setDueDate(pickedDate);
-                  handleDueDateUpdate(pickedDate);
-                }
-                setIsPickingDueDate(false);
-              }
-            }}
+            onChange={(date) => handleDueDateUpdate(date.toISOString())}
             onOpenChange={(open) => {
               if (!open) setIsPickingDueDate(false);
             }}
+            disabledDate={(current) => {
+              if (!startDate) return false;
+              return current && current.isBefore(dayjs(startDate), "day");
+            }}
           />
-          {dateError && (
-            <div className="text-red-500 text-xs mt-1">{dateError}</div>
-          )}
         </div>
       )}
     </div>

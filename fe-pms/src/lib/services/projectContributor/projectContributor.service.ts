@@ -4,7 +4,8 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
-import { InviteMultiple, Project } from "@/types/types";
+import { InviteMultiple } from "@/types/types";
+import { Project } from "@/models/project/project.model";
 
 //get list project by userId
 export const getProjectsContributorByUserId = async (

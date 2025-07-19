@@ -8,40 +8,19 @@ import {
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { createComment } from "@/lib/services/comment/comment.service";
-import {
-  updateAssigneeTask,
-  updateDescriptionTask,
-  updateEpicTask,
-} from "@/lib/services/task/task";
-import { Assignee } from "@/models/assignee/assignee";
+import { updateAssigneeTask, updateDescriptionTask, updateEpicTask, updatePriorityTask, updateTaskDate, updateTaskName } from "@/lib/services/task/task.service";
+import { Assignee } from "@/models/assignee/assignee.model";
 import { Comment } from "@/models/comment/comment";
-import { Epic } from "@/models/epic/epic";
-import { ProjectContributorTag } from "@/models/projectcontributor/projectcontributor";
-import { Task } from "@/types/types";
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-  FlagOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import {
-  Avatar,
-  Button,
-  DatePicker,
-  Dropdown,
-  Input,
-  Modal,
-  Select,
-  Space,
-  Tag,
-  Tooltip,
-} from "antd";
-import dayjs from "dayjs";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { Epic } from "@/models/epic/epic.model";
+import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
+import { Task } from "@/models/task/task.model";
+import { ArrowDownOutlined, ArrowUpOutlined, FlagOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, DatePicker, Dropdown, Input, Modal, Select, Space, Tag, Tooltip } from "antd";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
-dayjs.extend(isSameOrBefore);
+import dayjs from 'dayjs';
+ 
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
@@ -64,7 +43,10 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [epics, setEpics] = useState<Epic[]>([]);
   const [epic, setEpic] = useState<Epic>();
   const [currentTask, setCurrentTask] = useState<Task | null>(task);
-
+  const [startDate, setStartDate] = useState<string>("");
+  const [dueDate, setDueDate] = useState<string>("");
+  const [isEditingName, setIsEditingName] = useState<boolean>(false);
+  const [name, setName] = useState<string>("");
   useEffect(() => {
     setCurrentTask(task);
   }, [task]);
@@ -153,6 +135,9 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       setPriority(task.priority || "Medium");
       setAssignee(task.assignee);
       setEpic(task.epic);
+      setStartDate(task.startDate ?? "");
+      setDueDate(task.dueDate ?? "");
+      setName(task.name ?? "");
     }
   }, [task]);
 
@@ -173,6 +158,21 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     setIsEditingDescription(false);
   };
 
+  const handleSaveName = async () => {
+    setIsEditingName(false);
+    if (task._id) {
+      const response = await updateTaskName(task._id, name);
+      if (response.success) {
+        showSuccessToast(response.message);
+      }
+    }
+  };
+
+  const handleCancelName = () => {
+    setName(task.name || "");
+    setIsEditingName(false);
+  };
+
   const handleComment = async () => {
     try {
       const response = await createComment(
@@ -191,17 +191,9 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const priorityOptions = [
-    {
-      value: "Highest",
-      icon: <ArrowUpOutlined className="text-red-500 rotate-45" />,
-    },
-    { value: "High", icon: <ArrowUpOutlined className="text-red-500" /> },
-    { value: "Medium", icon: <FlagOutlined className="text-yellow-500" /> },
-    { value: "Low", icon: <ArrowDownOutlined className="text-blue-500" /> },
-    {
-      value: "Lowest",
-      icon: <ArrowDownOutlined className="text-blue-500 rotate-45" />,
-    },
+    { key: 'High',value: "HIGH", icon: <ArrowUpOutlined className="text-red-500" /> },
+    { key: 'Medium',value: "MEDIUM", icon: <FlagOutlined className="text-yellow-500" /> },
+    { key: 'Low',value: "LOW", icon: <ArrowDownOutlined className="text-blue-500" /> }
   ];
 
   const updateAssignee = async (taskId: string, assignee: string) => {
@@ -234,9 +226,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     }
   };
 
-  const updateDateTask = async () => {
+  const updateStartDateTask = async (date: string) => {
     try {
-      // const response = await updateTaskDate(task._id ? task._id : '',)
+      const response = await updateTaskDate(task._id ? task._id : "", {
+        startDate: date,
+      });
+      setStartDate(response.startDate);
     } catch (error: any) {
       const message =
         error?.response?.data?.message || "Không thể lấy gán task đã giao!";
@@ -244,6 +239,33 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       return null;
     }
   };
+
+  const updateDueDateTask = async (date: string) => {
+    try {
+      const response = await updateTaskDate(task._id ? task._id : "", {
+        dueDate: date,
+      });
+      setDueDate(response.dueDate);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const updatePriority = async (value:string)=>{
+    debugger
+    try {
+      const response = await updatePriorityTask(task._id ? task._id : "",value);
+      setDueDate(response.priority);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  }
 
   if (error || errorComment) {
     showErrorToast(error ? error : errorComment);
@@ -264,14 +286,38 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       <div className="flex">
         {/* Left section */}
         <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
-          {/* ID */}
-          <div className="flex items-center mb-8 text-sm text-gray-500">
-            <span>{task._id}</span>
-          </div>
-
           {/* Title */}
-          <h2 className="mb-2 text-3xl font-bold">{task.name}</h2>
-
+          
+            {isEditingName ? (
+              <div>
+                <Input.TextArea
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoSize={{ minRows: 3, maxRows: 10 }}
+                />
+                <div className="flex mt-2 space-x-2">
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={handleSaveName}>
+                    Save
+                  </Button>
+                  <Button size="small" onClick={handleCancelName}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => setIsEditingName(true)}
+                className="cursor-pointer min-h-[50px]">
+                {name ? (
+                  <h2 className="font-extrabold text-4xl">{name}</h2>
+                ) : (
+                  <p className="text-gray-500">Add a name...</p>
+                )}
+              </div>
+            )}
           {/* Description */}
           <div className="mb-4">
             <h3 className="mb-2 text-xl font-semibold">Description</h3>
@@ -320,12 +366,16 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 label: (
                   <div className="flex gap-2">
                     {opt.icon}
-                    <span>{opt.value}</span>
+                    <span>{opt.key}</span>
                   </div>
                 ),
                 value: opt.value,
               }))}
-              onChange={(value) => setPriority(value)}
+              onChange={(value) => {
+                console.log('priority',value);
+                setPriority(value)
+                updatePriority(value)
+              }}
             />
           </div>
 
@@ -552,31 +602,33 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
               <span className="font-semibold text-gray-600">Start Date:</span>
               <Space direction="vertical">
                 <DatePicker
-                  value={task.startDate ? dayjs(task.startDate) : undefined}
+                  value={startDate ? dayjs(startDate).startOf("day") : null}
                   onChange={(date) => {
-                    if (date && date.isBefore(dayjs(), "day")) {
+                    if (date && date.isBefore(dayjs().startOf("day"))) {
                       showErrorToast(
                         "Start Date không được nhỏ hơn ngày hiện tại"
                       );
                       return;
                     }
-                    setCurrentTask((prev) =>
-                      prev ? { ...prev, startDate: date?.toISOString() } : null
-                    );
+                    setStartDate(date?.format("YYYY-MM-DD") ?? "");
+                    updateStartDateTask(date?.format("YYYY-MM-DD"));
                   }}
-                  disabledDate={(current) =>
-                    current && current < dayjs().startOf("day")
-                  }
                 />
               </Space>
 
               <span className="font-semibold text-gray-600">Due Date:</span>
               <Space direction="vertical">
                 <DatePicker
-                  value={task.dueDate ? dayjs(task.dueDate) : undefined}
-                  disabledDate={(current) => {
-                    if (!task.startDate) return false;
-                    return current.isBefore(dayjs(task.startDate), "day");
+                  value={dueDate ? dayjs(dueDate).startOf("day") : null}
+                  onChange={(date) => {
+                    if (date && date.isBefore(dayjs().startOf("day"))) {
+                      showErrorToast(
+                        "Start Date không được nhỏ hơn ngày hiện tại"
+                      );
+                      return;
+                    }
+                    setDueDate(date?.format("YYYY-MM-DD") ?? "");
+                    updateDueDateTask(date?.format("YYYY-MM-DD"));
                   }}
                 />
               </Space>

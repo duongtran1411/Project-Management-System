@@ -1,6 +1,6 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { updateTaskEpic } from "@/lib/services/task/task";
+import { updateTaskEpic } from "@/lib/services/task/task.service";
 
 import { Dropdown, MenuProps, Tag } from "antd";
 import { useParams } from "next/navigation";

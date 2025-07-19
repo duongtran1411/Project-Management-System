@@ -1,10 +1,10 @@
 "use client";
 
-import { updateTaskDescription } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import { updateTaskDescription } from "@/lib/services/task/task.service";
+import { Task } from "@/models/task/task.model";
 
 import { Button, Input } from "antd";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Props {
   task: Task;
@@ -21,6 +21,13 @@ export const ChangeDescription: React.FC<Props> = ({
   mutateTask,
 }) => {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [lastSavedDescription, setLastSavedDescription] = useState(description);
+
+  useEffect(() => {
+    setLastSavedDescription(description);
+    setDescription(description);
+  }, [task._id]);
+
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
 
@@ -28,20 +35,23 @@ export const ChangeDescription: React.FC<Props> = ({
       if (!task._id) return;
       if (description) {
         const response = await updateTaskDescription(task._id, description);
-        if (response) setDescription(response.description);
         mutateTask();
+        if (response) {
+          setDescription(response.description);
+          setLastSavedDescription(response.description);
+        }
       }
     } catch (error) {
       console.log(error);
     }
   };
   const handleCancelDescription = () => {
-    setDescription(task.description || "");
+    setDescription(lastSavedDescription || "");
     setIsEditingDescription(false);
   };
   return (
     <div className="mb-4">
-      <h3 className="mb-2 text-lg font-semibold">Description</h3>
+      <h3 className="mb-2 text-lg font-semibold text-gray-600">Description</h3>
       {isEditingDescription ? (
         <div>
           <Input.TextArea

@@ -15,10 +15,11 @@ import type { NotificationArgsProps } from "antd";
 import React, { useEffect, useMemo, useState } from "react";
 import { isValidEmail } from "@/lib/utils";
 import axiosService from "@/lib/services/axios.service";
-import { InviteMultiple, ProjectRole } from "@/types/types";
+import { InviteMultiple } from "@/types/types";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
-import { inviteMemberMultiple } from "@/lib/services/projectContributor/projectContributor";
+import { inviteMemberMultiple } from "@/lib/services/projectContributor/projectContributor.service";
+import { ProjectRole } from "@/models/projectrole/project.role.model";
 type NotificationPlacement = NotificationArgsProps["placement"];
 const { Title, Text } = Typography;
 

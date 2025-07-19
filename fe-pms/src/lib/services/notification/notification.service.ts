@@ -1,6 +1,6 @@
 import { showErrorToast } from "@/components/common/toast/toast";
 import { Endpoints } from "@/lib/endpoints";
-import { NotificationQuery } from "@/models/notification/notification";
+import { NotificationQuery } from "@/models/notification/notification.model";
 import axiosService from "../axios.service";
 
 export const getNotifications = async (query: NotificationQuery) => {
