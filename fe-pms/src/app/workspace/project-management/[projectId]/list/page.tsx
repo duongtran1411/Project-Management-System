@@ -1,23 +1,20 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { Table, Tag, Input, Avatar, Button } from "antd";
-import {
-    FilterOutlined,
-    GroupOutlined,
-    SettingOutlined,
-    PlusOutlined,
-    CommentOutlined,
-    DownOutlined,
-    RightOutlined,
-    CalendarOutlined,
-    UserOutlined,
-} from "@ant-design/icons";
-import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import React, { useState } from "react";
+import {
+    CalendarOutlined,
+    CommentOutlined,
+    DownOutlined,
+    PlusOutlined,
+    RightOutlined,
+    UserOutlined
+} from "@ant-design/icons";
+import { Avatar, Button, Input, Table, Tag } from "antd";
 import dayjs from "dayjs";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import useSWR from "swr";
 
 
 const fetcher = (url: string) =>
@@ -108,15 +105,15 @@ const EpicPage = () => {
             ),
             width: 80,
         },
-        {
-            title: "Key",
-            dataIndex: "key",
-            key: "key",
-            render: (text: string, record: any) => (
-                <span style={{ marginLeft: record.isEpic ? 0 : 0 }}>{text}</span>
-            ),
-            width: 120,
-        },
+        // {
+        //     title: "Key",
+        //     dataIndex: "key",
+        //     key: "key",
+        //     render: (text: string, record: any) => (
+        //         <span style={{ marginLeft: record.isEpic ? 0 : 0 }}>{text}</span>
+        //     ),
+        //     width: 120,
+        // },
         {
             title: "Summary",
             dataIndex: "summary",
