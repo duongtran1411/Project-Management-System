@@ -4,6 +4,9 @@ import User from "../models/user.model";
 
 export interface AuthRequest extends Request {
   user?: any;
+  files?:
+    | Express.Multer.File[]
+    | { [fieldname: string]: Express.Multer.File[] };
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
