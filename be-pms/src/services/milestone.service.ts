@@ -13,7 +13,7 @@ export class MilestoneService {
 
     const milestone = await Milestone.create({
       ...milestoneData,
-      status: 'FUTURE',
+      status: 'NOT_START',
       createdBy: user._id,
       updatedBy: user._id,
     });
