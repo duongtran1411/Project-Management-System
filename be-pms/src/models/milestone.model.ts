@@ -33,8 +33,8 @@ const milestoneSchema = new Schema<IMilestone>(
     },
     status:{
       type:String,
-      enum: ["FUTURE", "COMPLETED", "ACTIVE"],
-      default: "FUTURE",
+      enum: ["NOT_START", "COMPLETED", "ACTIVE"],
+      default: "NOT_START",
     },
     projectId: {
       type: Schema.Types.ObjectId,
