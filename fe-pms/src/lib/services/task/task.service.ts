@@ -3,8 +3,8 @@ import {
   showSuccessToast,
 } from "@/components/common/toast/toast";
 import { Endpoints } from "@/lib/endpoints";
-import axiosService from "../axios.service";
 import { TaskModel } from "@/models/task/task.model";
+import axiosService from "../axios.service";
 
 export const createTask = async (task: TaskModel) => {
   try {
@@ -47,7 +47,7 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_STATUS(taskId), { status });
 
-    if (response.data?.success) {
+    if (response.status === 200) {
       showSuccessToast(
         response.data?.message || "Cập nhật trạng thái nhiệm vụ thành công!"
       );
@@ -88,7 +88,12 @@ export const updateAssigneeTask = async (taskId: string, assignee: string) => {
       .patch(`${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`, {
         assignee: assignee,
       });
-    return response.data?.data;
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật assignee của nhiệm vụ thành công!"
+      );
+      return response.data;
+    }
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Không thể lấy gán task đã giao!";
@@ -107,7 +112,13 @@ export const updateDescriptionTask = async (
       .patch(`${Endpoints.Task.UPDATE_DESCRIPTION(taskId)}`, {
         description: description,
       });
-    return response.data;
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message ||
+          "Cập nhật description của nhiệm vụ thành công!"
+      );
+      return response.data;
+    }
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Không thể lấy gán task đã giao!";
@@ -123,7 +134,12 @@ export const updateEpicTask = async (taskId: string, epicId: string) => {
       .patch(`${Endpoints.Task.UPDATE_EPIC(taskId)}`, {
         epic: epicId,
       });
-    return response.data;
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật epic của nhiệm vụ thành công!"
+      );
+      return response.data;
+    }
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Không thể lấy gán task đã giao!";
@@ -156,11 +172,11 @@ export const updatePriorityTask = async (taskId: string, priority: string) => {
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_PRIORITY(taskId), { priority });
 
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật dộ ưu tiên thành công!");
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật dộ ưu tiên thành công!"
+      );
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message =
@@ -177,11 +193,9 @@ export const deleteTaskMultiple = async (taskIds: string[]) => {
       .getAxiosInstance()
       .delete(Endpoints.Task.DELETE_TASKS, { data: { taskIds } });
 
-    if (response.data?.success) {
+    if (response.status === 200) {
       showSuccessToast("Xóa nhiệm vụ thành công!");
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Xóa thất bại");
     }
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi xóa task!";
@@ -199,11 +213,9 @@ export const updateTaskAssignee = async (
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_ASSIGNEE(taskId), { assignee });
 
-    if (response.data?.success) {
+    if (response.status === 200) {
       showSuccessToast("Cập nhật nhiệm vụ thành công!");
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
@@ -218,11 +230,11 @@ export const updateTaskEpic = async (taskId: string, epic: string) => {
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_EPIC(taskId), { epic });
 
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật nhiệm vụ thành công!");
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật epic của nhiệm vụ thành công!"
+      );
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
@@ -240,11 +252,12 @@ export const updateTaskDescription = async (
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_DESCRIPTION(taskId), { description });
 
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật nhiệm vụ thành công!");
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message ||
+          "Cập nhật description của nhiệm vụ thành công!"
+      );
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
@@ -262,11 +275,11 @@ export const updateTaskDate = async (
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_DATE(taskId), payload);
 
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật nhiệm vụ thành công!");
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật ngày của nhiệm vụ thành công!"
+      );
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
@@ -281,11 +294,11 @@ export const updateTaskReporter = async (taskId: string, reporter: string) => {
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_REPORTER(taskId), { reporter });
 
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật nhiệm vụ thành công!");
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật reporter của nhiệm vụ thành công!"
+      );
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
@@ -300,11 +313,11 @@ export const updateTaskName = async (taskId: string, name: string) => {
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_NAME(taskId), { name });
 
-    if (response.data?.success) {
-      showSuccessToast("Cập nhật tên nhiệm vụ thành công!");
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật tên nhiệm vụ thành công!"
+      );
       return response?.data.data;
-    } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
     }
   } catch (error: any) {
     const message =

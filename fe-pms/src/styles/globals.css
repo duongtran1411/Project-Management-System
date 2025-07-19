@@ -53,7 +53,6 @@ a {
   }
 }
 
-
 /* Login page specific styles */
 .login-container {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -95,7 +94,7 @@ a {
 }
 
 .login-branding::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -409,11 +408,11 @@ a {
   margin-top: 1rem;
 }
 
-.google-login-container>div {
+.google-login-container > div {
   width: 100% !important;
 }
 
-.google-login-container>div>div {
+.google-login-container > div > div {
   width: 100% !important;
   height: 48px !important;
   border-radius: 12px !important;
@@ -421,7 +420,7 @@ a {
   transition: all 0.3s ease;
 }
 
-.google-login-container>div>div:hover {
+.google-login-container > div > div:hover {
   border-color: #667eea !important;
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
 }
@@ -604,7 +603,7 @@ a {
     font-size: 14px !important;
   }
 
-  .google-login-container>div>div {
+  .google-login-container > div > div {
     height: 45px !important;
   }
 }
@@ -653,8 +652,13 @@ a {
   color: #ff4d4f !important;
 }
 
-.header-workspace-dropdown .ant-dropdown .ant-dropdown-menu-item-danger .anticon,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item-danger .anticon {
+.header-workspace-dropdown
+  .ant-dropdown
+  .ant-dropdown-menu-item-danger
+  .anticon,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item-danger
+  .anticon {
   color: #ff4d4f !important;
 }
 
@@ -665,19 +669,27 @@ a {
 }
 
 /* Force override for danger items in header workspace dropdowns */
-.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger {
+.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger {
   color: #ff4d4f !important;
 }
 
-.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover {
+.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover {
   background-color: #fff2f0 !important;
   color: #ff4d4f !important;
 }
 
-.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger .anticon,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger .anticon {
+.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger
+  .anticon,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger
+  .anticon {
   color: #ff4d4f !important;
 }
 
@@ -797,7 +809,8 @@ a {
 /* Board Epic Dropdown styles */
 .board-epic-dropdown .ant-dropdown-menu {
   border-radius: 6px !important;
-  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid #f0f0f0 !important;
   padding: 4px 0 !important;
   min-width: 120px !important;
@@ -826,7 +839,8 @@ a {
 /* Board Assignee Dropdown styles */
 .board-assignee-dropdown .ant-dropdown-menu {
   border-radius: 6px !important;
-  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid #f0f0f0 !important;
   padding: 4px 0 !important;
   min-width: 200px !important;
@@ -852,4 +866,128 @@ a {
   color: inherit !important;
 }
 
-/* Priority Dropdown specific styles */
+/* React-big-calendar */
+.rbc-row {
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+.rbc-header {
+  white-space: nowrap !important;
+}
+.rbc-time-header,
+.rbc-time-content,
+.rbc-month-view {
+  overflow-x: auto !important;
+}
+.rbc-time-header-content {
+  min-width: 900px; /* hoặc lớn hơn nếu cần */
+}
+
+.rbc-date-cell,
+.rbc-date-cell a {
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rbc-event-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rbc-time-header-gutter {
+  display: none !important;
+}
+
+.hide-time-gutter .rbc-time-gutter,
+.hide-time-gutter .rbc-timeslot-group,
+.hide-time-gutter .rbc-time-header-gutter {
+  display: none !important;
+}
+
+/* Áp dụng cho month view */
+.rbc-month-view .rbc-row-segment {
+  display: flex;
+  flex-wrap: nowrap; /* Không cho xuống dòng */
+  overflow-x: auto; /* Cho phép scroll ngang nếu tràn */
+  gap: 2px; /* Khoảng cách giữa các event */
+  min-height: 24px; /* Tùy chỉnh chiều cao tối thiểu */
+  max-width: 100%; /* Đảm bảo không tràn ra ngoài cell */
+}
+
+/* 1. Đảm bảo cell ngày không wrap event, cho phép scroll ngang */
+.rbc-month-row .rbc-row-content {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-height: 24px;
+  align-items: flex-start;
+}
+
+/* 2. Đảm bảo mỗi event là inline-block, không xuống dòng */
+.rbc-event {
+  display: inline-block !important;
+  white-space: nowrap;
+  margin-right: 4px;
+  max-width: 60px; /* hoặc nhỏ hơn nếu muốn */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+/* 3. Ẩn nút show more */
+.rbc-show-more {
+  display: none !important;
+}
+
+.rbc-month-row {
+  min-height: 40px; /* hoặc giá trị bạn muốn */
+}
+
+/* Giảm chiều rộng của 1 ngày trong month view */
+.rbc-month-view .rbc-day-bg,
+.rbc-month-view .rbc-date-cell,
+.rbc-month-view .rbc-row-content {
+  min-width: 60px !important; /* hoặc giá trị nhỏ hơn tùy ý */
+  max-width: 80px; /* có thể set max-width nếu muốn */
+  width: 60px !important;
+  box-sizing: border-box;
+}
+
+/* Nếu muốn áp dụng cho week view */
+.rbc-time-view .rbc-day-bg,
+.rbc-time-view .rbc-date-cell {
+  min-width: 60px !important;
+  max-width: 80px;
+  width: 60px !important;
+  box-sizing: border-box;
+}
+
+/* Ẩn phần event, chỉ hiển thị header ngày */
+.rbc-month-view .rbc-row-content {
+  display: none !important;
+}
+
+/* Custom header ngày để scroll ngang */
+.rbc-month-header {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+/* Mỗi cell ngày */
+.rbc-header {
+  min-width: 40px;
+  max-width: 60px;
+  text-align: center;
+  font-weight: 500;
+  padding: 2px 4px;
+  background: #f8f9fa;
+  border-right: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}

@@ -80,3 +80,19 @@ export const updateStatusMilestone = async (
     }
   }
 };
+
+export const getMilestonesByProject = async (
+  projectId: string
+): Promise<Milestone[]> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Milestone.GET_BY_PROJECT(projectId));
+    return response.data?.data || [];
+  } catch (error: any) {
+    showErrorToast(
+      error?.response?.data?.message || "Không thể lấy danh sách sprint!"
+    );
+    return [];
+  }
+};

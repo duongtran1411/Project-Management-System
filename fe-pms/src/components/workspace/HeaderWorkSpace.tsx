@@ -36,7 +36,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         router.push("/");
         break;
       case "profile":
-        router.push("/profile");
+        router.push("/workspace/profile");
         break;
       case "logout":
         logout();
