@@ -5,6 +5,7 @@ export interface IMilestone extends Document {
   startDate?: Date;
   endDate?: Date;
   goal?: string;
+  status:string;
   projectId?: mongoose.Types.ObjectId; 
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
@@ -29,6 +30,11 @@ const milestoneSchema = new Schema<IMilestone>(
     goal: {
       type: String,
       required: false,
+    },
+    status:{
+      type:String,
+      enum: ["NOT_START", "COMPLETED", "ACTIVE"],
+      default: "NOT_START",
     },
     projectId: {
       type: Schema.Types.ObjectId,
