@@ -76,8 +76,10 @@ export const authorizeProjectRole = (requiredRole: string) => {
 
       let projectId = req.params.projectId || req.body.projectId;
 
-      if (!projectId && req.params.taskId) {
-        const task = await Task.findById(req.params.taskId);
+      const taskId = req.params.taskId || req.params.id;
+
+      if (!projectId && taskId) {
+        const task = await Task.findById(taskId);
         if (!task) {
           return res.status(404).json({ message: "Task không tồn tại" });
         }
