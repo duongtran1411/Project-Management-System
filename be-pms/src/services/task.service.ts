@@ -4,6 +4,11 @@ import NotificationService from "./notification.service";
 import {
   emitNewNotification,
   emitNotificationStatsUpdate,
+  emitTaskCreated,
+  emitTaskUpdated,
+  emitTaskStatusChanged,
+  emitTaskAssigned,
+  emitTaskDeleted,
 } from "../utils/socket";
 
 export class TaskService {
@@ -110,12 +115,8 @@ export class TaskService {
       console.error("Failed to create task notifications:", error);
     }
 
-    if (this.io) {
-      this.io.emit("task-created", {
-        task: populatedTask,
-        projectId: taskData.projectId,
-      });
-    }
+    // Emit realtime event for task creation
+    emitTaskCreated(populatedTask, taskData.projectId.toString());
 
     return populatedTask;
   }
@@ -348,30 +349,27 @@ export class TaskService {
       }
     }
 
-    if (this.io && task && oldTask) {
+    // Emit realtime events for task updates
+    if (task && oldTask && task.projectId) {
       if (updateData.status && oldTask.status !== updateData.status) {
-        this.io.emit("task-status-changed", {
+        emitTaskStatusChanged(
           task,
-          projectId: task.projectId,
-          oldStatus: oldTask.status,
-          newStatus: updateData.status,
-        });
+          task.projectId.toString(),
+          oldTask.status,
+          updateData.status
+        );
       }
 
       if (oldTask.assignee?.toString() !== updateData.assignee?.toString()) {
-        this.io.emit("task-assigned", {
+        emitTaskAssigned(
           task,
-          projectId: task.projectId,
-          oldAssignee: oldTask.assignee,
-          newAssignee: updateData.assignee,
-        });
+          task.projectId.toString(),
+          oldTask.assignee,
+          updateData.assignee
+        );
       }
 
-      this.io.emit("task-updated", {
-        task,
-        projectId: task.projectId,
-        changes: updateData,
-      });
+      emitTaskUpdated(task, task.projectId.toString(), updateData);
     }
 
     return task;
@@ -381,11 +379,9 @@ export class TaskService {
     const task = await Task.findById(taskId);
     const result = await Task.findByIdAndDelete(taskId);
 
-    if (this.io && result && task) {
-      this.io.emit("task-deleted", {
-        taskId,
-        projectId: task.projectId,
-      });
+    // Emit realtime event for task deletion
+    if (result && task && task.projectId) {
+      emitTaskDeleted(taskId, task.projectId.toString());
     }
 
     return !!result;
@@ -476,13 +472,15 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    if (this.io && task && oldTask && oldTask.status !== status) {
-      this.io.emit("task-status-changed", {
+    // Emit realtime event for status change
+    if (task && oldTask && oldTask.status !== status && task.projectId) {
+      emitTaskStatusChanged(
         task,
-        projectId: task.projectId,
-        oldStatus: oldTask.status,
-        newStatus: status,
-      });
+        task.projectId.toString(),
+        oldTask.status,
+        status
+      );
+      emitTaskUpdated(task, task.projectId.toString(), { status });
     }
 
     return task;
@@ -510,12 +508,9 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    if (this.io && task) {
-      this.io.emit("task-updated", {
-        task,
-        projectId: task.projectId,
-        changes: { priority },
-      });
+    // Emit realtime event for priority change
+    if (task && task.projectId) {
+      emitTaskUpdated(task, task.projectId.toString(), { priority });
     }
 
     return task;
@@ -543,12 +538,9 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    if (this.io && task) {
-      this.io.emit("task-updated", {
-        task,
-        projectId: task.projectId,
-        changes: { name },
-      });
+    // Emit realtime event for name change
+    if (task && task.projectId) {
+      emitTaskUpdated(task, task.projectId.toString(), { name });
     }
 
     return task;
@@ -576,12 +568,9 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    if (this.io && task) {
-      this.io.emit("task-updated", {
-        task,
-        projectId: task.projectId,
-        changes: { description },
-      });
+    // Emit realtime event for description change
+    if (task && task.projectId) {
+      emitTaskUpdated(task, task.projectId.toString(), { description });
     }
 
     return task;
@@ -702,15 +691,16 @@ export class TaskService {
       }
     }
 
-    if (this.io && task && oldTask) {
-      // Emit socket event cho cả assign và unassign
+    // Emit realtime events for assignee changes
+    if (task && oldTask && task.projectId) {
       if (oldTask.assignee?.toString() !== assignee) {
-        this.io.emit("task-assigned", {
+        emitTaskAssigned(
           task,
-          projectId: task.projectId,
-          oldAssignee: oldTask.assignee,
-          newAssignee: assignee,
-        });
+          task.projectId.toString(),
+          oldTask.assignee,
+          assignee
+        );
+        emitTaskUpdated(task, task.projectId.toString(), { assignee });
       }
     }
 
@@ -739,12 +729,9 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    if (this.io && task) {
-      this.io.emit("task-updated", {
-        task,
-        projectId: task.projectId,
-        changes: { reporter },
-      });
+    // Emit realtime event for reporter change
+    if (task && task.projectId) {
+      emitTaskUpdated(task, task.projectId.toString(), { reporter });
     }
 
     return task;
@@ -772,12 +759,9 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    if (this.io && task) {
-      this.io.emit("task-updated", {
-        task,
-        projectId: task.projectId,
-        changes: { epic },
-      });
+    // Emit realtime event for epic change
+    if (task && task.projectId) {
+      emitTaskUpdated(task, task.projectId.toString(), { epic });
     }
 
     return task;
@@ -896,12 +880,7 @@ export class TaskService {
         const result = await Task.findByIdAndDelete(taskId);
         if (result) {
           success++;
-          if (this.io && task) {
-            this.io.emit("task-deleted", {
-              taskId,
-              projectId: task.projectId,
-            });
-          }
+          emitTaskDeleted(taskId, task?.projectId?.toString() || "");
         } else {
           failed++;
         }
