@@ -418,7 +418,7 @@ router.patch(
 router.patch(
   "/:id/name",
   authenticate,
-
+  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskName
 );
 
