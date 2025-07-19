@@ -186,6 +186,20 @@ export const deleteTaskMultiple = async (taskIds: string[]) => {
   }
 };
 
+export const deleteOneTask = async (taskId:string)=>{
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .delete(`${Endpoints.Task.DELETE_TASK(taskId)}`);
+
+    return response.data
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Lỗi khi xóa task!";
+    showErrorToast(message);
+    throw error;
+  }
+}
+
 export const updateTaskAssignee = async (
   taskId: string,
   assignee: string | null
@@ -289,6 +303,22 @@ export const updateTaskReporter = async (taskId: string, reporter: string) => {
     throw error;
   }
 };
+
+export const updateReporterForTask = async (taskId: string, reporter: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(Endpoints.Task.UPDATE_REPORTER(taskId), { reporter });
+
+    return response.data
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
+
 
 export const updateTaskName = async (taskId: string, name: string) => {
   try {

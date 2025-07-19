@@ -24,6 +24,7 @@ export class Endpoints {
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
     DELETE_TASKS: "task/bulk-delete",
+    DELETE_TASK:(taskId:string) => `task/${taskId}`,
     GET_BY_ASSIGNEE: (userId: string) => `task/assignee/${userId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
     GET_BY_EPIC: (epicId: string) => `task/epic/${epicId}`,

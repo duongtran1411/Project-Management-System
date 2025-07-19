@@ -383,7 +383,6 @@ router.patch("/:id/status", authenticate, taskController.updateTaskStatus);
 router.patch(
   "/:id/priority",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskPriority
 );
 
@@ -418,7 +417,6 @@ router.patch(
 router.patch(
   "/:id/name",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskName
 );
 
@@ -453,7 +451,6 @@ router.patch(
 router.patch(
   "/:id/description",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskDescription
 );
 
@@ -490,7 +487,6 @@ router.patch(
 router.patch(
   "/:id/assignee",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskAssignee
 );
 
@@ -525,7 +521,6 @@ router.patch(
 router.patch(
   "/:id/reporter",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskReporter
 );
 
@@ -560,7 +555,6 @@ router.patch(
 router.patch(
   "/:id/epic",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskEpic
 );
 
@@ -595,7 +589,6 @@ router.patch(
 router.patch(
   "/:id/milestone",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskMilestone
 );
 
@@ -630,7 +623,6 @@ router.patch(
 router.patch(
   "/:id/dates",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskDates
 );
 
@@ -667,7 +659,6 @@ router.patch(
 router.patch(
   "/:id/labels",
   authenticate,
-  authorizeProjectRole("PROJECT_ADMIN"),
   taskController.updateTaskLabels
 );
 

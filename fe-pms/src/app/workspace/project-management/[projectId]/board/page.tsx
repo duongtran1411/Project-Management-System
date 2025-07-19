@@ -23,10 +23,14 @@ import {
   ArrowDownOutlined,
   FileDoneOutlined,
   SearchOutlined,
+  MoreOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
 import {
+  deleteOneTask,
   updateAssigneeTask,
+  updateEpicTask,
   updateTaskStatus,
 } from "@/lib/services/task/task.service";
 import { useParams } from "next/navigation";
@@ -47,6 +51,7 @@ import {
 } from "@/components/common/toast/toast";
 import { Task } from "@/models/task/task.model";
 import { Epic } from "@/models/epic/epic.model";
+import DeleteTaskModal from "@/components/common/modal/deleteTask";
 
 const fetcher = (url: string) =>
   axiosService
@@ -77,26 +82,22 @@ const BoardPage = () => {
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [epicOpen, setEpicOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTaskDel, setSelectedTaskDel] = useState<Task | null>(null);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [epics, setEpics] = useState<Epic[]>([])
+  const [epics, setEpics] = useState<Epic[]>([]);
   const [contributor, setContributor] = useState<ProjectContributorTag[]>([]);
+  const [isOpenModalDel, setIsOpenModalDel] = useState<boolean>(false)
   const {
     data: taskData,
     error: taskError,
     isLoading,
     mutate: taskMutate,
-  } = useSWR(
-    `${Endpoints.Task.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
-  );
+  } = useSWR(`${Endpoints.Task.GET_BY_PROJECT(projectId)}`, fetcher);
 
   const { data: epicData, error: epicError } = useSWR(
-    `${Endpoints.Epic.GET_BY_PROJECT(
-      projectId
-    )}`,
+    `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
 
@@ -107,17 +108,19 @@ const BoardPage = () => {
     fetcher
   );
 
-  useEffect(()=>{
-   if(epicData) {
-    setEpics(epicData)
-   }
-  },[epicData])
+  useEffect(() => {
+    if (epicData) {
+      setEpics(epicData);
+    }
+  }, [epicData]);
 
-  const epicOptions = (epics || []).map((epic: Epic) => ({
-    label: epic.name,
-    value: epic.name,
-    id: epic._id,
-  })) as { label: string; value: string; id: string }[];
+  const epicOptions = Array.isArray(epics)
+    ? epics.map((epic: Epic) => ({
+        label: epic.name,
+        value: epic.name,
+        id: epic._id,
+      }))
+    : [];
 
   useEffect(() => {
     if (taskData) {
@@ -169,8 +172,7 @@ const BoardPage = () => {
       {epicOptions.map((epic) => (
         <div
           key={epic.value}
-          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50"
-        >
+          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
           <Checkbox
             checked={selectedEpics.includes(epic.value)}
             onChange={() =>
@@ -179,8 +181,7 @@ const BoardPage = () => {
                   ? prev.filter((e) => e !== epic.value)
                   : [...prev, epic.value]
               )
-            }
-          >
+            }>
             <span className="font-medium">{epic.label}</span>
           </Checkbox>
         </div>
@@ -256,6 +257,50 @@ const BoardPage = () => {
     }
   };
 
+  const hanldeUpadateStatus = async (taskId: string, status: string) => {
+    try {
+      const response = await updateTaskStatus(taskId, status);
+      taskMutate();
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const handleUpdateEpic = async (taskId: string, epic: string) => {
+    try {
+      const response = await updateEpicTask(taskId, epic);
+      if (response.success) {
+        showSuccessToast(response.message);
+        taskMutate();
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const handleDeleteTask = async (taskId:string) => {
+    try {
+      const response = await deleteOneTask(taskId);
+      if (response.success) {
+        showSuccessToast(response.message);
+         setIsOpenModalDel(false)
+        setSelectedTaskDel(null);
+        taskMutate();
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -306,8 +351,7 @@ const BoardPage = () => {
           onOpenChange={setEpicOpen}
           popupRender={() => epicDropdown}
           trigger={["click"]}
-          className="board-epic-dropdown"
-        >
+          className="board-epic-dropdown">
           <Button className="flex items-center font-semibold text-gray-700">
             Epic <DownOutlined className="ml-1" />
           </Button>
@@ -318,8 +362,7 @@ const BoardPage = () => {
             setSearch("");
             setSelectedEpics([]);
           }}
-          className="font-semibold text-gray-600"
-        >
+          className="font-semibold text-gray-600">
           Clear Filters
         </Button>
       </div>
@@ -334,16 +377,14 @@ const BoardPage = () => {
                 key={col.status}
                 isDropDisabled={false}
                 isCombineEnabled={false}
-                ignoreContainerClipping={false}
-              >
+                ignoreContainerClipping={false}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
                       snapshot.isDraggingOver ? "bg-blue-50" : ""
-                    }`}
-                  >
+                    }`}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <h2 className="font-semibold text-gray-700">
@@ -355,8 +396,7 @@ const BoardPage = () => {
                         <Button
                           type="text"
                           icon={<PlusOutlined />}
-                          className="!flex items-center"
-                        >
+                          className="!flex items-center">
                           Create
                         </Button>
                       )}
@@ -366,15 +406,14 @@ const BoardPage = () => {
                         <Draggable
                           draggableId={task._id ?? `${idx}`}
                           index={idx}
-                          key={task._id}
-                        >
+                          key={task._id}>
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                               key={task._id}
-                              className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${
+                              className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md group relative${
                                 snapshot.isDragging
                                   ? "ring-2 ring-blue-400"
                                   : ""
@@ -383,15 +422,111 @@ const BoardPage = () => {
                               onClick={() => {
                                 setSelectedTask(task);
                                 setIsModalOpen(true);
-                              }}
-                            >
+                              }}>
+                              <div
+                                className="absolute top-2 right-2 hidden group-hover:flex"
+                                key={task._id}>
+                                <Dropdown
+                                  trigger={["click"]}
+                                  menu={{
+                                    items: [
+                                      {
+                                        key: "change_status",
+                                        label: "Change status",
+                                        children: [
+                                          {
+                                            key: "status_TO_DO",
+                                            label: (
+                                              <span className="font-semibold bg-gray-300">
+                                                TO_DO
+                                              </span>
+                                            ),
+                                          },
+                                          {
+                                            key: "status_IN_PROGRESS",
+                                            label: (
+                                              <span className="font-semibold bg-purple-200">
+                                                IN_PROGRESS
+                                              </span>
+                                            ),
+                                          },
+                                          {
+                                            key: "status_DONE",
+                                            label: (
+                                              <span className="font-semibold bg-green-200">
+                                                DONE
+                                              </span>
+                                            ),
+                                          },
+                                        ],
+                                      },
+                                      {
+                                        key: "change_parent",
+                                        label: "Change parent",
+                                        children: epics.map((epic) => ({
+                                          key: `parent_${epic._id}`,
+                                          label: (
+                                            <span className="font-medium text-purple-600">
+                                              {epic.name}
+                                            </span>
+                                          ),
+                                        })),
+                                      },
+                                      {
+                                        key: "delete",
+                                        label: "Delete",
+                                        danger: true,
+                                      },
+                                    ],
+                                    onClick: ({ key, domEvent }) => {
+                                      domEvent.stopPropagation();
+                                      if (key.startsWith("parent_")) {
+                                        const epic = key.replace("parent_", "");
+                                        handleUpdateEpic(
+                                          task._id ? task._id : "",
+                                          epic
+                                        );
+                                      } else if (key === "delete") {
+                                        console.log("Delete task:", task._id);
+                                        setSelectedTaskDel(task)
+                                        setIsOpenModalDel(true)
+                                      } else if (key.startsWith("status_")) {
+                                        debugger;
+                                        const status = key.replace(
+                                          "status_",
+                                          ""
+                                        );
+                                        console.log(
+                                          "Update status:",
+                                          status,
+                                          "task:",
+                                          task._id
+                                        );
+                                        hanldeUpadateStatus(
+                                          task._id ? task._id : "",
+                                          status
+                                        );
+                                      }
+                                    },
+                                  }}>
+                                  <Button
+                                    type="text"
+                                    icon={
+                                      <MoreOutlined
+                                        style={{ fontSize: "20px" }}
+                                      />
+                                    }
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </Dropdown>
+                              </div>
                               <div className="space-y-2">
                                 <p
                                   className={`text-gray-700 font-medium ${
                                     col.status === "DONE" ? "line-through" : ""
-                                  }`}
-                                >
+                                  }`}>
                                   {task.name}
+                                  <EditOutlined className="mx-1 hover:bg-gray-300" />
                                 </p>
                                 <div className="flex flex-wrap gap-2">
                                   <span
@@ -399,8 +534,7 @@ const BoardPage = () => {
                                       task.epic?.name
                                         ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
                                         : ""
-                                    }
-                                  >
+                                    }>
                                     {task.epic?.name}
                                   </span>
                                 </div>
@@ -466,8 +600,7 @@ const BoardPage = () => {
                                               <Avatar
                                                 src={<UserOutlined />}
                                                 size="small"
-                                                className="bg-gray-400"
-                                              ></Avatar>
+                                                className="bg-gray-400"></Avatar>
                                               <div>
                                                 <p className="font-medium">
                                                   Unassigned
@@ -489,8 +622,7 @@ const BoardPage = () => {
                                               <div className="flex items-center gap-2">
                                                 <Avatar
                                                   src={e.userId.avatar}
-                                                  size="small"
-                                                >
+                                                  size="small">
                                                   {e.userId.fullName[0]}
                                                 </Avatar>
                                                 <div>
@@ -514,13 +646,11 @@ const BoardPage = () => {
                                       },
                                     }}
                                     trigger={["click"]}
-                                    className="board-assignee-dropdown"
-                                  >
+                                    className="board-assignee-dropdown">
                                     <Tooltip
                                       title={`Assignee: ${
                                         task.assignee?.fullName || "Unassigned"
-                                      }`}
-                                    >
+                                      }`}>
                                       <Avatar
                                         className={`cursor-pointer text-white ${
                                           task.assignee?.fullName ===
@@ -530,8 +660,7 @@ const BoardPage = () => {
                                         }`}
                                         size="default"
                                         src={task.assignee?.avatar}
-                                        onClick={(e) => e?.stopPropagation()}
-                                      >
+                                        onClick={(e) => e?.stopPropagation()}>
                                         {task.assignee?.fullName?.[0] || (
                                           <UserOutlined />
                                         )}
@@ -563,6 +692,17 @@ const BoardPage = () => {
             taskMutate();
           }}
           task={selectedTask}
+        />
+      )}
+
+      {selectedTaskDel && (
+        <DeleteTaskModal
+          open={isOpenModalDel}
+          onCancel={()=>{
+            setIsOpenModalDel(false)
+          }}
+          onDelete={() => handleDeleteTask(selectedTaskDel._id || "")}
+          task={selectedTaskDel}
         />
       )}
     </div>

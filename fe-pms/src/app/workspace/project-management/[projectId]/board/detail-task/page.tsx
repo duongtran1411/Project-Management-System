@@ -8,24 +8,68 @@ import {
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { createComment } from "@/lib/services/comment/comment.service";
-import { updateAssigneeTask, updateDescriptionTask, updateEpicTask, updatePriorityTask, updateTaskDate, updateTaskName } from "@/lib/services/task/task.service";
+import {
+  updateAssigneeTask,
+  updateDescriptionTask,
+  updateEpicTask,
+  updatePriorityTask,
+  updateReporterForTask,
+  updateTaskDate,
+  updateTaskName,
+  updateTaskReporter,
+  updateTaskStatus,
+} from "@/lib/services/task/task.service";
 import { Assignee } from "@/models/assignee/assignee.model";
 import { Comment } from "@/models/comment/comment";
 import { Epic } from "@/models/epic/epic.model";
 import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
 import { Task } from "@/models/task/task.model";
-import { ArrowDownOutlined, ArrowUpOutlined, FlagOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, Button, DatePicker, Dropdown, Input, Modal, Select, Space, Tag, Tooltip } from "antd";
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  DownOutlined,
+  FlagOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  DatePicker,
+  Dropdown,
+  Input,
+  Menu,
+  MenuProps,
+  Modal,
+  Select,
+  Space,
+  Tag,
+  Tooltip,
+} from "antd";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import dayjs from 'dayjs';
- 
+import dayjs from "dayjs";
+import { Reporter } from "@/models/reporter/reporter.model";
+
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
   task: Task;
 }
+
+type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
+
+const statusColors: Record<Status, string> = {
+  TO_DO: "default",
+  IN_PROGRESS: "blue",
+  DONE: "green",
+};
+
+const statusOptions: Record<Status, Status[]> = {
+  TO_DO: ["IN_PROGRESS", "DONE"],
+  IN_PROGRESS: ["DONE", "TO_DO"],
+  DONE: ["TO_DO", "IN_PROGRESS"],
+};
 
 const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   open,
@@ -47,6 +91,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [dueDate, setDueDate] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
+  const [status, setStatus] = useState(task.status || "TO_DO");
+  const [reporter, setReporter] = useState<Reporter>();
   useEffect(() => {
     setCurrentTask(task);
   }, [task]);
@@ -138,11 +184,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       setStartDate(task.startDate ?? "");
       setDueDate(task.dueDate ?? "");
       setName(task.name ?? "");
+      setStatus(task.status ?? "");
+      setReporter(task.reporter);
     }
   }, [task]);
 
   if (!task) return null;
-
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
     if (task._id) {
@@ -191,16 +238,28 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const priorityOptions = [
-    { key: 'High',value: "HIGH", icon: <ArrowUpOutlined className="text-red-500" /> },
-    { key: 'Medium',value: "MEDIUM", icon: <FlagOutlined className="text-yellow-500" /> },
-    { key: 'Low',value: "LOW", icon: <ArrowDownOutlined className="text-blue-500" /> }
+    {
+      key: "High",
+      value: "HIGH",
+      icon: <ArrowUpOutlined className="text-red-500" />,
+    },
+    {
+      key: "Medium",
+      value: "MEDIUM",
+      icon: <FlagOutlined className="text-yellow-500" />,
+    },
+    {
+      key: "Low",
+      value: "LOW",
+      icon: <ArrowDownOutlined className="text-blue-500" />,
+    },
   ];
 
   const updateAssignee = async (taskId: string, assignee: string) => {
     try {
       const response = await updateAssigneeTask(taskId, assignee);
       if (response.success) {
-        showSuccessToast(response.messsage);
+        showSuccessToast(response.message);
         setAssignee(response.data.assignee);
       }
     } catch (error: any) {
@@ -254,10 +313,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     }
   };
 
-  const updatePriority = async (value:string)=>{
-    debugger
+  const updatePriority = async (value: string) => {
     try {
-      const response = await updatePriorityTask(task._id ? task._id : "",value);
+      const response = await updatePriorityTask(
+        task._id ? task._id : "",
+        value
+      );
       setDueDate(response.priority);
     } catch (error: any) {
       const message =
@@ -265,7 +326,45 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       showErrorToast(message);
       return null;
     }
-  }
+  };
+
+  const handleMenuClick: MenuProps["onClick"] = async ({ key }) => {
+    const nextStatus = key as Status;
+    try {
+      const response = await updateTaskStatus(
+        task._id ? task._id : "",
+        nextStatus
+      );
+      setStatus(response.status);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const items = statusOptions[status as Status].map((item) => ({
+    key: item,
+    label: <Tag color={statusColors[item]}>{item.replaceAll("_", " ")}</Tag>,
+  }));
+
+  const updateReporter = async (taskId: string, reporter: string) => {
+    try {
+      debugger;
+      const response = await updateReporterForTask(taskId, reporter);
+      console.log(response);
+      if (response.success) {
+        showSuccessToast(response.message)
+        setReporter(response.data.reporter);
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
 
   if (error || errorComment) {
     showErrorToast(error ? error : errorComment);
@@ -281,43 +380,39 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={1200}
-      styles={{ body: { padding: 0 } }}
-    >
+      styles={{ body: { padding: 0 } }}>
       <div className="flex">
         {/* Left section */}
         <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
           {/* Title */}
-          
-            {isEditingName ? (
-              <div>
-                <Input.TextArea
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoSize={{ minRows: 3, maxRows: 10 }}
-                />
-                <div className="flex mt-2 space-x-2">
-                  <Button
-                    type="primary"
-                    size="small"
-                    onClick={handleSaveName}>
-                    Save
-                  </Button>
-                  <Button size="small" onClick={handleCancelName}>
-                    Cancel
-                  </Button>
-                </div>
+
+          {isEditingName ? (
+            <div>
+              <Input.TextArea
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoSize={{ minRows: 3, maxRows: 10 }}
+              />
+              <div className="flex mt-2 space-x-2">
+                <Button type="primary" size="small" onClick={handleSaveName}>
+                  Save
+                </Button>
+                <Button size="small" onClick={handleCancelName}>
+                  Cancel
+                </Button>
               </div>
-            ) : (
-              <div
-                onClick={() => setIsEditingName(true)}
-                className="cursor-pointer min-h-[50px]">
-                {name ? (
-                  <h2 className="font-extrabold text-4xl">{name}</h2>
-                ) : (
-                  <p className="text-gray-500">Add a name...</p>
-                )}
-              </div>
-            )}
+            </div>
+          ) : (
+            <div
+              onClick={() => setIsEditingName(true)}
+              className="cursor-pointer min-h-[50px]">
+              {name ? (
+                <h2 className="font-extrabold text-4xl">{name}</h2>
+              ) : (
+                <p className="text-gray-500">Add a name...</p>
+              )}
+            </div>
+          )}
           {/* Description */}
           <div className="mb-4">
             <h3 className="mb-2 text-xl font-semibold">Description</h3>
@@ -332,8 +427,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   <Button
                     type="primary"
                     size="small"
-                    onClick={handleSaveDescription}
-                  >
+                    onClick={handleSaveDescription}>
                     Save
                   </Button>
                   <Button size="small" onClick={handleCancelDescription}>
@@ -344,8 +438,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             ) : (
               <div
                 onClick={() => setIsEditingDescription(true)}
-                className="cursor-pointer min-h-[50px]"
-              >
+                className="cursor-pointer min-h-[50px]">
                 {description ? (
                   <p className="text-gray-500">{description}</p>
                 ) : (
@@ -372,9 +465,9 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 value: opt.value,
               }))}
               onChange={(value) => {
-                console.log('priority',value);
-                setPriority(value)
-                updatePriority(value)
+                console.log("priority", value);
+                setPriority(value);
+                updatePriority(value);
               }}
             />
           </div>
@@ -412,8 +505,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                       onClick={() => {
                         const mention = `@${e.userId.fullName} `;
                         setNewComment((prev) => prev + mention);
-                      }}
-                    >
+                      }}>
                       {e.userId.fullName}
                     </Button>
                   ))}
@@ -432,8 +524,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   type="primary"
                   size="small"
                   onClick={handleComment}
-                  disabled={!newComment.trim()}
-                >
+                  disabled={!newComment.trim()}>
                   Save
                 </Button>
                 <Button size="small" onClick={() => setNewComment("")}>
@@ -470,10 +561,24 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
         {/* Right section */}
 
         <div className="w-3/5 p-6">
-          <div>
-            <Tag color="purple" className="mb-2">
-              {task.status || "None"}
-            </Tag>
+          <div className="mb-2">
+            <Dropdown
+              menu={{
+                items,
+                onClick: handleMenuClick,
+              }}
+              trigger={["click"]}
+              className="">
+              <Tag
+                color={statusColors[status as Status]}
+                style={{
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                }}>
+                {status.replaceAll("_", " ")} <DownOutlined />
+              </Tag>
+            </Dropdown>
           </div>
           <div className="px-5 space-y-5 text-sm border border-gray-200 rounded-md py-7">
             <h3 className="mb-2 text-lg font-semibold">Details</h3>
@@ -514,8 +619,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                           <Avatar
                             src={<UserOutlined />}
                             size="small"
-                            className="bg-gray-400"
-                          ></Avatar>
+                            className="bg-gray-400"></Avatar>
                           <div>
                             <p className="font-medium">Unassigned</p>
                           </div>
@@ -550,20 +654,17 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                     }
                   },
                 }}
-                trigger={["click"]}
-              >
+                trigger={["click"]}>
                 <Tooltip
                   title={`Assignee: ${assignee?.fullName || "Unassigned"}`}
-                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
-                >
+                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
                   <Avatar
                     className={`cursor-pointer text-white ${
                       assignee?.fullName === "Unassigned" ? "bg-gray-400" : ""
                     }`}
                     size="default"
                     src={assignee?.avatar}
-                    onClick={(e) => e?.stopPropagation()}
-                  >
+                    onClick={(e) => e?.stopPropagation()}>
                     {assignee?.fullName?.[0] || <UserOutlined />}
                   </Avatar>
                   <p>{assignee?.fullName}</p>
@@ -638,10 +739,76 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 {task.milestones?.name || "None"}
               </span>
               <span className="font-semibold text-gray-600">Reporter:</span>
-              <div className="flex items-center space-x-1">
-                <Avatar src={task.createdBy?.avatar} className="mx-1" />{" "}
-                <p>{task.createdBy?.fullName}</p>
-              </div>
+              <Dropdown
+                menu={{
+                  items: [
+                    ...(task.reporter?._id
+                      ? [
+                          {
+                            key: task.reporter._id,
+                            label: (
+                              <div className="flex items-center gap-2 bg-gray-100">
+                                <Avatar
+                                  src={task.reporter.avatar}
+                                  size="small"
+                                />
+                                <div>
+                                  <p className="font-medium">
+                                    {task.reporter.fullName}
+                                  </p>
+                                  <p className="text-xs text-gray-400">
+                                    {task.reporter.email}
+                                  </p>
+                                </div>
+                              </div>
+                            ),
+                          },
+                        ]
+                      : []),
+                    ...contributor
+                      .filter((t) => {
+                        return t.userId._id !== task.reporter?._id;
+                      })
+                      .map((e) => ({
+                        key: e.userId._id,
+                        label: (
+                          <div className="flex items-center gap-2">
+                            <Avatar src={e.userId.avatar} size="small">
+                              {e.userId.fullName[0]}
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{e.userId.fullName}</p>
+                              <p className="text-xs text-gray-400">
+                                {e.userId.email}
+                              </p>
+                            </div>
+                          </div>
+                        ),
+                      })),
+                  ],
+                  onClick: ({ key, domEvent }) => {
+                    domEvent.stopPropagation();
+                    if (task._id && key) {
+                      updateReporter(task._id, key);
+                    }
+                  },
+                }}
+                trigger={["click"]}>
+                <Tooltip
+                  title={`Reporter: ${reporter?.fullName || "Unassigned"}`}
+                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
+                  <Avatar
+                    className={`cursor-pointer text-white`}
+                    size="default"
+                    src={reporter?.avatar}
+                    onClick={(e) => e?.stopPropagation()}>
+                    {reporter?.fullName?.[0] || <UserOutlined />}
+                  </Avatar>
+                  <p>
+                    {reporter?.fullName ? reporter?.fullName : "Unassigned"}
+                  </p>
+                </Tooltip>
+              </Dropdown>
             </div>
           </div>
         </div>
