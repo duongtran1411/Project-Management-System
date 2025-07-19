@@ -13,9 +13,7 @@ export const createTask = async (task: TaskModel) => {
       .post(`${Endpoints.Task.CREATE_TASK}`, task);
 
     if (response.status === 201) {
-      showSuccessToast(
-        response.data?.message || "Create new task successfully!"
-      );
+      showSuccessToast("Create new task successfully!");
       return response.data;
     }
   } catch (error: any) {
@@ -48,9 +46,7 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
       .patch(Endpoints.Task.UPDATE_STATUS(taskId), { status });
 
     if (response.data?.success) {
-      showSuccessToast(
-        response.data?.message || "Cập nhật trạng thái nhiệm vụ thành công!"
-      );
+      showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
       return response?.data.data;
     } else {
       throw new Error(response.data?.message || "Cập nhật thất bại");
@@ -88,7 +84,7 @@ export const updateAssigneeTask = async (taskId: string, assignee: string) => {
       .patch(`${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`, {
         assignee: assignee,
       });
-    return response.data?.data;
+    return response.data;
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Không thể lấy gán task đã giao!";

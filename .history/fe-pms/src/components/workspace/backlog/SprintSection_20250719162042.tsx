@@ -238,6 +238,7 @@ const SprintSection: React.FC<Props> = ({
     }
   };
 
+  // State cho modal xác nhận xóa task
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
 
   return (

@@ -41,7 +41,6 @@ export class Endpoints {
   static readonly Milestone = {
     MILESTONE: "milestone",
     GET_BY_PROJECT: (projectId: string) => `milestone/project/${projectId}`,
-    UPDATE_STATUS: (milestoneId: string) => `milestone/${milestoneId}/status`,
   };
 
   static readonly Workspace = {

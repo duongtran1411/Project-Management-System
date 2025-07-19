@@ -13,7 +13,7 @@ export const updateMilestone = async (milestone: Milestone) => {
       .put(`${Endpoints.Milestone.MILESTONE}/${milestone._id}`, milestone);
 
     if (response.status === 200) {
-      showSuccessToast(response.data?.message || "Cập nhật sprint thành công!");
+      showSuccessToast("Cập nhật sprint thành công!");
       return response.data?.data;
     }
   } catch (error: any) {
@@ -30,7 +30,7 @@ export const deleteMilestone = async (milestoneId: string) => {
       .delete(`${Endpoints.Milestone.MILESTONE}/${milestoneId}`);
 
     if (response.status === 200) {
-      showSuccessToast(response.data?.message || "Xóa sprint thành công!");
+      showSuccessToast("Xóa sprint thành công!");
       return response.data;
     }
   } catch (error: any) {
@@ -47,7 +47,7 @@ export const createMilestone = async (milestone: CreateMilestone) => {
       .post(`${Endpoints.Milestone.MILESTONE}`, milestone);
 
     if (response.status === 201) {
-      showSuccessToast(response.data?.message || "  Tạo sprint thành công!");
+      showSuccessToast("  Tạo sprint thành công!");
       return response.data?.data;
     }
   } catch (error: any) {
