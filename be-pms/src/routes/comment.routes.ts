@@ -1,14 +1,15 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/auth.middleware";
 import commentController from "../controllers/comment.controller";
+import { uploadFiles } from "../middlewares/upload.middleware";
 
-const router = Router()
+const router = Router();
 
 /**
  * @openapi
  * /comment/{taskId}:
  *   get:
- *     summary: Lấy tất cả mẫu email
+ *     summary: Lấy tất cả comments của task
  *     tags: [Comment]
  *     security: [bearerAuth: []]
  *     parameters:
@@ -19,56 +20,69 @@ const router = Router()
  *         description: ID của task
  *     responses:
  *       200:
- *         description: Lấy danh sách thành công
+ *         description: Lấy danh sách comments thành công
  *       400:
  *         description: Lỗi lấy dữ liệu
  */
-router.get('/:taskId',authenticate,commentController.getCommentTask)
+router.get("/:taskId", authenticate, commentController.getCommentTask);
 
 /**
  * @openapi
  * /comment:
  *   post:
- *     summary: Tạo mẫu comment mới
+ *     summary: Tạo comment với files
  *     tags: [Comment]
  *     security: [bearerAuth: []]
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               content:
  *                 type: string
+ *                 description: Nội dung comment
  *               task:
  *                 type: string
- *               author:
- *                 type: string
- *               mentions: 
+ *                 description: ID của task
+ *               mentions:
  *                 type: array
- *                 description: ID của user có trong project
  *                 items:
  *                   type: string
- *               attachments:
+ *                 description: Danh sách user IDs được mention (có thể gửi array hoặc string JSON)
+ *               files:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     filename:
- *                       type: string
- *                       description: tên file của image
- *                     url:
- *                       type: string
- *                       description: đường dẫn của image trên cloudinary
+ *                   type: string
+ *                   format: binary
+ *                 description: Files để upload (tối đa 5 file, mỗi file tối đa 10MB)
  *     responses:
  *       201:
- *         description: Tạo mẫu comment thành công
+ *         description: Tạo comment thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     comment:
+ *                       type: object
+ *                       description: Comment đã tạo với đầy đủ thông tin
+ *                     attachments:
+ *                       type: array
+ *                       description: Tất cả attachments
  *       400:
  *         description: Dữ liệu không hợp lệ
+ *       500:
+ *         description: Tạo comment thất bại
  */
-
-router.post('/', authenticate, commentController.create)
-
+router.post("/", authenticate, uploadFiles, commentController.createComment);
 
 export default router;
