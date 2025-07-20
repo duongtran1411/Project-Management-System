@@ -10,12 +10,28 @@ import {
   emitTaskAssigned,
   emitTaskDeleted,
 } from "../utils/socket";
+import {
+  sendTaskAssignmentEmail,
+  sendTaskStatusChangeEmail,
+  sendTaskUpdateEmail,
+  sendTaskUnassignedEmail,
+  sendTaskCreatedEmail,
+} from "../utils/email.util";
+import User from "../models/user.model";
 
 export class TaskService {
   private io: Server | null = null;
 
   setSocketIO(io: Server) {
     this.io = io;
+  }
+
+  private getTaskUrl(projectId: any, taskId: any): string {
+    const projectIdStr = projectId?.toString();
+    const taskIdStr = taskId?.toString();
+    if (!projectIdStr || !taskIdStr) return "";
+    console.log(projectIdStr, "ádsadasdas", taskIdStr);
+    return `http://localhost:3000/workspace/project-management/${projectIdStr}/board/detail-task/${taskIdStr}`;
   }
 
   private async emitNotificationEvent(notification: any, recipientId: string) {
@@ -57,11 +73,40 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
+    const projectName =
+      typeof populatedTask.projectId === "object" &&
+      populatedTask.projectId !== null &&
+      "name" in populatedTask.projectId
+        ? (populatedTask.projectId as { name?: string }).name ||
+          "Unknown Project"
+        : "Unknown Project";
+
     try {
+      // Send email to assignee if assigned
       if (
         taskData.assignee &&
         taskData.assignee.toString() !== user._id.toString()
       ) {
+        const assigneeUser = await User.findById(taskData.assignee).select(
+          "fullName email"
+        );
+        if (assigneeUser && assigneeUser.email) {
+          try {
+            await sendTaskAssignmentEmail(
+              assigneeUser.email,
+              assigneeUser.fullName || "User",
+              taskData.name || "Unnamed Task",
+              projectName,
+              (user.fullName as string) ||
+                (user.email as string) ||
+                "Unknown User",
+              this.getTaskUrl(taskData.projectId, task._id)
+            );
+          } catch (emailError) {
+            console.error("Failed to send assignment email:", emailError);
+          }
+        }
+
         const notification = await NotificationService.createNotification({
           recipientId: taskData.assignee.toString(),
           senderId: user._id.toString(),
@@ -70,12 +115,7 @@ export class TaskService {
           entityId: (task._id as any).toString(),
           metadata: {
             taskName: taskData.name,
-            projectName:
-              typeof populatedTask.projectId === "object" &&
-              populatedTask.projectId !== null &&
-              "name" in populatedTask.projectId
-                ? (populatedTask.projectId as { name?: string }).name
-                : undefined,
+            projectName,
           },
         });
 
@@ -85,10 +125,31 @@ export class TaskService {
         );
       }
 
+      // Send email to reporter if different from creator
       if (
         taskData.reporter &&
         taskData.reporter.toString() !== user._id.toString()
       ) {
+        const reporterUser = await User.findById(taskData.reporter).select(
+          "fullName email"
+        );
+        if (reporterUser && reporterUser.email) {
+          try {
+            await sendTaskCreatedEmail(
+              reporterUser.email,
+              reporterUser.fullName || "User",
+              taskData.name || "Unnamed Task",
+              projectName,
+              (user.fullName as string) ||
+                (user.email as string) ||
+                "Unknown User",
+              this.getTaskUrl(taskData.projectId, task._id)
+            );
+          } catch (emailError) {
+            console.error("Failed to send task created email:", emailError);
+          }
+        }
+
         const notification = await NotificationService.createNotification({
           recipientId: taskData.reporter.toString(),
           senderId: user._id.toString(),
@@ -97,12 +158,7 @@ export class TaskService {
           entityId: (task._id as any).toString(),
           metadata: {
             taskName: taskData.name,
-            projectName:
-              typeof populatedTask.projectId === "object" &&
-              populatedTask.projectId !== null &&
-              "name" in populatedTask.projectId
-                ? (populatedTask.projectId as { name?: string }).name
-                : undefined,
+            projectName,
           },
         });
 
@@ -201,12 +257,42 @@ export class TaskService {
     ]);
 
     if (task && oldTask) {
+      const projectName =
+        typeof task.projectId === "object" &&
+        task.projectId !== null &&
+        "name" in task.projectId
+          ? (task.projectId as { name?: string }).name || "Unknown Project"
+          : "Unknown Project";
+
       try {
+        // Send email for status change
         if (
           updateData.status &&
           oldTask.status !== updateData.status &&
           task.assignee
         ) {
+          const assigneeUser = await User.findById(task.assignee).select(
+            "fullName email"
+          );
+          if (assigneeUser && assigneeUser.email) {
+            try {
+              await sendTaskStatusChangeEmail(
+                assigneeUser.email,
+                assigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                oldTask.status,
+                updateData.status,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send status change email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: task.assignee.toString(),
             senderId: user._id.toString(),
@@ -215,12 +301,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
               taskStatus: updateData.status,
             },
           });
@@ -231,11 +312,32 @@ export class TaskService {
           );
         }
 
+        // Send email for new assignee
         if (
           updateData.assignee &&
           oldTask.assignee?.toString() !== updateData.assignee?.toString() &&
           updateData.assignee.toString() !== user._id.toString()
         ) {
+          const newAssigneeUser = await User.findById(
+            updateData.assignee
+          ).select("fullName email");
+          if (newAssigneeUser && newAssigneeUser.email) {
+            try {
+              await sendTaskAssignmentEmail(
+                newAssigneeUser.email,
+                newAssigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send assignment email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: updateData.assignee.toString(),
             senderId: user._id.toString(),
@@ -244,12 +346,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -268,6 +365,26 @@ export class TaskService {
           oldTask.assignee &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
+          const oldAssigneeUser = await User.findById(oldTask.assignee).select(
+            "fullName email"
+          );
+          if (oldAssigneeUser && oldAssigneeUser.email) {
+            try {
+              await sendTaskUnassignedEmail(
+                oldAssigneeUser.email,
+                oldAssigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send unassignment email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: oldTask.assignee.toString(),
             senderId: user._id.toString(),
@@ -276,12 +393,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -298,6 +410,26 @@ export class TaskService {
           oldTask.assignee.toString() !== updateData.assignee?.toString() &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
+          const oldAssigneeUser = await User.findById(oldTask.assignee).select(
+            "fullName email"
+          );
+          if (oldAssigneeUser && oldAssigneeUser.email) {
+            try {
+              await sendTaskUnassignedEmail(
+                oldAssigneeUser.email,
+                oldAssigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send reassignment email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: oldTask.assignee.toString(),
             senderId: user._id.toString(),
@@ -306,12 +438,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -330,12 +457,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -472,6 +594,38 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
+    // Send email notification for status change
+    if (task && oldTask && oldTask.status !== status && task.assignee) {
+      const projectName =
+        typeof task.projectId === "object" &&
+        task.projectId !== null &&
+        "name" in task.projectId
+          ? (task.projectId as { name?: string }).name || "Unknown Project"
+          : "Unknown Project";
+
+      const assigneeUser = await User.findById(task.assignee).select(
+        "fullName email"
+      );
+      if (assigneeUser && assigneeUser.email) {
+        try {
+          await sendTaskStatusChangeEmail(
+            assigneeUser.email,
+            assigneeUser.fullName || "User",
+            task.name,
+            projectName,
+            oldTask.status,
+            status,
+            (user.fullName as string) ||
+              (user.email as string) ||
+              "Unknown User",
+            this.getTaskUrl(task.projectId, task._id)
+          );
+        } catch (emailError) {
+          console.error("Failed to send status change email:", emailError);
+        }
+      }
+    }
+
     // Emit realtime event for status change
     if (task && oldTask && oldTask.status !== status && task.projectId) {
       emitTaskStatusChanged(
@@ -601,6 +755,13 @@ export class TaskService {
     ]);
 
     if (task && oldTask) {
+      const projectName =
+        typeof task.projectId === "object" &&
+        task.projectId !== null &&
+        "name" in task.projectId
+          ? (task.projectId as { name?: string }).name || "Unknown Project"
+          : "Unknown Project";
+
       try {
         // Case 1: Assign task (có assignee mới và khác với assignee cũ)
         if (
@@ -608,6 +769,26 @@ export class TaskService {
           oldTask.assignee?.toString() !== assignee &&
           assignee !== user._id.toString()
         ) {
+          const newAssigneeUser = await User.findById(assignee).select(
+            "fullName email"
+          );
+          if (newAssigneeUser && newAssigneeUser.email) {
+            try {
+              await sendTaskAssignmentEmail(
+                newAssigneeUser.email,
+                newAssigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send assignment email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: assignee,
             senderId: user._id.toString(),
@@ -616,12 +797,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -634,6 +810,26 @@ export class TaskService {
           oldTask.assignee &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
+          const oldAssigneeUser = await User.findById(oldTask.assignee).select(
+            "fullName email"
+          );
+          if (oldAssigneeUser && oldAssigneeUser.email) {
+            try {
+              await sendTaskUnassignedEmail(
+                oldAssigneeUser.email,
+                oldAssigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send unassignment email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: oldTask.assignee.toString(),
             senderId: user._id.toString(),
@@ -642,12 +838,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -664,6 +855,26 @@ export class TaskService {
           oldTask.assignee.toString() !== assignee &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {
+          const oldAssigneeUser = await User.findById(oldTask.assignee).select(
+            "fullName email"
+          );
+          if (oldAssigneeUser && oldAssigneeUser.email) {
+            try {
+              await sendTaskUnassignedEmail(
+                oldAssigneeUser.email,
+                oldAssigneeUser.fullName || "User",
+                task.name,
+                projectName,
+                (user.fullName as string) ||
+                  (user.email as string) ||
+                  "Unknown User",
+                this.getTaskUrl(task.projectId, task._id)
+              );
+            } catch (emailError) {
+              console.error("Failed to send reassignment email:", emailError);
+            }
+          }
+
           const notification = await NotificationService.createNotification({
             recipientId: oldTask.assignee.toString(),
             senderId: user._id.toString(),
@@ -672,12 +883,7 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName:
-                typeof task.projectId === "object" &&
-                task.projectId !== null &&
-                "name" in task.projectId
-                  ? (task.projectId as { name?: string }).name
-                  : undefined,
+              projectName,
             },
           });
 
@@ -759,9 +965,12 @@ export class TaskService {
       { path: "milestones", select: "name description" },
     ]);
 
-    // Emit realtime event for epic change
-    if (task && task.projectId) {
-      emitTaskUpdated(task, task.projectId.toString(), { epic });
+    if (this.io && task) {
+      this.io.emit("task-updated", {
+        task,
+        projectId: task.projectId,
+        changes: { epic },
+      });
     }
 
     return task;

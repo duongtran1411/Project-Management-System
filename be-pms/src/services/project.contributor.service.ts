@@ -137,7 +137,34 @@ export class ProjectContributorService {
       throw new Error("Người dùng không tồn tại.");
     }
 
-    // Tạo contributor
+    // Kiểm tra xem user đã là contributor của project này chưa
+    const existingContributor = await ProjectContributor.findOne({
+      userId: user._id,
+      projectId: invitation.projectId,
+    });
+
+    if (existingContributor) {
+      // Nếu đã tồn tại, chỉ cập nhật role nếu khác
+      if (
+        existingContributor.projectRoleId.toString() !==
+        invitation.projectRoleId.toString()
+      ) {
+        existingContributor.projectRoleId = invitation.projectRoleId;
+        await existingContributor.save();
+      }
+
+      // Cập nhật status invitation
+      await ProjectInvitation.findByIdAndUpdate(invitation._id, {
+        status: "accepted",
+      });
+
+      return existingContributor.populate([
+        { path: "userId", select: "fullName email avatar" },
+        { path: "projectRoleId", select: "name" },
+      ]);
+    }
+
+    // Tạo contributor mới nếu chưa tồn tại
     const contributor = await ProjectContributor.create({
       userId: user._id,
       projectId: invitation.projectId,
