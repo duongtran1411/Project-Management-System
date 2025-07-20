@@ -71,4 +71,5 @@ export interface TaskModel {
   description: string;
   projectId: string;
   milestones?: string;
+  assignee?: string;
 }

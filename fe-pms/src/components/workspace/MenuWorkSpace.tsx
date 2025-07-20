@@ -1,16 +1,8 @@
 "use client";
 
-import {
-  ClockCircleOutlined,
-  ProfileOutlined,
-  FilterOutlined,
-  DashboardOutlined,
-  TeamOutlined,
-  UserOutlined,
-  BarsOutlined,
-} from "@ant-design/icons";
-import { Menu } from "antd";
+import { BarsOutlined, TeamOutlined, UserOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
+import { Menu } from "antd";
 import Link from "next/link";
 
 const items: MenuProps["items"] = [
@@ -19,17 +11,7 @@ const items: MenuProps["items"] = [
     key: "foryou",
     icon: <UserOutlined />,
   },
-  {
-    label: "Recent",
-    key: "recent",
-    icon: <ClockCircleOutlined />,
-  },
 
-  {
-    label: "Plans",
-    key: "plans",
-    icon: <ProfileOutlined />,
-  },
   {
     label: (
       <Link href="/workspace/viewall" className="flex items-center gap-2">
@@ -40,16 +22,6 @@ const items: MenuProps["items"] = [
     icon: <BarsOutlined />,
   },
 
-  {
-    label: "Filters",
-    key: "filters",
-    icon: <FilterOutlined />,
-  },
-  {
-    label: "Dashboards",
-    key: "dashboards",
-    icon: <DashboardOutlined />,
-  },
   {
     label: (
       <Link href="/workspace/teams" className="flex items-center gap-2">

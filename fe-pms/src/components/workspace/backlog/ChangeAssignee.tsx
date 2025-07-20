@@ -3,6 +3,7 @@ import axiosService from "@/lib/services/axios.service";
 import { updateTaskAssignee } from "@/lib/services/task/task.service";
 import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 interface Props {
@@ -20,10 +21,22 @@ const fetcher = (url: string) =>
 const ChangeAssignee: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
   const params = useParams();
   const projectId = params.projectId as string;
-  const { data: contributorData } = useSWR(
-    `${Endpoints.User.GET_BY_PROJECT(projectId)}`,
+  const [members, setMembers] = useState<string[]>([]); //contributors & project_admin
+
+  const { data: contributorsData } = useSWR(
+    `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`,
     fetcher
   );
+
+  useEffect(() => {
+    if (contributorsData?.data) {
+      const listMember = contributorsData?.data.filter((member: any) => {
+        return member.projectRoleId?.name !== "STAKEHOLDER";
+      });
+
+      setMembers(listMember);
+    }
+  }, [contributorsData?.data]);
 
   const menuItems: MenuProps["items"] = [
     {
@@ -35,7 +48,7 @@ const ChangeAssignee: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
         </div>
       ),
     },
-    ...(contributorData?.data.map((option: any) => ({
+    ...(members.map((option: any) => ({
       key: option.userId._id,
       label: (
         <div className="flex items-center gap-3 p-2">
