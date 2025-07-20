@@ -31,8 +31,6 @@ export const ModalEdit: React.FC<Props> = ({
   const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
   const cloudURL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
-  console.log("preset, cloudURL", preset, cloudURL);
-
   if (!preset || !cloudURL) {
     throw new Error(
       "Missing CLOUDINARY_UPLOAD_PRESET or CLOUDINARY_UPLOAD_URL"

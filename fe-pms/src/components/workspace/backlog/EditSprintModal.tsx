@@ -1,11 +1,9 @@
 "use client";
-import { Modal, Form, Input, DatePicker } from "antd";
+import { DatePicker, Form, Input, Modal } from "antd";
 
-import { useEffect } from "react";
-import dayjs from "dayjs";
-import { mutate } from "swr";
-import { Endpoints } from "@/lib/endpoints";
 import { Milestone } from "@/models/milestone/milestone.model";
+import dayjs from "dayjs";
+import { useEffect } from "react";
 
 const { TextArea } = Input;
 
@@ -44,9 +42,7 @@ const EditSprintModal: React.FC<EditSprintModalProps> = ({
         startDate: values.startDate.toISOString(),
         endDate: values.endDate.toISOString(),
       });
-      mutate(
-        `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Milestone.MILESTONE}`
-      );
+
       form.resetFields();
     });
   };
@@ -85,7 +81,13 @@ const EditSprintModal: React.FC<EditSprintModalProps> = ({
           name="endDate"
           rules={[{ required: true, message: "End date is required" }]}
         >
-          <DatePicker showTime />
+          <DatePicker
+            showTime
+            disabledDate={(current) => {
+              const startDate = form.getFieldValue("startDate");
+              return startDate && current.isBefore(startDate, "day");
+            }}
+          />
         </Form.Item>
 
         <Form.Item label="Sprint goal" name="goal">

@@ -17,10 +17,16 @@ export class Endpoints {
 
   static readonly Epic = {
     GET_BY_PROJECT: (projectId: string) => `epic/project/${projectId}`,
+    GET_BY_ID: (epicId: string) => `epic/${epicId}`,
+    CREATE_EPIC: "epic",
+    UPDATE_EPIC: (epicId: string) => `epic/${epicId}`,
+    DELETE_EPIC: (epicId: string) => `epic/${epicId}`,
+
   };
 
   static readonly Task = {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
+    GET_BY_MILESTONE: (milestoneId: string) => `task/milestone/${milestoneId}`,
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
     DELETE_TASKS: "task/bulk-delete",
@@ -57,9 +63,13 @@ export class Endpoints {
   static readonly Project = {
     CREATE_PROJECT: "project",
     GET_BY_ID: (projectId: string) => `project/${projectId}`,
+    UPDATE_PROJECT: (projectId: string) => `project/${projectId}`,
+    DELETE_PROJECT: (projectId: string) => `project/${projectId}`,
   };
 
   static readonly ProjectContributor = {
+    GET_CONTRIBUTOR_BY_PROJECT : (projectId: string) =>
+  `project-contributor/project/${projectId}`,
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
@@ -68,6 +78,7 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
+  
   };
 
   static readonly ProjectRole = {
@@ -102,4 +113,12 @@ export class Endpoints {
       `notification/${notificationId}/archive`,
     DELETE: (notificationId: string) => `notification/${notificationId}`,
   };
+
+
+  static readonly PeopleYouWorkWith = {
+  GET_BY_PROJECT: (projectId: string) => `people-you-work-with/project/${projectId}`,
+};
+
 }
+
+

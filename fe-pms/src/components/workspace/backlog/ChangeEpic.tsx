@@ -26,7 +26,7 @@ const ChangeEpic: React.FC<Props> = ({ taskId, epic, mutateTask }) => {
     fetcher
   );
 
-  const menuItems: MenuProps["items"] = epicData.data.map((option: any) => ({
+  const menuItems: MenuProps["items"] = epicData?.data?.map((option: any) => ({
     key: option._id,
     label: <Tag color="purple">{option.name}</Tag>,
   }));

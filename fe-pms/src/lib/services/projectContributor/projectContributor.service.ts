@@ -32,15 +32,20 @@ export const inviteMemberMultiple = async (members: InviteMultiple) => {
       .getAxiosInstance()
       .post(Endpoints.ProjectContributor.INVITE_MULTIPLE, members);
 
-    if (response.status === 201) {
-      showSuccessToast("Invite members successfully!");
+    if (response.data.statusCode === 201) {
       return response.data?.data;
     }
   } catch (error: any) {
-    const message =
-      error?.response?.data?.message || "Failed to invite member.";
-    showErrorToast(message);
-    console.log("Inviting Member Error:", message);
+    if (
+      error?.response?.data?.data?.errors &&
+      error.response?.data?.data?.errors.length > 0
+    ) {
+      error.response.data.data.errors.forEach(
+        (err: { email: string; error: string }) => {
+          showErrorToast(`Email ${err.email}: ${err.error}`);
+        }
+      );
+    }
   }
   return null;
 };
@@ -64,3 +69,22 @@ export const confirmInvite = async (token: string) => {
   }
   return null;
 };
+
+
+
+export const getContributorsByProjectId = async (projectId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.ProjectContributor.GET_CONTRIBUTOR_BY_PROJECT(projectId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      "Failed to fetch contributors of the project.";
+    showErrorToast(message);
+    return null;
+  }
+};
+

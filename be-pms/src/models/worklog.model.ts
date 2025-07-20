@@ -5,6 +5,8 @@ export interface IWorklog extends Document {
   taskId?: mongoose.Types.ObjectId;
   description: string;
   timeSpent: number;
+  timeRemain: number;
+  startDate: Date;
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -28,6 +30,12 @@ const worklogSchema = new Schema<IWorklog>(
     timeSpent: {
       type: Number,
       required: [true, "Timespent is required"],
+    },
+    timeRemain: {
+      type: Number,
+    },
+    startDate: {
+      type: Date,
     },
     createdBy: {
       type: Schema.Types.ObjectId,

@@ -9,10 +9,26 @@ export interface SocketEvents {
   "join-project": (projectId: string) => void;
   "leave-project": (projectId: string) => void;
   "open-comment-task": (taskId: string) => void;
+  "leave-comment-task": (taskId: string) => void;
   "send-comment": (data: {
     taskId: string;
     message: string;
     user: any;
+  }) => void;
+  "new-comment": (data: {
+    comment: any;
+    taskId: string;
+    timestamp: Date;
+  }) => void;
+  "comment-updated": (data: {
+    comment: any;
+    taskId: string;
+    timestamp: Date;
+  }) => void;
+  "comment-deleted": (data: {
+    commentId: string;
+    taskId: string;
+    timestamp: Date;
   }) => void;
   "new-notification": (data: { notification: any; timestamp: Date }) => void;
   "notification-read": (data: {
@@ -33,31 +49,28 @@ const initSocket = (httpServer: ServerHttp) => {
   });
 
   io.on("connection", async (socket: Socket) => {
-    console.log(`User connected: ${socket.id}`);
-
     socket.on("join-user", (userId: string) => {
       socket.join(`user-${userId}`);
-      console.log(`User ${userId} joined notification room`);
     });
 
     socket.on("leave-user", (userId: string) => {
       socket.leave(`user-${userId}`);
-      console.log(`User ${userId} left notification room`);
     });
 
     socket.on("join-project", (projectId: string) => {
       socket.join(`project-${projectId}`);
-      console.log(`User joined project: ${projectId}`);
     });
 
     socket.on("leave-project", (projectId: string) => {
       socket.leave(`project-${projectId}`);
-      console.log(`User left project: ${projectId}`);
     });
 
     socket.on("open-comment-task", (taskId: string) => {
       socket.join(`task-${taskId}`);
-      console.log(`User opened comments for task: ${taskId}`);
+    });
+
+    socket.on("leave-comment-task", (taskId: string) => {
+      socket.leave(`task-${taskId}`);
     });
 
     socket.on(
@@ -87,7 +100,6 @@ export const emitTaskCreated = (task: any, projectId: string) => {
       type: "created",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-created for project: ${projectId}`);
   }
 };
 
@@ -100,7 +112,6 @@ export const emitTaskUpdated = (task: any, projectId: string, changes: any) => {
       type: "updated",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-updated for project: ${projectId}`);
   }
 };
 
@@ -119,7 +130,6 @@ export const emitTaskStatusChanged = (
       type: "status-changed",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-status-changed for project: ${projectId}`);
   }
 };
 
@@ -138,7 +148,6 @@ export const emitTaskAssigned = (
       type: "assigned",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-assigned for project: ${projectId}`);
   }
 };
 
@@ -150,7 +159,6 @@ export const emitTaskDeleted = (taskId: string, projectId: string) => {
       type: "deleted",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-deleted for project: ${projectId}`);
   }
 };
 
@@ -160,7 +168,6 @@ export const emitNewNotification = (notification: any, recipientId: string) => {
       notification,
       timestamp: new Date(),
     });
-    console.log(`Emitted new-notification for user: ${recipientId}`);
   }
 };
 
@@ -173,7 +180,6 @@ export const emitNotificationRead = (
       notificationId,
       timestamp: new Date(),
     });
-    console.log(`Emitted notification-read for user: ${recipientId}`);
   }
 };
 
@@ -186,7 +192,6 @@ export const emitAllNotificationsRead = (
       count,
       timestamp: new Date(),
     });
-    console.log(`Emitted all-notifications-read for user: ${recipientId}`);
   }
 };
 
@@ -199,7 +204,51 @@ export const emitNotificationStatsUpdate = (
       stats,
       timestamp: new Date(),
     });
-    console.log(`Emitted notification-stats-updated for user: ${recipientId}`);
+  }
+};
+
+// Comment realtime events
+export const emitNewComment = (comment: any, taskId: string) => {
+  if (io) {
+    io.to(`task-${taskId}`).emit("new-comment", {
+      comment,
+      taskId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitCommentUpdated = (comment: any, taskId: string) => {
+  if (io) {
+    io.to(`task-${taskId}`).emit("comment-updated", {
+      comment,
+      taskId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitCommentDeleted = (commentId: string, taskId: string) => {
+  if (io) {
+    io.to(`task-${taskId}`).emit("comment-deleted", {
+      commentId,
+      taskId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitFileUpload = (data: {
+  taskId: string;
+  files: Array<{ filename: string; url: string }>;
+  uploadedBy: string;
+  timestamp: Date;
+}) => {
+  if (io) {
+    io.to(`task-${data.taskId}`).emit("file-uploaded", {
+      ...data,
+      timestamp: new Date(),
+    });
   }
 };
 

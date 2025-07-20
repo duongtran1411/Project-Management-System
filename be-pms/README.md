@@ -101,7 +101,7 @@ Body: {
 ```
 POST /api/v1/auth/refresh-token
 Body: {
-  "refreshToken": "your_refresh_token"
+  "refresh_token": "your_refresh_token"
 }
 ```
 

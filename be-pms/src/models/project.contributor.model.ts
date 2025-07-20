@@ -18,6 +18,8 @@ const projectContributorSchema = new Schema<IProjectContributor>({
   joinedAt: { type: Date, default: Date.now },
 });
 
+projectContributorSchema.index({ userId: 1, projectId: 1 }, { unique: true });
+
 export default mongoose.model<IProjectContributor>(
   "ProjectContributor",
   projectContributorSchema

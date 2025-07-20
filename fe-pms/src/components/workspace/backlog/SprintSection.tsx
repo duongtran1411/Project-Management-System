@@ -2,6 +2,7 @@
 import {
   deleteMilestone,
   updateMilestone,
+  updateStatusMilestone,
 } from "@/lib/services/milestone/milestone.service";
 import { deleteTaskMultiple } from "@/lib/services/task/task.service";
 import { formatDate } from "@/lib/utils";
@@ -11,6 +12,7 @@ import {
   EllipsisOutlined,
   PlusOutlined,
   RightOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -194,17 +196,26 @@ const SprintSection: React.FC<Props> = ({
   };
 
   const handleUpdate = async (milestone: Milestone) => {
-    if (!milestone || !milestone._id) {
-      console.warn("Invalid milestone data.");
-      return;
-    }
-
     try {
       await updateMilestone(milestone);
       refreshData();
       setEditModalOpen(false);
+      setEditingMilestone(null);
     } catch (error) {
-      console.error("Failed to update milestone:", error);
+      console.error("Error updating milestone:", error);
+    }
+  };
+
+  const handleSprintStatusChange = async (milestone: Milestone) => {
+    try {
+      if (milestone.status === "NOT_START") {
+        await updateStatusMilestone(milestone._id, "ACTIVE");
+      } else if (milestone.status === "ACTIVE") {
+        await updateStatusMilestone(milestone._id, "COMPLETED");
+      }
+      refreshData();
+    } catch (error) {
+      console.error("Error updating sprint status:", error);
     }
   };
 
@@ -221,14 +232,19 @@ const SprintSection: React.FC<Props> = ({
       if (selectedTaskIds) await deleteTaskMultiple(selectedTaskIds);
       setSelectedTaskIds([]);
       await mutateTask();
+      setIsDeleteTaskModalOpen(false); // Đóng modal sau khi xóa
     } catch (error) {
       console.log(error);
     }
   };
 
+  const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
+
   return (
     <div>
       {milestoneData?.map((milestone: Milestone) => {
+        // Ẩn sprint nếu đã completed
+        if (milestone.status === "COMPLETED") return null;
         const taskInMileStone = listTask?.filter(
           (task: Task) => task.milestones?._id === milestone._id
         );
@@ -270,9 +286,10 @@ const SprintSection: React.FC<Props> = ({
                 )}
                 <h3 className="font-semibold">{milestone.name} </h3>
                 <span className="ml-2 text-sm text-gray-500">
-                  {formatDate(milestone.startDate)} –{" "}
-                  {formatDate(milestone.endDate)} ({taskInMileStone.length} of{" "}
-                  {taskData?.length || 0} work items visible)
+                  {milestone.startDate && formatDate(milestone.startDate)} –{" "}
+                  {milestone.endDate && formatDate(milestone.endDate)} (
+                  {taskInMileStone.length} of {taskData?.length || 0} work items
+                  visible)
                 </span>
               </div>
               {/* Right */}
@@ -300,9 +317,22 @@ const SprintSection: React.FC<Props> = ({
                     }
                   </Tag>
                 </div>
-                {/* <Button type="default" className="font-semibold text-gray-600">
-                  Complete sprint
-                </Button> */}
+
+                {/* Complete sprint */}
+                <Button
+                  type="default"
+                  className="font-semibold text-gray-600"
+                  disabled={taskInMileStone.length === 0}
+                  onClick={() => handleSprintStatusChange(milestone)}
+                >
+                  {milestone.status === "NOT_START"
+                    ? "Start sprint"
+                    : milestone.status === "ACTIVE"
+                    ? "Complete sprint"
+                    : null}
+                </Button>
+
+                {/* More */}
                 <Dropdown
                   menu={{
                     items: items.map((item) => ({
@@ -371,7 +401,16 @@ const SprintSection: React.FC<Props> = ({
 
       {/* Confirm delete sprint */}
       <Modal
-        title="Delete sprint"
+        title={
+          <span className="flex items-center gap-2">
+            <WarningOutlined
+              style={{
+                color: "#ff4d4f",
+              }}
+            />
+            Delete Sprint
+          </span>
+        }
         closable={{ "aria-label": "Custom Close Button" }}
         open={isModalOpen}
         onOk={handleOk}
@@ -388,13 +427,32 @@ const SprintSection: React.FC<Props> = ({
         <div className="fixed bottom-4 left-4 right-4 bg-gray-700 border shadow-md rounded-md p-3 flex items-center justify-between z-50 w-max m-auto text-white">
           <div
             className="flex gap-3 hover:bg-gray-900 p-1 rounded-md cursor-pointer"
-            onClick={handleDeleteTask}
+            onClick={() => setIsDeleteTaskModalOpen(true)}
           >
             <DeleteOutlined />
             <p>Delete task</p>
           </div>
         </div>
       )}
+
+      {/* Modal xác nhận xóa task */}
+      <Modal
+        title={
+          <span className="flex items-center gap-2">
+            <WarningOutlined
+              style={{
+                color: "#ff4d4f",
+              }}
+            />
+            Delete task
+          </span>
+        }
+        open={isDeleteTaskModalOpen}
+        onOk={handleDeleteTask}
+        onCancel={() => setIsDeleteTaskModalOpen(false)}
+      >
+        <p>Are you sure you want to delete {selectedTaskIds.length} task(s)?</p>
+      </Modal>
     </div>
   );
 };
