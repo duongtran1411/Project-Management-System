@@ -10,6 +10,7 @@ import {
   emitTaskAssigned,
   emitTaskDeleted,
 } from "../utils/socket";
+import { IUser, Milestone } from "../models";
 import {
   sendTaskAssignmentEmail,
   sendTaskStatusChangeEmail,
@@ -18,7 +19,6 @@ import {
   sendTaskCreatedEmail,
 } from "../utils/email.util";
 import User from "../models/user.model";
-
 export class TaskService {
   private io: Server | null = null;
 
@@ -27,11 +27,8 @@ export class TaskService {
   }
 
   private getTaskUrl(projectId: any, taskId: any): string {
-    const projectIdStr = projectId?.toString();
-    const taskIdStr = taskId?.toString();
-    if (!projectIdStr || !taskIdStr) return "";
-    console.log(projectIdStr, "ádsadasdas", taskIdStr);
-    return `http://localhost:3000/workspace/project-management/${projectIdStr}/board/detail-task/${taskIdStr}`;
+    if (!projectId || !taskId) return "";
+    return `http://localhost:3000/workspace/project-management/${projectId}/detail-task/${taskId}`;
   }
 
   private async emitNotificationEvent(notification: any, recipientId: string) {
@@ -75,10 +72,10 @@ export class TaskService {
 
     const projectName =
       typeof populatedTask.projectId === "object" &&
-      populatedTask.projectId !== null &&
-      "name" in populatedTask.projectId
+        populatedTask.projectId !== null &&
+        "name" in populatedTask.projectId
         ? (populatedTask.projectId as { name?: string }).name ||
-          "Unknown Project"
+        "Unknown Project"
         : "Unknown Project";
 
     try {
@@ -98,8 +95,8 @@ export class TaskService {
               taskData.name || "Unnamed Task",
               projectName,
               (user.fullName as string) ||
-                (user.email as string) ||
-                "Unknown User",
+              (user.email as string) ||
+              "Unknown User",
               this.getTaskUrl(taskData.projectId, task._id)
             );
           } catch (emailError) {
@@ -115,7 +112,12 @@ export class TaskService {
           entityId: (task._id as any).toString(),
           metadata: {
             taskName: taskData.name,
-            projectName,
+            projectName:
+              typeof populatedTask.projectId === "object" &&
+                populatedTask.projectId !== null &&
+                "name" in populatedTask.projectId
+                ? (populatedTask.projectId as { name?: string }).name
+                : undefined,
           },
         });
 
@@ -141,8 +143,8 @@ export class TaskService {
               taskData.name || "Unnamed Task",
               projectName,
               (user.fullName as string) ||
-                (user.email as string) ||
-                "Unknown User",
+              (user.email as string) ||
+              "Unknown User",
               this.getTaskUrl(taskData.projectId, task._id)
             );
           } catch (emailError) {
@@ -158,7 +160,12 @@ export class TaskService {
           entityId: (task._id as any).toString(),
           metadata: {
             taskName: taskData.name,
-            projectName,
+            projectName:
+              typeof populatedTask.projectId === "object" &&
+                populatedTask.projectId !== null &&
+                "name" in populatedTask.projectId
+                ? (populatedTask.projectId as { name?: string }).name
+                : undefined,
           },
         });
 
@@ -259,8 +266,8 @@ export class TaskService {
     if (task && oldTask) {
       const projectName =
         typeof task.projectId === "object" &&
-        task.projectId !== null &&
-        "name" in task.projectId
+          task.projectId !== null &&
+          "name" in task.projectId
           ? (task.projectId as { name?: string }).name || "Unknown Project"
           : "Unknown Project";
 
@@ -284,8 +291,8 @@ export class TaskService {
                 oldTask.status,
                 updateData.status,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -301,7 +308,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
               taskStatus: updateData.status,
             },
           });
@@ -329,8 +341,8 @@ export class TaskService {
                 task.name,
                 projectName,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -346,7 +358,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -376,8 +393,8 @@ export class TaskService {
                 task.name,
                 projectName,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -393,7 +410,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -421,8 +443,8 @@ export class TaskService {
                 task.name,
                 projectName,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -438,7 +460,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -457,7 +484,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -570,6 +602,25 @@ export class TaskService {
     return tasks;
   }
 
+  async getTasksByProjectId(projectId: string): Promise<ITask[]> {
+    const milestone = await Milestone.find({ projectId: projectId, status: 'ACTIVE' })
+
+    const milestoneIds = await milestone.map((m) => m._id);
+    const tasks = await Task.find({ milestones: milestoneIds })
+      .populate([
+        { path: 'milestones', select: '_id name' },
+        { path: "assignee", select: "fullName email avatar" },
+        { path: "reporter", select: "fullName email avatar" },
+        { path: "createdBy", select: "fullName email avatar" },
+        { path: "updatedBy", select: "fullName email avatar" },
+        { path: "projectId", select: "name description" },
+        { path: "epic", select: "name description" },
+      ])
+      .sort({ createdAt: -1 });
+
+    return tasks;
+  }
+
   async updateTaskStatus(
     taskId: string,
     status: string,
@@ -598,8 +649,8 @@ export class TaskService {
     if (task && oldTask && oldTask.status !== status && task.assignee) {
       const projectName =
         typeof task.projectId === "object" &&
-        task.projectId !== null &&
-        "name" in task.projectId
+          task.projectId !== null &&
+          "name" in task.projectId
           ? (task.projectId as { name?: string }).name || "Unknown Project"
           : "Unknown Project";
 
@@ -616,8 +667,8 @@ export class TaskService {
             oldTask.status,
             status,
             (user.fullName as string) ||
-              (user.email as string) ||
-              "Unknown User",
+            (user.email as string) ||
+            "Unknown User",
             this.getTaskUrl(task.projectId, task._id)
           );
         } catch (emailError) {
@@ -757,8 +808,8 @@ export class TaskService {
     if (task && oldTask) {
       const projectName =
         typeof task.projectId === "object" &&
-        task.projectId !== null &&
-        "name" in task.projectId
+          task.projectId !== null &&
+          "name" in task.projectId
           ? (task.projectId as { name?: string }).name || "Unknown Project"
           : "Unknown Project";
 
@@ -780,8 +831,8 @@ export class TaskService {
                 task.name,
                 projectName,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -797,7 +848,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -821,8 +877,8 @@ export class TaskService {
                 task.name,
                 projectName,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -838,7 +894,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -866,8 +927,8 @@ export class TaskService {
                 task.name,
                 projectName,
                 (user.fullName as string) ||
-                  (user.email as string) ||
-                  "Unknown User",
+                (user.email as string) ||
+                "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
             } catch (emailError) {
@@ -883,7 +944,12 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
-              projectName,
+              projectName:
+                typeof task.projectId === "object" &&
+                  task.projectId !== null &&
+                  "name" in task.projectId
+                  ? (task.projectId as { name?: string }).name
+                  : undefined,
             },
           });
 
@@ -1009,6 +1075,28 @@ export class TaskService {
     return task;
   }
 
+  async updateMileStonesForTasks(milestoneId: string, milestoneIdMove: string, user: IUser): Promise<ITask[]> {
+    await Milestone.findByIdAndUpdate(milestoneId, { status: 'DONE' })
+
+    const updatedTask = await Task.updateMany(
+      { milestones: milestoneId, status: { $ne: 'DONE' } },
+      { $set: { milestones: milestoneIdMove, updatedBy: user._id } }
+    )
+
+    await Milestone.findByIdAndUpdate(milestoneIdMove, { status: 'ACTIVE' })
+
+    if (!updatedTask) {
+      throw new Error('Can not update task')
+    }
+
+    const tasks = await Task.find({ milestones: milestoneIdMove, status: { $ne: 'DONE' } });
+
+    if (!tasks) {
+      throw new Error('Can get task has been updated')
+    }
+    return tasks
+  }
+
   async updateTaskDates(
     taskId: string,
     startDate: Date | null,
@@ -1099,6 +1187,16 @@ export class TaskService {
     }
 
     return { success, failed };
+  }
+
+  async taskNotDoneByMileStone(milestoneId: string): Promise<number> {
+    const task = await Task.find({ milestones: milestoneId, status: { $ne: 'DONE' } }).countDocuments();
+
+    if (task === 0) {
+      return 0
+    }
+
+    return task
   }
 }
 

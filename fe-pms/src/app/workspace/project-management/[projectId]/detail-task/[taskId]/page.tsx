@@ -16,7 +16,6 @@ import {
   updateReporterForTask,
   updateTaskDate,
   updateTaskName,
-  updateTaskReporter,
   updateTaskStatus,
 } from "@/lib/services/task/task.service";
 import { Assignee } from "@/models/assignee/assignee.model";
@@ -37,7 +36,6 @@ import {
   DatePicker,
   Dropdown,
   Input,
-  Menu,
   MenuProps,
   Modal,
   Select,
@@ -50,12 +48,6 @@ import { useEffect, useState } from "react";
 import useSWR from "swr";
 import dayjs from "dayjs";
 import { Reporter } from "@/models/reporter/reporter.model";
-
-interface DetailTaskModalProps {
-  open: boolean;
-  onClose: () => void;
-  task: Task;
-}
 
 type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
 
@@ -71,11 +63,13 @@ const statusOptions: Record<Status, Status[]> = {
   DONE: ["TO_DO", "IN_PROGRESS"],
 };
 
-const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
-  open,
-  onClose,
-  task,
-}) => {
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data.data);
+
+const TaskDetail = () => {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
@@ -86,16 +80,23 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [assignee, setAssignee] = useState<Assignee>();
   const [epics, setEpics] = useState<Epic[]>([]);
   const [epic, setEpic] = useState<Epic>();
-  const [currentTask, setCurrentTask] = useState<Task | null>(task);
+  const [currentTask, setCurrentTask] = useState<Task | null>(null);
   const [startDate, setStartDate] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
-  const [status, setStatus] = useState(task.status || "TO_DO");
+  const [status, setStatus] = useState(currentTask?.status || "TO_DO");
   const [reporter, setReporter] = useState<Reporter>();
+  const params = useParams()
+  const taskId = params.taskId
+  const {
+    data: taskData,
+    error: taskError,
+    isLoading: taskIsLoading,
+  } = useSWR(taskId ? `${Endpoints.Task.GET_BY_ID(taskId?.toString())}` : '', fetcher);
   useEffect(() => {
-    setCurrentTask(task);
-  }, [task]);
+    setCurrentTask(taskData);
+  }, [taskData]);
   const getMemberProject = async (
     url: string
   ): Promise<ProjectContributorTag[]> => {
@@ -133,7 +134,9 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     error: errorComment,
     isLoading: loadingComment,
   } = useSWR(
-    task._id ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(task._id)}` : "",
+    currentTask?._id
+      ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(currentTask._id)}`
+      : "",
     getCommentTask
   );
 
@@ -176,48 +179,57 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   }, [dataEpic]);
 
   useEffect(() => {
-    if (task) {
-      setDescription(task.description || "");
-      setPriority(task.priority || "Medium");
-      setAssignee(task.assignee);
-      setEpic(task.epic);
-      setStartDate(task.startDate ?? "");
-      setDueDate(task.dueDate ?? "");
-      setName(task.name ?? "");
-      setStatus(task.status ?? "");
-      setReporter(task.reporter);
+    if (currentTask) {
+      setDescription(currentTask.description || "");
+      setPriority(currentTask.priority || "Medium");
+      setAssignee(currentTask.assignee);
+      setEpic(currentTask.epic);
+      setStartDate(currentTask.startDate ?? "");
+      setDueDate(currentTask.dueDate ?? "");
+      setName(currentTask.name ?? "");
+      setStatus(currentTask.status ?? "");
+      setReporter(currentTask.reporter);
     }
-  }, [task]);
+  }, [currentTask]);
 
-  if (!task) return null;
+  if (!currentTask) return null;
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
-    if (task._id) {
-      const response = await updateDescriptionTask(task._id, description);
+    if (currentTask._id) {
+      const response = await updateDescriptionTask(
+        currentTask._id,
+        description
+      );
+      if (response.success) {
+        showSuccessToast(response.message);
+      }
     }
   };
 
   const handleCancelDescription = () => {
-    setDescription(task.description || "");
+    setDescription(currentTask.description || "");
     setIsEditingDescription(false);
   };
 
   const handleSaveName = async () => {
     setIsEditingName(false);
-    if (task._id) {
-      const response = await updateTaskName(task._id, name);
+    if (currentTask._id) {
+      const response = await updateTaskName(currentTask._id, name);
+      if (response.success) {
+        showSuccessToast(response.message);
+      }
     }
   };
 
   const handleCancelName = () => {
-    setName(task.name || "");
+    setName(currentTask.name || "");
     setIsEditingName(false);
   };
 
   const handleComment = async () => {
     try {
       const response = await createComment(
-        task._id ? task._id : "",
+        currentTask._id ? currentTask._id : "",
         newComment
       );
       if (response.success) {
@@ -253,6 +265,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     try {
       const response = await updateAssigneeTask(taskId, assignee);
       if (response.success) {
+        showSuccessToast(response.message);
         setAssignee(response.data.assignee);
       }
     } catch (error: any) {
@@ -265,8 +278,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
   const updateEpic = async (epicId: string) => {
     try {
-      const response = await updateEpicTask(task._id ? task._id : "", epicId);
+      const response = await updateEpicTask(
+        currentTask._id ? currentTask._id : "",
+        epicId
+      );
       if (response.success) {
+        showSuccessToast(response.message);
         setEpic(response.data.epic);
       }
     } catch (error: any) {
@@ -279,9 +296,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
   const updateStartDateTask = async (date: string) => {
     try {
-      const response = await updateTaskDate(task._id ? task._id : "", {
-        startDate: date,
-      });
+      const response = await updateTaskDate(
+        currentTask._id ? currentTask._id : "",
+        {
+          startDate: date,
+        }
+      );
       setStartDate(response.startDate);
     } catch (error: any) {
       const message =
@@ -293,9 +313,12 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
   const updateDueDateTask = async (date: string) => {
     try {
-      const response = await updateTaskDate(task._id ? task._id : "", {
-        dueDate: date,
-      });
+      const response = await updateTaskDate(
+        currentTask._id ? currentTask._id : "",
+        {
+          dueDate: date,
+        }
+      );
       setDueDate(response.dueDate);
     } catch (error: any) {
       const message =
@@ -308,7 +331,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const updatePriority = async (value: string) => {
     try {
       const response = await updatePriorityTask(
-        task._id ? task._id : "",
+        currentTask._id ? currentTask._id : "",
         value
       );
       setDueDate(response.priority);
@@ -324,7 +347,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     const nextStatus = key as Status;
     try {
       const response = await updateTaskStatus(
-        task._id ? task._id : "",
+        currentTask._id ? currentTask._id : "",
         nextStatus
       );
       setStatus(response.status);
@@ -347,7 +370,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       const response = await updateReporterForTask(taskId, reporter);
       console.log(response);
       if (response.success) {
-        showSuccessToast(response.message)
+        showSuccessToast(response.message);
         setReporter(response.data.reporter);
       }
     } catch (error: any) {
@@ -367,12 +390,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   }
 
   return (
-    <Modal
-      open={open}
-      onCancel={onClose}
-      footer={null}
-      width={1200}
-      styles={{ body: { padding: 0 } }}>
+    <div className="bg-zinc-50">
       <div className="flex">
         {/* Left section */}
         <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
@@ -581,22 +599,22 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
               <Dropdown
                 menu={{
                   items: [
-                    ...(task.assignee?._id
+                    ...(currentTask.assignee?._id
                       ? [
                           {
-                            key: task.assignee._id,
+                            key: currentTask.assignee._id,
                             label: (
                               <div className="flex items-center gap-2 bg-gray-100">
                                 <Avatar
-                                  src={task.assignee.avatar}
+                                  src={currentTask.assignee.avatar}
                                   size="small"
                                 />
                                 <div>
                                   <p className="font-medium">
-                                    {task.assignee.fullName}
+                                    {currentTask.assignee.fullName}
                                   </p>
                                   <p className="text-xs text-gray-400">
-                                    {task.assignee.email}
+                                    {currentTask.assignee.email}
                                   </p>
                                 </div>
                               </div>
@@ -620,7 +638,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                     },
                     ...contributor
                       .filter((t) => {
-                        return t.userId._id !== task.assignee?._id;
+                        return t.userId._id !== currentTask.assignee?._id;
                       })
                       .map((e) => ({
                         key: e.userId._id,
@@ -641,8 +659,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   ],
                   onClick: ({ key, domEvent }) => {
                     domEvent.stopPropagation();
-                    if (task._id && key) {
-                      updateAssignee(task._id, key);
+                    if (currentTask._id && key) {
+                      updateAssignee(currentTask._id, key);
                     }
                   },
                 }}
@@ -664,7 +682,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
               </Dropdown>
 
               <span className="font-semibold text-gray-600">Labels:</span>
-              <span>{task.name || "None"}</span>
+              <span>{currentTask.name || "None"}</span>
               <span className="font-semibold text-gray-600">Parent:</span>
               <Select
                 showSearch
@@ -728,28 +746,28 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
               <span className="font-semibold text-gray-600">Sprint:</span>
               <span className="text-blue-600">
-                {task.milestones?.name || "None"}
+                {currentTask.milestones?.name || "None"}
               </span>
               <span className="font-semibold text-gray-600">Reporter:</span>
               <Dropdown
                 menu={{
                   items: [
-                    ...(task.reporter?._id
+                    ...(currentTask.reporter?._id
                       ? [
                           {
-                            key: task.reporter._id,
+                            key: currentTask.reporter._id,
                             label: (
                               <div className="flex items-center gap-2 bg-gray-100">
                                 <Avatar
-                                  src={task.reporter.avatar}
+                                  src={currentTask.reporter.avatar}
                                   size="small"
                                 />
                                 <div>
                                   <p className="font-medium">
-                                    {task.reporter.fullName}
+                                    {currentTask.reporter.fullName}
                                   </p>
                                   <p className="text-xs text-gray-400">
-                                    {task.reporter.email}
+                                    {currentTask.reporter.email}
                                   </p>
                                 </div>
                               </div>
@@ -759,7 +777,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                       : []),
                     ...contributor
                       .filter((t) => {
-                        return t.userId._id !== task.reporter?._id;
+                        return t.userId._id !== currentTask.reporter?._id;
                       })
                       .map((e) => ({
                         key: e.userId._id,
@@ -780,8 +798,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   ],
                   onClick: ({ key, domEvent }) => {
                     domEvent.stopPropagation();
-                    if (task._id && key) {
-                      updateReporter(task._id, key);
+                    if (currentTask._id && key) {
+                      updateReporter(currentTask._id, key);
                     }
                   },
                 }}
@@ -805,8 +823,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
           </div>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 
-export default DetailTaskModal;
+export default TaskDetail;
