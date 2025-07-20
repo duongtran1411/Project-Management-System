@@ -36,6 +36,10 @@ const EpicPage = () => {
     const [editingTaskPriorityValue, setEditingTaskPriorityValue] = useState<string>("");
     const [people, setPeople] = useState<Array<{ userId: { _id: string; fullName: string; avatar?: string } }>>([]);
     const [editingAssigneeTaskId, setEditingAssigneeTaskId] = useState<string | null>(null);
+    const [editingAssigneeValue, setEditingAssigneeValue] = useState<string>("");
+    const [editingReporterTaskId, setEditingReporterTaskId] = useState<string | null>(null);
+    const [editingReporterValue, setEditingReporterValue] = useState<string>("");
+    const [searchText, setSearchText] = useState("");
 
 
     const { data: epicData, mutate } = useSWR(
@@ -186,11 +190,43 @@ const EpicPage = () => {
         }
     };
 
-    const handleUpdateTaskAssignee = async (taskId: string, userId: string | null) => {
+
+    const handleUpdateTaskAssignee = async (taskId: string, userId: string) => {
         try {
             await axiosService.getAxiosInstance().patch(
                 `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`,
-                { assigneeId: userId }
+                { assignee: userId || null } // Gán null nếu không có user
+            );
+
+            // Cập nhật lại dữ liệu
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+
+            await mutate();
+        } catch (err) {
+            console.error("Failed to update assignee:", err);
+        } finally {
+            setEditingAssigneeTaskId(null);
+            setEditingAssigneeValue("");
+        }
+    };
+
+    const handleUpdateTaskReporter = async (taskId: string, userId: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_REPORTER(taskId)}`,
+                { reporter: userId || null }
             );
 
             const epicId = Object.keys(taskMap).find((eid) =>
@@ -201,27 +237,18 @@ const EpicPage = () => {
                 const taskRes = await fetcher(
                     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
                 );
-
-                // Map lại assignee từ people nếu cần
-                const updatedTasks = taskRes.data.map((task: any) => {
-                    const matchedUser = people.find(p => p.userId._id === task.assignee);
-                    return {
-                        ...task,
-                        assignee: matchedUser ? matchedUser.userId : null,
-                    };
-                });
-
                 setTaskMap((prev) => ({
                     ...prev,
-                    [epicId]: updatedTasks,
+                    [epicId]: taskRes.data,
                 }));
             }
 
             await mutate();
-        } catch (error) {
-            console.error("Failed to update task assignee:", error);
+        } catch (err) {
+            console.error("Failed to update reporter:", err);
         } finally {
-            setEditingAssigneeTaskId(null);
+            setEditingReporterTaskId(null);
+            setEditingReporterValue("");
         }
     };
 
@@ -229,7 +256,10 @@ const EpicPage = () => {
 
 
 
-    const epicRows = (epicData?.data || []).map((epic: any) => ({
+
+    const epicRows = (epicData?.data || []).filter((epic: any) =>
+        epic.name.toLowerCase().includes(searchText.toLowerCase())
+    ).map((epic: any) => ({
         key: epic._id,
         summary: epic.name,
         status: epic.status,
@@ -244,19 +274,23 @@ const EpicPage = () => {
     const dataSource = epicRows.flatMap((epic) => {
         const rows = [epic];
         if (expandedKeys.includes(epic.key) && taskMap[epic.key]) {
-            const tasks = taskMap[epic.key].map((task) => ({
-                ...task,
-                key: task._id,
-                summary: task.name,
-                status: task.status,
-                assignee: task.assignee || "Unassigned",
-                dueDate: new Date(task.createdAt).toLocaleDateString(),
-                priority: task.priority || "None",
-                created: new Date(task.createdAt).toLocaleDateString(),
-                updated: new Date(task.updatedAt).toLocaleDateString(),
-                reporter: task.reporter || "N/A",
-                isEpic: false,
-            }));
+            const tasks = taskMap[epic.key]
+                .filter((task) =>
+                    task.name.toLowerCase().includes(searchText.toLowerCase())
+                )
+                .map((task) => ({
+                    ...task,
+                    key: task._id,
+                    summary: task.name,
+                    status: task.status,
+                    assignee: task.assignee || "Unassigned",
+                    dueDate: new Date(task.createdAt).toLocaleDateString(),
+                    priority: task.priority || "None",
+                    created: new Date(task.createdAt).toLocaleDateString(),
+                    updated: new Date(task.updatedAt).toLocaleDateString(),
+                    reporter: task.reporter || "N/A",
+                    isEpic: false,
+                }));
             rows.push(...tasks);
         }
         return rows;
@@ -421,77 +455,86 @@ const EpicPage = () => {
         //     ),
         //     width: 150,
         // },
+
+
         {
             title: "Assignee",
             dataIndex: "assignee",
             key: "assignee",
             width: 280,
-            render: (assignee: any, record: any) => {
-                if (record.isEpic) return null;
+            render: (_: any, record: any) => {
+                if (record.isEpic) return "";
+
+                const assigneeId = typeof record.assignee === "object"
+                    ? record.assignee?._id
+                    : record.assignee;
+
+                const assignee = people.find(p => p.userId._id === assigneeId);
+
+                const name = assignee?.userId.fullName || "Unassigned";
+                const avatar = assignee?.userId.avatar;
 
                 if (editingAssigneeTaskId === record.key) {
                     return (
                         <Select
-                            placeholder="Assign to..."
-                            value={assignee?._id || "unassigned"}
+                            style={{ width: 250 }}
+                            value={editingAssigneeValue}
                             onChange={(value) => {
-                                handleUpdateTaskAssignee(record.key, value === "unassigned" ? null : value);
-                                setEditingAssigneeTaskId(null);
+                                setEditingAssigneeValue(value);
+                                handleUpdateTaskAssignee(record.key, value);
                             }}
-                            onBlur={() => setEditingAssigneeTaskId(null)}
-                            size="small"
-                            style={{ width: 220 }}
                             options={[
                                 {
-                                    value: "unassigned",
                                     label: (
-                                        <span className="flex items-center gap-2">
-                                            <Avatar icon={<UserOutlined />} size="small" />
+                                        <div className="flex items-center gap-2">
+                                            <Avatar size="small">
+                                                <UserOutlined />
+                                            </Avatar>
                                             <span>Unassigned</span>
-                                        </span>
+                                        </div>
                                     ),
+                                    value: "", // Giá trị rỗng thể hiện unassigned
                                 },
-                                ...people.map((user: any) => ({
-                                    value: user.userId._id,
+                                ...people.map((p) => ({
                                     label: (
-                                        <span className="flex items-center gap-2">
-                                            <Avatar size="small" src={user.userId.avatar} />
-                                            <span>{user.userId.fullName}</span>
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <Avatar size="small" src={p.userId.avatar} />
+                                            <span>{p.userId.fullName}</span>
+                                        </div>
                                     ),
+                                    value: p.userId._id,
                                 })),
                             ]}
+                            autoFocus
+                            size="small"
+                            optionLabelProp="label"
                         />
 
                     );
                 }
 
-                if (!assignee || !assignee.fullName) {
-                    return (
-                        <span
-                            className="flex items-center gap-2 text-gray-500"
-                            style={{ cursor: "pointer" }}
-                            onClick={() => setEditingAssigneeTaskId(record.key)}
-                        >
-                            <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#e0e0e0" }} />
-                            <span>Unassigned</span>
-                        </span>
-                    );
-                }
 
                 return (
-                    <span
-                        className="flex items-center gap-2"
-                        style={{ cursor: "pointer" }}
-                        onClick={() => setEditingAssigneeTaskId(record.key)}
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => {
+                            setEditingAssigneeTaskId(record.key);
+                            setEditingAssigneeValue(assigneeId || "");
+                        }}
                     >
-                        <Avatar src={assignee.avatar} size={24} />
-                        <span>{assignee.fullName}</span>
-                    </span>
+                        <Avatar size="small" src={avatar}>
+                            {!avatar ? (name === "Unassigned" ? <UserOutlined /> : name.charAt(0)) : null}
+                        </Avatar>
+
+                        <span>{name}</span>
+                    </div>
                 );
+
             }
-            ,
+
+
         },
+
 
         {
             title: "Due date",
@@ -572,25 +615,63 @@ const EpicPage = () => {
             dataIndex: "reporter",
             key: "reporter",
             width: 280,
-            render: (reporter: any, record: any) => {
-                if (record.isEpic) return null;
-                if (!reporter || !reporter.fullName) {
+            render: (_: any, record: any) => {
+                if (record.isEpic) return "";
+
+                const reporterId = typeof record.reporter === "object"
+                    ? record.reporter?._id
+                    : record.reporter;
+
+                const reporter = people.find(p => p.userId._id === reporterId);
+
+                const name = reporter?.userId.fullName || "Unassigned";
+                const avatar = reporter?.userId.avatar;
+
+                if (editingReporterTaskId === record.key) {
                     return (
-                        <span className="flex items-center gap-2 text-gray-500">
-                            <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#e0e0e0" }} />
-                            <span>Unassigned</span>
-                        </span>
+                        <Select
+                            style={{ width: 250 }}
+                            value={editingReporterValue}
+                            onChange={(value) => {
+                                setEditingReporterValue(value);
+                                handleUpdateTaskReporter(record.key, value);
+                            }}
+                            options={people.map((p) => ({
+                                label: (
+                                    <div className="flex items-center gap-2">
+                                        <Avatar size="small" src={p.userId.avatar} />
+                                        <span>{p.userId.fullName}</span>
+                                    </div>
+                                ),
+                                value: p.userId._id,
+                            }))}
+                            autoFocus
+                            size="small"
+                            optionLabelProp="label"
+                        />
                     );
                 }
 
                 return (
-                    <span className="flex items-center gap-2">
-                        <Avatar src={reporter.avatar} size={24} />
-                        <span>{reporter.fullName}</span>
-                    </span>
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => {
+                            const validId = reporterId && people.some(p => p.userId._id === reporterId)
+                                ? reporterId
+                                : (people[0]?.userId._id || "");
+                            setEditingReporterTaskId(record.key);
+                            setEditingReporterValue(validId);
+                        }}
+                    >
+                        <Avatar size="small" src={avatar}>
+                            {!avatar ? (name === "Unassigned" ? <UserOutlined /> : name.charAt(0)) : null}
+                        </Avatar>
+                        <span>{name}</span>
+                    </div>
                 );
-            },
+            }
         },
+
     ];
 
     useEffect(() => {
@@ -608,7 +689,12 @@ const EpicPage = () => {
     return (
         <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex items-center justify-between mb-7">
-                <Input.Search placeholder="Search epic..." className="w-64" />
+                <Input.Search
+                    placeholder="Search epic..."
+                    className="w-64"
+                    value={searchText}
+                    onChange={e => setSearchText(e.target.value)}
+                />
             </div>
 
             <Table

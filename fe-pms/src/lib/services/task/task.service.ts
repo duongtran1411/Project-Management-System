@@ -398,6 +398,7 @@ export const updateTaskName = async (taskId: string, name: string) => {
   }
 };
 
+
 export const getTaskNotDone = async (milestonesId: string) => {
   try {
     const response = await axiosService
@@ -429,3 +430,4 @@ export const updateMileStoneForTasks = async (milestoneId: string, milestoneIdMo
     throw error;
   }
 }
+
