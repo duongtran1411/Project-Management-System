@@ -662,4 +662,88 @@ router.patch(
   taskController.updateTaskLabels
 );
 
+
+/**
+ * @openapi
+ * /task/count/{milestoneId}:
+ *   get:
+ *     summary: lấy số lượng task theo milestoneId
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: milestoneId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của milestone
+ *     responses:
+ *       200: { description: lấy số lượng task không thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get('/count/:milestoneId', authenticate, taskController.countTaskNotDoneByMileStone)
+
+
+/**
+ * @openapi
+ * /task/board/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách task theo projectId
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách task theo projectId thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ *       401:
+ *         description: Không có quyền truy cập
+ */
+
+router.get(
+  "/board/:projectId",
+  authenticate,
+  taskController.getTaskByProjectId
+);
+
+
+
+/**
+ * @openapi
+ * /task/updatemilestones/task/{milestoneId}:
+ *   patch:
+ *     summary: Cập nhật milestones cho task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: milestoneId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của milestones
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [milestonesIdMove]
+ *             properties:
+ *               milestonesIdMove:
+ *                 type: string
+ *     responses:
+ *       200: { description: Cập nhật milestones task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch('/updatemilestones/task/:milestoneId',authenticate,taskController.updateMileStonesForTask)
+
 export default router;

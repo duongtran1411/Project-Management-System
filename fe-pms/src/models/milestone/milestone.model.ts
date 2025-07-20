@@ -4,6 +4,7 @@ export interface Milestone {
   startDate: string; // ISO date string
   endDate: string; // ISO date string
   goal: string;
+  status:string
   projectId: string;
 }
 export interface CreateMilestone {

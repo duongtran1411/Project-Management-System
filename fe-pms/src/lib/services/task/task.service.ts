@@ -23,6 +23,27 @@ export const createTask = async (task: TaskModel) => {
   }
 };
 
+export const createTaskBoard = async (taskName: string, milestones: string, projectId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Task.CREATE_TASK}`, {
+        name: taskName,
+        milestones: milestones,
+        projectId: projectId
+      });
+
+    if (response.status === 201) {
+      showSuccessToast("Create new task successfully!");
+      return response.data;
+    }
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(error.response.data.message || "Fail to create new task!");
+    }
+  }
+}
+
 export const getTasksByProject = async (
   projectId: string
 ): Promise<TaskModel[] | null> => {
@@ -186,7 +207,7 @@ export const deleteTaskMultiple = async (taskIds: string[]) => {
   }
 };
 
-export const deleteOneTask = async (taskId:string)=>{
+export const deleteOneTask = async (taskId: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
@@ -339,3 +360,35 @@ export const updateTaskName = async (taskId: string, name: string) => {
     throw error;
   }
 };
+
+export const getTaskNotDone = async (milestonesId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(`${Endpoints.Task.COUNT_NUMBER_TASK_NOT_DONE(milestonesId)}`);
+
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
+export const updateMileStoneForTasks = async (milestoneId: string, milestoneIdMove: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(`${Endpoints.Task.UPDATE_MILESTONES_FOR_TASK(milestoneId)}`, {
+        milestonesIdMove: milestoneIdMove
+      });
+
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
+    showErrorToast(message);
+    throw error;
+  }
+}

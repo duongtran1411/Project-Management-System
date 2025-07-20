@@ -26,8 +26,7 @@ const taskSchema = new Schema<ITask>(
       required: [true, "name is required"],
     },
     description: {
-      type: String,
-      required: [true, "description is required"],
+      type: String
     },
     labels: [String],
     epic: {
