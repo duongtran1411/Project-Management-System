@@ -365,9 +365,8 @@ const BoardPage = () => {
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
-                        snapshot.isDraggingOver ? "bg-blue-50" : ""
-                      }`}
+                      className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${snapshot.isDraggingOver ? "bg-blue-50" : ""
+                        }`}
                     >
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
@@ -401,11 +400,10 @@ const BoardPage = () => {
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 key={task._id}
-                                className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${
-                                  snapshot.isDragging
-                                    ? "ring-2 ring-blue-400"
-                                    : ""
-                                }`}
+                                className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${snapshot.isDragging
+                                  ? "ring-2 ring-blue-400"
+                                  : ""
+                                  }`}
                                 styles={{ body: { padding: "12px" } }}
                                 onClick={() => {
                                   setSelectedTask(task);
@@ -414,11 +412,10 @@ const BoardPage = () => {
                               >
                                 <div className="space-y-2">
                                   <p
-                                    className={`text-gray-700 font-medium ${
-                                      col.status === "DONE"
-                                        ? "line-through"
-                                        : ""
-                                    }`}
+                                    className={`text-gray-700 font-medium ${col.status === "DONE"
+                                      ? "line-through"
+                                      : ""
+                                      }`}
                                   >
                                     {task.name}
                                   </p>
@@ -435,7 +432,7 @@ const BoardPage = () => {
                                   </div>
                                   {task.dueDate ? (
                                     new Date(task.dueDate).getTime() <
-                                    Date.now() ? (
+                                      Date.now() ? (
                                       <div className="inline-flex items-center px-2 py-1 text-sm text-orange-300 border-2 border-orange-300 rounded gap-x-2">
                                         <ClockCircleOutlined />
                                         {format(
@@ -467,31 +464,31 @@ const BoardPage = () => {
                                         items: [
                                           ...(task.assignee?._id
                                             ? [
-                                                {
-                                                  key: task.assignee._id,
-                                                  label: (
-                                                    <div className="flex items-center gap-2 bg-gray-100">
-                                                      <Avatar
-                                                        src={
-                                                          task.assignee.avatar
+                                              {
+                                                key: task.assignee._id,
+                                                label: (
+                                                  <div className="flex items-center gap-2 bg-gray-100">
+                                                    <Avatar
+                                                      src={
+                                                        task.assignee.avatar
+                                                      }
+                                                      size="small"
+                                                    />
+                                                    <div>
+                                                      <p className="font-medium">
+                                                        {
+                                                          task.assignee
+                                                            .fullName
                                                         }
-                                                        size="small"
-                                                      />
-                                                      <div>
-                                                        <p className="font-medium">
-                                                          {
-                                                            task.assignee
-                                                              .fullName
-                                                          }
-                                                        </p>
-                                                        <p className="text-xs text-gray-400">
-                                                          {task.assignee.email}
-                                                        </p>
-                                                      </div>
+                                                      </p>
+                                                      <p className="text-xs text-gray-400">
+                                                        {task.assignee.email}
+                                                      </p>
                                                     </div>
-                                                  ),
-                                                },
-                                              ]
+                                                  </div>
+                                                ),
+                                              },
+                                            ]
                                             : []),
                                           {
                                             key: "unassigned",
@@ -551,18 +548,16 @@ const BoardPage = () => {
                                       className="board-assignee-dropdown"
                                     >
                                       <Tooltip
-                                        title={`Assignee: ${
-                                          task.assignee?.fullName ||
+                                        title={`Assignee: ${task.assignee?.fullName ||
                                           "Unassigned"
-                                        }`}
+                                          }`}
                                       >
                                         <Avatar
-                                          className={`cursor-pointer text-white ${
-                                            task.assignee?.fullName ===
+                                          className={`cursor-pointer text-white ${task.assignee?.fullName ===
                                             "Unassigned"
-                                              ? "bg-gray-400"
-                                              : ""
-                                          }`}
+                                            ? "bg-gray-400"
+                                            : ""
+                                            }`}
                                           size="default"
                                           src={task.assignee?.avatar}
                                           onClick={(e) => e?.stopPropagation()}
