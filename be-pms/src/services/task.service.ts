@@ -31,7 +31,7 @@ export class TaskService {
     const taskIdStr = taskId?.toString();
     if (!projectIdStr || !taskIdStr) return "";
     console.log(projectIdStr, "ádsadasdas", taskIdStr);
-    return `http://localhost:3000/workspace/project-management/${projectIdStr}/board/detail-task/${taskIdStr}`;
+    return `http://localhost:3000/workspace/project-management/${projectIdStr}/detail-task/${taskIdStr}`;
   }
 
   private async emitNotificationEvent(notification: any, recipientId: string) {
