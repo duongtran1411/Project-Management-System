@@ -226,4 +226,38 @@ router.get("/overdue", authenticate, milestoneController.getOverdueMilestones);
  */
 router.patch('/:id/status', authenticate, milestoneController.updateStatus)
 
+
+/**
+ * @openapi
+ * /milestone/active/project/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách milestone active theo dự án
+ *     tags: [Milestone]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
+ *     responses:
+ *       200: { description: Lấy danh sách milestone với status active theo dự án thành công }
+ */
+router.get("/active/project/:projectId", authenticate, milestoneController.getMilestonesActiveByProject);
+
+/**
+ * @openapi
+ * /milestone/notstart/project/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách milestone notstart theo dự án
+ *     tags: [Milestone]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
+ *     responses:
+ *       200: { description: Lấy danh sách milestone với status not start theo dự án thành công }
+ */
+router.get("/notstart/project/:projectId", authenticate, milestoneController.getMilestonesNotStartByProject);
 export default router;
