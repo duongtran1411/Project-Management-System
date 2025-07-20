@@ -19,6 +19,23 @@ export const getEpicsByProject = async (projectId: string) => {
   }
 };
 
+
+
+export const updateEpic = async (epicId: string, data: { name: string }) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .put(Endpoints.Epic.UPDATE_EPIC(epicId), data);
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Failed to update epic!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
+
 export const createEpic = async (epicData: any) => {
   try {
     const response = await axiosService
@@ -37,3 +54,4 @@ export const createEpic = async (epicData: any) => {
     return null;
   }
 };
+

@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
 
   useEffect(() => {
@@ -10,9 +10,9 @@ const page = () => {
   }, [router]);
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Workspace Page</h1>
+      <h1 className="mb-4 text-2xl font-bold">Workspace Page</h1>
     </div>
   );
 };
 
-export default page;
+export default Page;

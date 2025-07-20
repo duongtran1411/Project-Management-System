@@ -9,7 +9,7 @@ import {
   StarOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Col, Row, Statistic, Typography } from "antd";
+import { Button, Card, Col, Row, Space, Statistic, Typography } from "antd";
 import { useState } from "react";
 
 import { showSuccessToast } from "@/components/common/toast/toast";
@@ -25,6 +25,7 @@ export default function Page() {
   const [name, setName] = useState<string>("");
   const router = useRouter();
   const { userInfo } = useAuth();
+
   useEffect(() => {
     const justLoggedIn = localStorage.getItem(Constants.API_FIRST_LOGIN);
     if (userInfo && justLoggedIn === "true") {
@@ -94,19 +95,19 @@ export default function Page() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative px-4 py-20 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left Content */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                <div className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-full">
                   <StarOutlined className="mr-2" />
                   Trusted by 1000+ teams worldwide
                 </div>
 
                 <Title
                   level={1}
-                  className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight"
+                  className="text-5xl font-bold leading-tight text-gray-900 lg:text-6xl"
                 >
                   Connect every team,
                   <br />
@@ -117,7 +118,7 @@ export default function Page() {
                   together with Project Hub
                 </Title>
 
-                <Paragraph className="text-xl text-gray-600 leading-relaxed">
+                <Paragraph className="text-xl leading-relaxed text-gray-600">
                   Streamline your workflow, boost productivity, and achieve your
                   goals faster with our comprehensive project management
                   platform.
@@ -126,15 +127,15 @@ export default function Page() {
 
               {userInfo ? (
                 <div className="space-y-6">
-                  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50">
+                  <div className="p-6 border bg-white/80 backdrop-blur-sm rounded-2xl border-gray-200/50">
                     <Text className="text-2xl font-semibold text-gray-800">
                       Welcome back,{" "}
-                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 font-bold">
+                      <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                         {name}
                       </span>
                       ! 👋
                     </Text>
-                    <Text className="block text-gray-600 mt-2">
+                    <Text className="block mt-2 text-gray-600">
                       Ready to continue where you left off?
                     </Text>
                   </div>
@@ -142,7 +143,7 @@ export default function Page() {
                   <Button
                     type="primary"
                     size="large"
-                    className="h-14 px-8 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 border-0 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="px-8 text-lg font-semibold transition-all duration-300 border-0 shadow-lg h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
                     onClick={handleContinue}
                     icon={<ArrowRightOutlined />}
                   >
@@ -153,8 +154,8 @@ export default function Page() {
             </div>
 
             {/* Right Content - Image Animation */}
-            <div className="relative flex justify-center items-center">
-              <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-8 border border-gray-200/50 shadow-2xl w-full max-w-2xl">
+            <div className="relative flex items-center justify-center">
+              <div className="w-full max-w-2xl p-8 border shadow-2xl bg-white/60 backdrop-blur-sm rounded-3xl border-gray-200/50">
                 <ImageAnimation />
               </div>
             </div>
@@ -164,11 +165,11 @@ export default function Page() {
 
       {/* Stats Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <Row gutter={[24, 24]} justify="center">
             {stats.map((stat, index) => (
               <Col xs={12} sm={6} lg={3} key={index}>
-                <Card className="text-center border-0 shadow-sm hover:shadow-md transition-shadow">
+                <Card className="text-center transition-shadow border-0 shadow-sm hover:shadow-md">
                   <Statistic
                     title={stat.title}
                     value={stat.value}
@@ -188,12 +189,12 @@ export default function Page() {
 
       {/* Features Section */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Title level={2} className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="mb-16 text-center">
+            <Title level={2} className="mb-4 text-4xl font-bold text-gray-900">
               Everything you need to succeed
             </Title>
-            <Paragraph className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <Paragraph className="max-w-3xl mx-auto text-xl text-gray-600">
               Powerful features designed to help teams work more efficiently and
               deliver better results
             </Paragraph>
@@ -203,13 +204,13 @@ export default function Page() {
             {features.map((feature, index) => (
               <Col xs={24} sm={12} lg={6} key={index}>
                 <Card
-                  className="h-full text-center border-0 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="h-full text-center transition-all duration-300 border-0 shadow-sm hover:shadow-lg hover:-translate-y-1"
                   styles={{ body: { padding: "2rem 1.5rem" } }}
                 >
                   <div className="mb-4">{feature.icon}</div>
                   <Title
                     level={4}
-                    className="text-xl font-semibold text-gray-900 mb-3"
+                    className="mb-3 text-xl font-semibold text-gray-900"
                   >
                     {feature.title}
                   </Title>
@@ -222,7 +223,39 @@ export default function Page() {
           </Row>
         </div>
       </section>
+
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+        <div className="max-w-4xl px-4 mx-auto text-center sm:px-6 lg:px-8">
+          <Title level={2} className="mb-6 text-4xl font-bold text-white">
+            Ready to transform your workflow?
+          </Title>
+          <Paragraph className="mb-8 text-xl text-blue-100">
+            Join thousands of teams who are already working smarter with Project
+            Hub
+          </Paragraph>
+          <Space size="large">
+            <Button
+              type="primary"
+              size="large"
+              className="h-12 px-8 text-lg font-semibold text-blue-600 bg-white border-0 hover:bg-gray-100"
+              onClick={() => router.push("/authentication/login")}
+            >
+              Start Free Trial
+            </Button>
+            <Button
+              size="large"
+              className="h-12 px-8 text-lg font-semibold text-white border-2 border-white hover:bg-white hover:text-blue-600"
+            >
+              Watch Demo
+            </Button>
+          </Space>
+        </div>
+      </section>
+
+
       <Footer />
-    </div>
+    </div >
   );
 }

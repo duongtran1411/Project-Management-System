@@ -21,6 +21,7 @@ export class Endpoints {
     CREATE_EPIC: "epic",
     UPDATE_EPIC: (epicId: string) => `epic/${epicId}`,
     DELETE_EPIC: (epicId: string) => `epic/${epicId}`,
+
   };
 
   static readonly Task = {
@@ -103,4 +104,12 @@ export class Endpoints {
       `notification/${notificationId}/archive`,
     DELETE: (notificationId: string) => `notification/${notificationId}`,
   };
+
+
+  static readonly PeopleYouWorkWith = {
+  GET_BY_PROJECT: (projectId: string) => `people-you-work-with/project/${projectId}`,
+};
+
 }
+
+
