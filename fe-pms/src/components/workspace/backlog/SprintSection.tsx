@@ -286,9 +286,10 @@ const SprintSection: React.FC<Props> = ({
                 )}
                 <h3 className="font-semibold">{milestone.name} </h3>
                 <span className="ml-2 text-sm text-gray-500">
-                  {formatDate(milestone.startDate)} –{" "}
-                  {formatDate(milestone.endDate)} ({taskInMileStone.length} of{" "}
-                  {taskData?.length || 0} work items visible)
+                  {milestone.startDate && formatDate(milestone.startDate)} –{" "}
+                  {milestone.endDate && formatDate(milestone.endDate)} (
+                  {taskInMileStone.length} of {taskData?.length || 0} work items
+                  visible)
                 </span>
               </div>
               {/* Right */}

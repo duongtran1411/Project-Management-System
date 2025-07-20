@@ -56,6 +56,8 @@ export class Endpoints {
   static readonly Project = {
     CREATE_PROJECT: "project",
     GET_BY_ID: (projectId: string) => `project/${projectId}`,
+    UPDATE_PROJECT: (projectId: string) => `project/${projectId}`,
+    DELETE_PROJECT: (projectId: string) => `project/${projectId}`,
   };
 
   static readonly ProjectContributor = {
