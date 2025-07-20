@@ -2,6 +2,7 @@
 
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
+import { getPeopleYouWorkWith } from "@/lib/services/peopleYouWork/peopleYouWork.service";
 import {
     CalendarOutlined,
     CommentOutlined,
@@ -13,7 +14,7 @@ import {
 import { Avatar, Button, Input, Select, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 const fetcher = (url: string) =>
@@ -33,6 +34,7 @@ const EpicPage = () => {
     const [editingTaskSummaryText, setEditingTaskSummaryText] = useState<string>("");
     const [editingTaskPriorityId, setEditingTaskPriorityId] = useState<string | null>(null);
     const [editingTaskPriorityValue, setEditingTaskPriorityValue] = useState<string>("");
+    const [people, setPeople] = useState([])
 
 
     const { data: epicData, mutate } = useSWR(
@@ -74,6 +76,23 @@ const EpicPage = () => {
         }
     };
 
+
+    const handleUpdateTaskSummary = async (taskId: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_NAME(taskId)}`,
+                { name: editingTaskSummaryText }
+            );
+            await mutate();
+        } catch (error) {
+            console.error("Failed to update task summary:", error);
+        } finally {
+            setEditingTaskSummaryId(null);
+            setEditingTaskSummaryText("");
+        }
+    };
+
+
     const handleUpdateEpicStatus = async (epicId: string) => {
         try {
             await axiosService.getAxiosInstance().put(
@@ -89,50 +108,95 @@ const EpicPage = () => {
         }
     };
 
+
     const handleUpdateTaskStatus = async (taskId: string) => {
         try {
-            await axiosService.getAxiosInstance().put(
-                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_TASK(taskId)}`,
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_STATUS(taskId)}`,
                 { status: editingStatusTaskValue }
             );
-            await mutate(); // Refresh data
+
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+            await mutate();
         } catch (error) {
             console.error("Failed to update task status:", error);
         } finally {
+            // Reset state
             setEditingStatusTaskId(null);
             setEditingStatusTaskValue("");
         }
     };
 
-    const handleUpdateTaskSummary = async (taskId: string) => {
-        try {
-            await axiosService.getAxiosInstance().put(
-                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_NAME(taskId)}`,
-                { name: editingTaskSummaryText }
-            );
-            await mutate();
-        } catch (error) {
-            console.error("Failed to update task summary:", error);
-        } finally {
-            setEditingTaskSummaryId(null);
-            setEditingTaskSummaryText("");
-        }
-    };
 
-    const handleUpdateTaskPriority = async (taskId: string) => {
+    const handleUpdateTaskPriority = async (taskId: string, newPriority: string) => {
         try {
-            await axiosService.getAxiosInstance().put(
+            await axiosService.getAxiosInstance().patch(
                 `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_PRIORITY(taskId)}`,
-                { priority: editingTaskPriorityValue }
+                { priority: newPriority }
             );
-            await mutate();
+
+            // Tìm lại epicId chứa task đó
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+
         } catch (error) {
             console.error("Failed to update task priority:", error);
         } finally {
             setEditingTaskPriorityId(null);
-            setEditingTaskPriorityValue("");
         }
     };
+
+    const handleUpdateTaskAssignee = async (taskId: string, userId: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`,
+                { assigneeId: userId }
+            );
+
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+            await mutate();
+        } catch (error) {
+            console.error("Failed to update task assignee:", error);
+        }
+    };
+
+
+
 
 
     const epicRows = (epicData?.data || []).map((epic: any) => ({
@@ -334,23 +398,50 @@ const EpicPage = () => {
             width: 280,
             render: (assignee: any, record: any) => {
                 if (record.isEpic) return null;
-                if (!assignee || !assignee.fullName) {
-                    return (
-                        <span className="flex items-center gap-2 text-gray-500">
-                            <Avatar icon={<UserOutlined />} />
-                            <span>Unassigned</span>
-                        </span>
-                    );
-                }
+
+                // Tìm người dùng trong danh sách hiện tại
+                const currentUser = people.find((p) => p._id === assignee?._id);
 
                 return (
-                    <span className="flex items-center gap-2">
-                        <Avatar src={assignee.avatar} />
-                        <span>{assignee.fullName}</span>
-                    </span>
+                    <Select
+                        showSearch
+                        placeholder="Assign to..."
+                        value={assignee?._id || "unassigned"}
+                        onChange={(value) =>
+                            handleUpdateTaskAssignee(record.key, value === "unassigned" ? null : value)
+                        }
+                        optionFilterProp="label"
+                        size="small"
+                        style={{ width: 220 }}
+                        dropdownStyle={{ maxHeight: 300 }}
+                        options={[
+                            {
+                                value: "unassigned",
+                                label: (
+                                    <span className="flex items-center gap-2">
+                                        <Avatar icon={<UserOutlined />} size="small" />
+                                        <span>Unassigned</span>
+                                    </span>
+                                ),
+                            },
+                            ...people.map((user: any) => ({
+                                value: user._id,
+                                label: (
+                                    <span className="flex items-center gap-2">
+                                        <Avatar size="small" src={user.avatar} icon={<UserOutlined />} />
+                                        <span>{user.fullName}</span>
+                                    </span>
+                                ),
+                            })),
+                        ]}
+                        // Hiển thị hiện tại
+                        dropdownRender={(menu) => <>{menu}</>}
+                        optionLabelProp="label"
+                    />
                 );
             },
         },
+
         {
             title: "Due date",
             dataIndex: "dueDate",
@@ -375,7 +466,7 @@ const EpicPage = () => {
                         <Select
                             value={editingTaskPriorityValue}
                             onChange={(value) => setEditingTaskPriorityValue(value)}
-                            onBlur={() => handleUpdateTaskPriority(record.key)}
+                            onBlur={() => handleUpdateTaskPriority(record.key, editingTaskPriorityValue)}
                             autoFocus
                             size="small"
                             style={{ width: 100 }}
@@ -385,6 +476,7 @@ const EpicPage = () => {
                                 { value: "HIGH", label: "HIGH" },
                             ]}
                         />
+
                     );
                 }
                 return (
@@ -449,6 +541,15 @@ const EpicPage = () => {
             },
         },
     ];
+
+    useEffect(() => {
+        const fetchPeople = async () => {
+            if (!projectId) return;
+            const res = await getPeopleYouWorkWith(projectId);
+            if (res) setPeople(res);
+        };
+        fetchPeople();
+    }, [projectId]);
 
     return (
         <div className="p-6 bg-white rounded-lg shadow">
