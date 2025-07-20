@@ -1,6 +1,12 @@
 "use client";
 
+import { useAuth } from "@/lib/auth/auth-context";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+import { createWorklog } from "@/lib/services/worklog/worklog.service";
+import { formatDateTime } from "@/lib/utils";
 import { Task } from "@/models/task/task.model";
+import { Worklog, WorklogModel } from "@/models/worklog/worklog";
 import {
   Avatar,
   Button,
@@ -13,19 +19,19 @@ import {
   Row,
   Typography,
 } from "antd";
+
 import dayjs from "dayjs";
 import { useState } from "react";
+import useSWR from "swr";
 
-export const Worklog: React.FC<{ task: Task }> = ({ task }) => {
-  console.log(task);
-  const [workLog, setWorkLog] = useState<null | {
-    user: { name: string; avatar?: string };
-    timeSpent: string;
-    timeRemaining: string;
-    dateStarted: string;
-    description: string;
-  }>(null);
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
+export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
+  const { userInfo } = useAuth();
   const [showWorkLogModal, setShowWorkLogModal] = useState(false);
   const [workLogForm, setWorkLogForm] = useState({
     timeSpent: "",
@@ -33,6 +39,14 @@ export const Worklog: React.FC<{ task: Task }> = ({ task }) => {
     dateStarted: dayjs(),
     description: "",
   });
+
+  const { data: worklogData, mutate: mutateWorklog } = useSWR(
+    task._id ? Endpoints.Worklog.GET_BY_TASK(task._id) : null,
+    fetcher
+  );
+
+  console.log("Worklog data:", worklogData);
+  console.log("User info:", userInfo);
 
   const calculateProgress = () => {
     if (!workLogForm.timeSpent) return 0;
@@ -80,9 +94,40 @@ export const Worklog: React.FC<{ task: Task }> = ({ task }) => {
 
   const hasTimeInput = workLogForm.timeSpent || workLogForm.timeRemaining;
   const progress = calculateProgress();
+
+  const handelSubmit = async () => {
+    try {
+      if (!task._id || !userInfo?.userId) {
+        console.error("Missing task ID or user info");
+        return;
+      }
+
+      const timeSpent = parseInt(workLogForm.timeSpent.replace(/[^0-9]/g, ""));
+      const timeRemaining = workLogForm.timeRemaining
+        ? parseInt(workLogForm.timeRemaining.replace(/[^0-9]/g, ""))
+        : undefined;
+
+      const dataWorklog: WorklogModel = {
+        taskId: task._id,
+        timeSpent,
+        timeRemaining,
+        startDate:
+          workLogForm.dateStarted.toISOString() || new Date().toISOString(),
+        description: workLogForm.description,
+        contributor: userInfo.userId,
+      };
+
+      await createWorklog(dataWorklog);
+      setShowWorkLogModal(false);
+      mutateWorklog();
+    } catch (error) {
+      console.error("Error creating worklog:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      {!workLog ? (
+      {!worklogData?.data || worklogData?.data?.length === 0 ? (
         <>
           <Image
             src="/clock-5.png"
@@ -95,40 +140,82 @@ export const Worklog: React.FC<{ task: Task }> = ({ task }) => {
             and report on the time spent on the work.
           </p>
           <Button type="link" onClick={() => setShowWorkLogModal(true)}>
-            <span className="font-bold text-blue-400 font-charlie">
+            <span className="font-semibold text-blue-400 font-charlie">
               Log time
             </span>
           </Button>
         </>
       ) : (
-        <div className="w-full flex flex-col items-start">
-          <div className="flex items-center mb-2">
-            <Avatar src={workLog.user.avatar}>{workLog.user.name[0]}</Avatar>
-            <span className="ml-2 font-semibold">{workLog.user.name}</span>
-            <span className="ml-2 text-gray-500">
-              logged {workLog.timeSpent} on {workLog.dateStarted}
-            </span>
-          </div>
-          <div className="mb-2">{workLog.description}</div>
-          {/* Nếu muốn cho phép sửa/xóa thì mở comment dưới */}
-          {/* <Button size="small" onClick={() => setShowWorkLogModal(true)}>Edit</Button>
-                  <Button size="small" danger onClick={() => setWorkLog(null)}>Delete</Button> */}
+        <div className="w-full">
+          {worklogData &&
+            worklogData?.data?.map((worklog: Worklog, index: number) => (
+              <div
+                key={worklog._id || index}
+                className="mb-4 p-4 bg-gray-100 rounded-lg"
+              >
+                <div className="flex items-start space-x-3">
+                  {worklog.contributor?.avatar ? (
+                    <Avatar
+                      size={25}
+                      className="bg-blue-500 text-white font-semibold"
+                      src={worklog.contributor?.avatar}
+                    />
+                  ) : (
+                    <Avatar
+                      size={25}
+                      className="bg-blue-500 text-white font-semibold"
+                    >
+                      U
+                    </Avatar>
+                  )}
+                  <div className="flex-1 flex-col">
+                    <div className="flex flex-col items-start space-x-2 mb-1">
+                      <span className="font-semibold text-gray-900">
+                        {worklog.contributor?.fullName || "Unknown User"}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        logged {worklog.timeSpent}h from{" "}
+                        {worklog?.startDate &&
+                          formatDateTime(worklog?.startDate)}
+                      </span>
+                    </div>
+                    <div className="text-gray-800 mb-2 ml-2">
+                      {worklog.description || "No description"}
+                    </div>
+                    <div className="flex items-center space-x-1 text-sm">
+                      <Button
+                        type="text"
+                        size="small"
+                        className="p-1 h-auto text-gray-600 font-semibold hover:text-blue-600"
+                        onClick={() => setShowWorkLogModal(true)}
+                      >
+                        Edit
+                      </Button>
+                      <span className="text-gray-400">•</span>
+                      <Button
+                        type="text"
+                        size="small"
+                        className="p-1 h-auto text-gray-600 font-semibold hover:text-red-600"
+                        onClick={() => {
+                          // TODO: Implement delete worklog functionality
+                          console.log("Delete worklog");
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
         </div>
       )}
+
       <Modal
         title="Time tracking"
         open={showWorkLogModal}
         onCancel={() => setShowWorkLogModal(false)}
-        onOk={() => {
-          setWorkLog({
-            user: { name: "Nguyễn Thị Lan K17 HL", avatar: "" }, // Thay bằng user thực tế nếu có
-            timeSpent: workLogForm.timeSpent,
-            timeRemaining: workLogForm.timeRemaining,
-            dateStarted: workLogForm.dateStarted.format("YYYY-MM-DD HH:mm"),
-            description: workLogForm.description,
-          });
-          setShowWorkLogModal(false);
-        }}
+        onOk={handelSubmit}
         okText="Save"
         cancelText="Cancel"
         okButtonProps={{
@@ -184,7 +271,6 @@ export const Worklog: React.FC<{ task: Task }> = ({ task }) => {
                     timeSpent: e.target.value,
                   }))
                 }
-                placeholder="2h"
                 size="middle"
               />
             </Col>
@@ -208,7 +294,6 @@ export const Worklog: React.FC<{ task: Task }> = ({ task }) => {
                     timeRemaining: e.target.value,
                   }))
                 }
-                placeholder="3h"
                 size="middle"
               />
             </Col>

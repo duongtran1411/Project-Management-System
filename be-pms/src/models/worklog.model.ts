@@ -18,14 +18,15 @@ const worklogSchema = new Schema<IWorklog>(
     contributor: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: [true, "Contributor is required"],
     },
     taskId: {
       type: Schema.Types.ObjectId,
       ref: "Task",
+      required: [true, "TaskId is required"],
     },
     description: {
       type: String,
-      required: [true, "description is required"],
     },
     timeSpent: {
       type: Number,
@@ -34,6 +35,7 @@ const worklogSchema = new Schema<IWorklog>(
     timeRemain: {
       type: Number,
     },
+
     startDate: {
       type: Date,
     },

@@ -4,7 +4,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Task } from "@/models/task/task.model";
 import { Avatar, Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
-import { Worklog } from "../worklog/Worklog";
+import { WorklogComponent } from "../worklog/Worklog";
 import { ChangeDescription } from "./ChangeDescription";
 import { ChangeDueDate } from "./ChangeDueDate";
 import { ChangeName } from "./ChangeName";
@@ -235,7 +235,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
             </>
           )}
           {/* Worklog */}
-          {activeTab === "worklog" && <Worklog task={task} />}
+          {activeTab === "worklog" && <WorklogComponent task={task} />}
         </div>
       </div>
       {/* Thêm các trường khác nếu muốn */}
