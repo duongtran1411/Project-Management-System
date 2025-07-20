@@ -1,18 +1,16 @@
 "use client";
 
-import { Modal, notification } from "antd";
-import { Select } from "antd";
-import { MailOutlined } from "@ant-design/icons";
-import { Tag } from "antd";
-import { useEffect, useState } from "react";
-import { isValidEmail } from "@/lib/utils";
-import useSWR from "swr";
-import { Endpoints } from "@/lib/endpoints";
-import { ProjectRole } from "@/models/projectrole/project.role.model";
-import axiosService from "@/lib/services/axios.service";
-import { InviteMultiple } from "@/types/types";
-import { inviteMemberMultiple } from "@/lib/services/projectContributor/projectContributor.service";
 import { showWarningToast } from "@/components/common/toast/toast";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+import { inviteMemberMultiple } from "@/lib/services/projectContributor/projectContributor.service";
+import { isValidEmail } from "@/lib/utils";
+import { ProjectRole } from "@/models/projectrole/project.role.model";
+import { InviteMultiple } from "@/types/types";
+import { MailOutlined } from "@ant-design/icons";
+import { Modal, notification, Select, Spin, Tag } from "antd";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 
 interface DataType {
   _id: string;
@@ -50,6 +48,7 @@ export const ModalAddMember: React.FC<Props> = ({
   const [inviteEmails, setInviteEmails] = useState<string[]>([]);
   const [inviteEmailError, setInviteEmailError] = useState<string | null>(null);
   const [projectRoleId, setProjectRoleId] = useState<string>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const openNotificationWithIcon = (
     type: NotificationType,
@@ -96,36 +95,48 @@ export const ModalAddMember: React.FC<Props> = ({
         setInviteEmailError("Invalid email(s): " + invalids.join(", "));
         return;
       }
-      const data: InviteMultiple = {
-        emails: inviteEmails,
-        projectId: inviteProject._id,
-        projectRoleId,
-      };
-      const response = await inviteMemberMultiple(data);
-      if (response?.success && response?.success?.length > 0) {
-        response.success.forEach((item: any) => {
-          openNotificationWithIcon(
-            "success",
-            "Thêm thành viên thành công",
-            item.message
-          );
-        });
+      setLoading(true);
+      try {
+        const data: InviteMultiple = {
+          emails: inviteEmails,
+          projectId: inviteProject._id,
+          projectRoleId,
+        };
+        const response = await inviteMemberMultiple(data);
+        if (response?.success && response?.success?.length > 0) {
+          response.success.forEach((item: any) => {
+            openNotificationWithIcon(
+              "success",
+              "Thêm thành viên thành công",
+              item.message
+            );
+          });
+        }
+        if (response?.errors && response?.errors?.length > 0) {
+          response.errors.forEach((item: any) => {
+            openNotificationWithIcon(
+              "error",
+              "Thêm thành viên thất bại",
+              item.error
+            );
+          });
+        }
+        setIsInviteModalOpen(false);
+        setInviteEmails([]);
+        setInviteEmailError(null);
+      } finally {
+        setLoading(false);
       }
-      if (response?.errors && response?.errors?.length > 0) {
-        response.errors.forEach((item: any) => {
-          openNotificationWithIcon(
-            "error",
-            "Thêm thành viên thất bại",
-            item.error
-          );
-        });
-      }
-
-      setIsInviteModalOpen(false);
-      setInviteEmails([]);
-      setInviteEmailError(null);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spin size="large" tip="Loading..." fullscreen />
+      </div>
+    );
+  }
   return (
     <>
       {contextHolder}
@@ -138,6 +149,7 @@ export const ModalAddMember: React.FC<Props> = ({
         onCancel={handleCancelInvite}
         okText="Invite"
         cancelText="Cancel"
+        confirmLoading={loading}
       >
         <Select
           mode="tags"
