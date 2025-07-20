@@ -62,6 +62,8 @@ export class Endpoints {
   };
 
   static readonly ProjectContributor = {
+    GET_CONTRIBUTOR_BY_PROJECT : (projectId: string) =>
+  `project-contributor/project/${projectId}`,
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
@@ -70,6 +72,7 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
+  
   };
 
   static readonly ProjectRole = {

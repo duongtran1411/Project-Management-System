@@ -2,7 +2,7 @@
 
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { getPeopleYouWorkWith } from "@/lib/services/peopleYouWork/peopleYouWork.service";
+import { getContributorsByProjectId } from "@/lib/services/projectContributor/projectContributor.service";
 import {
     CalendarOutlined,
     CommentOutlined,
@@ -34,7 +34,8 @@ const EpicPage = () => {
     const [editingTaskSummaryText, setEditingTaskSummaryText] = useState<string>("");
     const [editingTaskPriorityId, setEditingTaskPriorityId] = useState<string | null>(null);
     const [editingTaskPriorityValue, setEditingTaskPriorityValue] = useState<string>("");
-    const [people, setPeople] = useState([])
+    const [people, setPeople] = useState<Array<{ userId: { _id: string; fullName: string; avatar?: string } }>>([]);
+    const [editingAssigneeTaskId, setEditingAssigneeTaskId] = useState<string | null>(null);
 
 
     const { data: epicData, mutate } = useSWR(
@@ -77,12 +78,28 @@ const EpicPage = () => {
     };
 
 
-    const handleUpdateTaskSummary = async (taskId: string) => {
+    const handleUpdateTaskSummary = async (taskId: string, newText: string) => {
         try {
             await axiosService.getAxiosInstance().patch(
                 `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_NAME(taskId)}`,
-                { name: editingTaskSummaryText }
+                { name: newText }
             );
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+
+            await mutate();
+
             await mutate();
         } catch (error) {
             console.error("Failed to update task summary:", error);
@@ -169,7 +186,7 @@ const EpicPage = () => {
         }
     };
 
-    const handleUpdateTaskAssignee = async (taskId: string, userId: string) => {
+    const handleUpdateTaskAssignee = async (taskId: string, userId: string | null) => {
         try {
             await axiosService.getAxiosInstance().patch(
                 `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`,
@@ -184,14 +201,27 @@ const EpicPage = () => {
                 const taskRes = await fetcher(
                     `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
                 );
+
+                // Map lại assignee từ people nếu cần
+                const updatedTasks = taskRes.data.map((task: any) => {
+                    const matchedUser = people.find(p => p.userId._id === task.assignee);
+                    return {
+                        ...task,
+                        assignee: matchedUser ? matchedUser.userId : null,
+                    };
+                });
+
                 setTaskMap((prev) => ({
                     ...prev,
-                    [epicId]: taskRes.data,
+                    [epicId]: updatedTasks,
                 }));
             }
+
             await mutate();
         } catch (error) {
             console.error("Failed to update task assignee:", error);
+        } finally {
+            setEditingAssigneeTaskId(null);
         }
     };
 
@@ -289,14 +319,14 @@ const EpicPage = () => {
                 if (editingTaskSummaryId === record.key) {
                     return (
                         <Input
-                            value={editingTaskSummaryText}
-                            onChange={(e) => setEditingTaskSummaryText(e.target.value)}
-                            onPressEnter={() => handleUpdateTaskSummary(record.key)}
-                            onBlur={() => handleUpdateTaskSummary(record.key)}
+                            defaultValue={text}
+                            onPressEnter={(e) => handleUpdateTaskSummary(record.key, e.currentTarget.value)}
+                            onBlur={(e) => handleUpdateTaskSummary(record.key, e.currentTarget.value)}
                             autoFocus
                             size="small"
                             style={{ width: "100%" }}
                         />
+
                     );
                 }
                 return (
@@ -381,16 +411,16 @@ const EpicPage = () => {
             width: 120,
         },
 
-        {
-            title: "Comments",
-            key: "comments",
-            render: () => (
-                <span className="flex items-center gap-1 text-gray-500">
-                    <CommentOutlined /> Add comment
-                </span>
-            ),
-            width: 150,
-        },
+        // {
+        //     title: "Comments",
+        //     key: "comments",
+        //     render: () => (
+        //         <span className="flex items-center gap-1 text-gray-500">
+        //             <CommentOutlined /> Add comment
+        //         </span>
+        //     ),
+        //     width: 150,
+        // },
         {
             title: "Assignee",
             dataIndex: "assignee",
@@ -399,47 +429,68 @@ const EpicPage = () => {
             render: (assignee: any, record: any) => {
                 if (record.isEpic) return null;
 
-                // Tìm người dùng trong danh sách hiện tại
-                const currentUser = people.find((p) => p._id === assignee?._id);
+                if (editingAssigneeTaskId === record.key) {
+                    return (
+                        <Select
+                            placeholder="Assign to..."
+                            value={assignee?._id || "unassigned"}
+                            onChange={(value) => {
+                                handleUpdateTaskAssignee(record.key, value === "unassigned" ? null : value);
+                                setEditingAssigneeTaskId(null);
+                            }}
+                            onBlur={() => setEditingAssigneeTaskId(null)}
+                            size="small"
+                            style={{ width: 220 }}
+                            options={[
+                                {
+                                    value: "unassigned",
+                                    label: (
+                                        <span className="flex items-center gap-2">
+                                            <Avatar icon={<UserOutlined />} size="small" />
+                                            <span>Unassigned</span>
+                                        </span>
+                                    ),
+                                },
+                                ...people.map((user: any) => ({
+                                    value: user.userId._id,
+                                    label: (
+                                        <span className="flex items-center gap-2">
+                                            <Avatar size="small" src={user.userId.avatar} />
+                                            <span>{user.userId.fullName}</span>
+                                        </span>
+                                    ),
+                                })),
+                            ]}
+                        />
+
+                    );
+                }
+
+                if (!assignee || !assignee.fullName) {
+                    return (
+                        <span
+                            className="flex items-center gap-2 text-gray-500"
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setEditingAssigneeTaskId(record.key)}
+                        >
+                            <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#e0e0e0" }} />
+                            <span>Unassigned</span>
+                        </span>
+                    );
+                }
 
                 return (
-                    <Select
-                        showSearch
-                        placeholder="Assign to..."
-                        value={assignee?._id || "unassigned"}
-                        onChange={(value) =>
-                            handleUpdateTaskAssignee(record.key, value === "unassigned" ? null : value)
-                        }
-                        optionFilterProp="label"
-                        size="small"
-                        style={{ width: 220 }}
-                        dropdownStyle={{ maxHeight: 300 }}
-                        options={[
-                            {
-                                value: "unassigned",
-                                label: (
-                                    <span className="flex items-center gap-2">
-                                        <Avatar icon={<UserOutlined />} size="small" />
-                                        <span>Unassigned</span>
-                                    </span>
-                                ),
-                            },
-                            ...people.map((user: any) => ({
-                                value: user._id,
-                                label: (
-                                    <span className="flex items-center gap-2">
-                                        <Avatar size="small" src={user.avatar} icon={<UserOutlined />} />
-                                        <span>{user.fullName}</span>
-                                    </span>
-                                ),
-                            })),
-                        ]}
-                        // Hiển thị hiện tại
-                        dropdownRender={(menu) => <>{menu}</>}
-                        optionLabelProp="label"
-                    />
+                    <span
+                        className="flex items-center gap-2"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setEditingAssigneeTaskId(record.key)}
+                    >
+                        <Avatar src={assignee.avatar} size={24} />
+                        <span>{assignee.fullName}</span>
+                    </span>
                 );
-            },
+            }
+            ,
         },
 
         {
@@ -545,11 +596,14 @@ const EpicPage = () => {
     useEffect(() => {
         const fetchPeople = async () => {
             if (!projectId) return;
-            const res = await getPeopleYouWorkWith(projectId);
-            if (res) setPeople(res);
+            const res = await getContributorsByProjectId(projectId);
+            if (res?.length) {
+                setPeople(res);
+            }
         };
         fetchPeople();
     }, [projectId]);
+
 
     return (
         <div className="p-6 bg-white rounded-lg shadow">
@@ -566,11 +620,11 @@ const EpicPage = () => {
                 rowKey="key"
             />
 
-            <div className="flex items-center mt-2">
+            {/* <div className="flex items-center mt-2">
                 <Button type="dashed" icon={<PlusOutlined />} className="flex items-center justify-center w-full">
                     Create
                 </Button>
-            </div>
+            </div> */}
         </div>
     );
 };
