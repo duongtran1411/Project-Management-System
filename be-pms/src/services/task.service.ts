@@ -27,11 +27,8 @@ export class TaskService {
   }
 
   private getTaskUrl(projectId: any, taskId: any): string {
-    const projectIdStr = projectId?.toString();
-    const taskIdStr = taskId?.toString();
-    if (!projectIdStr || !taskIdStr) return "";
-    console.log(projectIdStr, "ádsadasdas", taskIdStr);
-    return `http://localhost:3000/workspace/project-management/${projectIdStr}/detail-task/${taskIdStr}`;
+    if (!projectId || !taskId) return "";
+    return `http://localhost:3000/workspace/project-management/${projectId}/detail-task/${taskId}`;
   }
 
   private async emitNotificationEvent(notification: any, recipientId: string) {
