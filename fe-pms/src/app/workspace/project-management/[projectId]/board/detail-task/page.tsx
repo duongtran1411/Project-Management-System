@@ -194,9 +194,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     setIsEditingDescription(false);
     if (task._id) {
       const response = await updateDescriptionTask(task._id, description);
-      if (response.success) {
-        showSuccessToast(response.message);
-      }
     }
   };
 
@@ -209,9 +206,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     setIsEditingName(false);
     if (task._id) {
       const response = await updateTaskName(task._id, name);
-      if (response.success) {
-        showSuccessToast(response.message);
-      }
     }
   };
 
@@ -259,7 +253,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     try {
       const response = await updateAssigneeTask(taskId, assignee);
       if (response.success) {
-        showSuccessToast(response.message);
         setAssignee(response.data.assignee);
       }
     } catch (error: any) {
@@ -274,7 +267,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     try {
       const response = await updateEpicTask(task._id ? task._id : "", epicId);
       if (response.success) {
-        showSuccessToast(response.message);
         setEpic(response.data.epic);
       }
     } catch (error: any) {
