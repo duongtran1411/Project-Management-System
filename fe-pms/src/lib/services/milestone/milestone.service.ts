@@ -57,6 +57,19 @@ export const createMilestone = async (milestone: CreateMilestone) => {
   }
 };
 
+export const updateMileStoneStatusDone = async (milestonesId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(`${Endpoints.Milestone.UPDATE_STATUS(milestonesId)}`, { status: 'DONE' });
+
+    return response.data
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(error.response.data.message || "Create to delete sprint!");
+    }
+  }
+}
 export const updateStatusMilestone = async (
   milestoneId: string,
   status: string

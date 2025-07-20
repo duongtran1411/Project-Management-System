@@ -25,6 +25,27 @@ export const createTask = async (task: TaskModel) => {
   }
 };
 
+export const createTaskBoard = async (taskName: string, milestones: string, projectId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Task.CREATE_TASK}`, {
+        name: taskName,
+        milestones: milestones,
+        projectId: projectId
+      });
+
+    if (response.status === 201) {
+      showSuccessToast("Create new task successfully!");
+      return response.data;
+    }
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(error.response.data.message || "Fail to create new task!");
+    }
+  }
+}
+
 export const getTasksByProject = async (
   projectId: string
 ): Promise<TaskModel[] | null> => {
@@ -224,6 +245,20 @@ export const deleteTaskMultiple = async (taskIds: string[]) => {
   }
 };
 
+export const deleteOneTask = async (taskId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .delete(`${Endpoints.Task.DELETE_TASK(taskId)}`);
+
+    return response.data
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Lỗi khi xóa task!";
+    showErrorToast(message);
+    throw error;
+  }
+}
+
 export const updateTaskAssignee = async (
   taskId: string,
   assignee: string | null
@@ -327,6 +362,22 @@ export const updateTaskReporter = async (taskId: string, reporter: string) => {
   }
 };
 
+export const updateReporterForTask = async (taskId: string, reporter: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(Endpoints.Task.UPDATE_REPORTER(taskId), { reporter });
+
+    return response.data
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
+
+
 export const updateTaskName = async (taskId: string, name: string) => {
   try {
     const response = await axiosService
@@ -346,3 +397,35 @@ export const updateTaskName = async (taskId: string, name: string) => {
     throw error;
   }
 };
+
+export const getTaskNotDone = async (milestonesId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(`${Endpoints.Task.COUNT_NUMBER_TASK_NOT_DONE(milestonesId)}`);
+
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
+export const updateMileStoneForTasks = async (milestoneId: string, milestoneIdMove: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(`${Endpoints.Task.UPDATE_MILESTONES_FOR_TASK(milestoneId)}`, {
+        milestonesIdMove: milestoneIdMove
+      });
+
+    return response.data
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
+    showErrorToast(message);
+    throw error;
+  }
+}

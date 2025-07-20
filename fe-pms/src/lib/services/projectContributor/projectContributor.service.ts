@@ -69,3 +69,22 @@ export const confirmInvite = async (token: string) => {
   }
   return null;
 };
+
+
+
+export const getContributorsByProjectId = async (projectId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.ProjectContributor.GET_CONTRIBUTOR_BY_PROJECT(projectId));
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      "Failed to fetch contributors of the project.";
+    showErrorToast(message);
+    return null;
+  }
+};
+

@@ -8,7 +8,7 @@ const page = () => {
   const params = useParams();
   const projectId = params.projectId;
   useEffect(() => {
-    router.push(`${projectId}/board`);
+    // router.push(`${projectId}/board`);
   }, [router]);
   return null;
 }

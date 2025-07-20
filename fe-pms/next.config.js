@@ -6,15 +6,10 @@ const nextConfig = {
     // Performance optimizations
     experimental: {
         optimizePackageImports: ['antd', '@ant-design/icons', 'lucide-react'],
-        // Tăng tốc compile
-        turbo: {
-            rules: {
-                '*.svg': {
-                    loaders: ['@svgr/webpack'],
-                    as: '*.js',
-                },
-            },
-        },
+        // Optimize CSS loading
+        optimizeCss: true,
+        // Reduce bundle size
+        optimizePackageImports: ['antd', '@ant-design/icons'],
     },
 
     // Image optimization
@@ -60,6 +55,29 @@ const nextConfig = {
     // Tối ưu ESLint - bỏ qua trong development
     eslint: {
         ignoreDuringBuilds: true,
+    },
+
+    // Headers for better caching
+    async headers() {
+        return [
+            {
+                source: '/(.*)',
+                headers: [
+                    {
+                        key: 'X-Content-Type-Options',
+                        value: 'nosniff',
+                    },
+                    {
+                        key: 'X-Frame-Options',
+                        value: 'DENY',
+                    },
+                    {
+                        key: 'X-XSS-Protection',
+                        value: '1; mode=block',
+                    },
+                ],
+            },
+        ];
     },
 
 };

@@ -1,5 +1,6 @@
 import { Assignee } from "../assignee/assignee.model";
 import { Epic } from "../epic/epic.model";
+import { Reporter } from "../reporter/reporter.model";
 
 export interface Task {
   _id?: string;
@@ -9,12 +10,7 @@ export interface Task {
   priority?: string;
   assignee?: Assignee;
   epic?: Epic;
-  reporter?: {
-    _id: string;
-    email?: string;
-    avatar?: string;
-    fullName?: string;
-  };
+  reporter?: Reporter
   startDate?: string;
   dueDate?: string;
   milestones?: {

@@ -30,6 +30,7 @@ export class Endpoints {
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
     DELETE_TASKS: "task/bulk-delete",
+    DELETE_TASK:(taskId:string) => `task/${taskId}`,
     GET_BY_ASSIGNEE: (userId: string) => `task/assignee/${userId}`,
     GET_BY_ID: (taskId: string) => `task/${taskId}`,
     GET_BY_EPIC: (epicId: string) => `task/epic/${epicId}`,
@@ -42,12 +43,17 @@ export class Endpoints {
     UPDATE_MILESTONE: (taskId: string) => `task/${taskId}/milestone`,
     UPDATE_NAME: (taskId: string) => `task/${taskId}/name`,
     UPDATE_DESCRIPTION: (taskId: string) => `task/${taskId}/description`,
+    COUNT_NUMBER_TASK_NOT_DONE: (milestonesId: string) => `task/count/${milestonesId}`,
+    GET_TASK_BOARD_BY_PROJECT_ID: (projectId: string) => `task/board/${projectId}`,
+    UPDATE_MILESTONES_FOR_TASK: (milestoneId: string) => `/task/updatemilestones/task/${milestoneId}`
   };
 
   static readonly Milestone = {
     MILESTONE: "milestone",
+    UPDATE_STATUS: (milestoneId:string) => `milestone/${milestoneId}/status`,
     GET_BY_PROJECT: (projectId: string) => `milestone/project/${projectId}`,
-    UPDATE_STATUS: (milestoneId: string) => `milestone/${milestoneId}/status`,
+    GET_BY_ACTIVE: (projectId: string) => `milestone/active/project/${projectId}`,
+    GET_BY_NOT_START: (projectId: string) => `milestone/notstart/project/${projectId}`
   };
 
   static readonly Workspace = {
@@ -62,6 +68,8 @@ export class Endpoints {
   };
 
   static readonly ProjectContributor = {
+    GET_CONTRIBUTOR_BY_PROJECT : (projectId: string) =>
+  `project-contributor/project/${projectId}`,
     GET_PROJECTS_BY_USER: (userId: string) =>
       `project-contributor/user/${userId}/projects`,
     CREATE_PROJECT_CONTRIBUTOR: "project-contributor",
@@ -70,6 +78,7 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
+  
   };
 
   static readonly ProjectRole = {

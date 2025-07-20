@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import taskService from "../services/task.service";
 import { Server } from "socket.io";
@@ -243,6 +243,33 @@ export class TaskController {
       const { milestoneId } = req.params;
       const tasks = await taskService.getTasksByMilestone(milestoneId);
 
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách task theo milestone thành công",
+        data: tasks,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get tasks by milestone error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lấy danh sách task theo milestone thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  getTaskByProjectId = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const tasks = await taskService.getTasksByProjectId(projectId);
+      if (!tasks) {
+        res.status(400).json({
+          success: true,
+          message: "Không thể lấy danh sách task",
+          statusCode: 400
+        });
+      }
       res.status(200).json({
         success: true,
         message: "Lấy danh sách task theo milestone thành công",
@@ -725,6 +752,75 @@ export class TaskController {
       res.status(400).json({
         success: false,
         message: error.message || "Cập nhật labels task thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  countTaskNotDoneByMileStone = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { milestoneId } = req.params
+      if (!milestoneId) res.status(400).json({
+        status: 400,
+        success: false,
+        message: `can not find task by milestone id ${milestoneId}`
+      })
+      const numberTask = await taskService.taskNotDoneByMileStone(milestoneId);
+
+      res.status(200).json({
+        status: 200,
+        success: true,
+        number: numberTask
+      })
+    } catch (error: any) {
+      console.error("Update task labels error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật labels task thất bại",
+        statusCode: 400,
+      });
+    }
+  }
+
+
+  updateMileStonesForTask = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { milestoneId } = req.params
+      const { milestonesIdMove } = req.body;
+      const user = req.user!;
+
+      if (!milestoneId && !milestonesIdMove) {
+        res.status(400).json({
+          success: false,
+          message: "Milestone là bắt buộc",
+          statusCode: 400,
+        });
+      }
+
+      const task = await taskService.updateMileStonesForTasks(milestoneId, milestonesIdMove, user);
+
+      if (!task) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy task",
+          statusCode: 404,
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật milestone task thành công",
+        data: task,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Update task milestone error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Cập nhật milestone task thất bại",
         statusCode: 400,
       });
     }
