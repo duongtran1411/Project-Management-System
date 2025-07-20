@@ -181,6 +181,56 @@ router.post(
 
 /**
  * @openapi
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refresh_token:
+ *                 type: string
+ *                 example: "refresh_token_here"
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *       401:
+ *         description: Invalid refresh token
+ */
+router.post("/refresh", authController.refreshToken);
+
+/**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     summary: Logout and revoke refresh token
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token_id:
+ *                 type: string
+ *                 example: "token_id_to_revoke"
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       500:
+ *         description: Logout failed
+ */
+router.post("/logout", authController.logout);
+
+/**
+ * @openapi
  * /auth/change-password:
  *   post:
  *     summary: Đổi mật khẩu

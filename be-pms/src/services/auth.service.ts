@@ -1,38 +1,37 @@
+import crypto from "crypto";
+import { PasswordReset, Role } from "../models";
 import User, { IUser } from "../models/user.model";
+import { sendOTPEmail, sendPasswordEmail } from "../utils/email.util";
 import { verifyGoogleIdToken } from "../utils/google-auth.util";
 import {
-  sendForgotPasswordEmail,
-  sendPasswordEmail,
-  sendOTPEmail,
-} from "../utils/email.util";
-import { generateRandomPassword } from "../utils/password.util";
-import { generateRefreshToken, generateToken } from "../utils/jwt.util";
-import { Role, PasswordReset } from "../models";
+  generateRefreshToken,
+  generateToken,
+  verifyToken,
+} from "../utils/jwt.util";
 import {
   generateOTP,
   generateResetToken,
   hashOTP,
   verifyOTP,
 } from "../utils/password-reset.util";
-import roleService from "./role.service";
+import { generateRandomPassword } from "../utils/password.util";
+import refreshTokenService from "./refresh-token.service";
 
 interface LoginResponse {
   user: Partial<IUser>;
   access_token: string;
   refresh_token: string;
+  token_id: string;
 }
 
 export class AuthService {
   async loginWithGoogle(idToken: string): Promise<LoginResponse> {
-    // 1. Xác thực token với Google
     const googleUser = await verifyGoogleIdToken(idToken);
-    // 2. Tìm user theo email
     let user = await User.findOne({ email: googleUser.email });
     let roleDefault = await Role.findOne({ name: { $eq: "USER" } });
     let isNewUser = false;
     let tempPassword = "";
     if (!user) {
-      // 3. Nếu chưa có user, tạo user mới với mật khẩu random
       tempPassword = generateRandomPassword();
       user = await User.create({
         fullName: googleUser.name,
@@ -41,21 +40,28 @@ export class AuthService {
         avatar: googleUser.picture,
         status: "ACTIVE",
         verified: true,
-        role: roleDefault?._id, // Chỉ lưu ObjectId của role
+        role: roleDefault?._id,
       });
       isNewUser = true;
-      // 4. Chỉ gửi email mật khẩu khi tạo user mới lần đầu
       await sendPasswordEmail(user.email, user.fullName, tempPassword);
     }
     if (!user.isActive) {
       throw new Error("Account is deactivated");
     }
-    // 5. Cập nhật lastLogin
     user.lastLogin = new Date();
     await user.save();
-    // 6. Populate role để đảm bảo có đầy đủ thông tin role
     user = await User.findById(user._id).populate("role");
-    // 7. Trả về JWT
+
+    const tokenId = crypto.randomBytes(32).toString("hex");
+
+    if (user) {
+      await refreshTokenService.saveRefreshToken(
+        (user._id as any).toString(),
+        tokenId,
+        90 * 24 * 60 * 60 // 90 days in seconds
+      );
+    }
+
     const access_token = generateToken(user as IUser);
     const refresh_token = generateRefreshToken(user as IUser);
     const { password: _, ...userResponse } = user?.toObject() || {};
@@ -63,6 +69,7 @@ export class AuthService {
       user: userResponse,
       access_token,
       refresh_token,
+      token_id: tokenId,
     };
   }
   async loginWithEmail(
@@ -94,8 +101,19 @@ export class AuthService {
     user.failedLoginAttempts = 0;
     user.lastLogin = new Date();
     await user.save();
-    // Populate role để đảm bảo có đầy đủ thông tin role
+
     const populatedUser = await User.findById(user._id).populate("role");
+
+    const tokenId = crypto.randomBytes(32).toString("hex");
+
+    if (populatedUser) {
+      await refreshTokenService.saveRefreshToken(
+        (populatedUser._id as any).toString(),
+        tokenId,
+        90 * 24 * 60 * 60 // 90 days in seconds
+      );
+    }
+
     const access_token = generateToken(populatedUser as IUser);
     const refresh_token = generateRefreshToken(populatedUser as IUser);
     const { password: _, ...userResponse } = populatedUser?.toObject() || {};
@@ -103,6 +121,7 @@ export class AuthService {
       user: userResponse,
       access_token,
       refresh_token,
+      token_id: tokenId,
     };
   }
 
@@ -144,6 +163,19 @@ export class AuthService {
 
     // Populate role để đảm bảo có đầy đủ thông tin role
     const populatedUser = await User.findById(user._id).populate("role");
+
+    // Generate token ID for refresh token
+    const tokenId = crypto.randomBytes(32).toString("hex");
+
+    // Save refresh token to Redis/memory
+    if (populatedUser) {
+      await refreshTokenService.saveRefreshToken(
+        (populatedUser._id as any).toString(),
+        tokenId,
+        90 * 24 * 60 * 60 // 90 days in seconds
+      );
+    }
+
     const access_token = generateToken(populatedUser as IUser);
     const refresh_token = generateRefreshToken(populatedUser as IUser);
     const { password: _, ...userResponse } = populatedUser?.toObject() || {};
@@ -151,6 +183,7 @@ export class AuthService {
       user: userResponse,
       access_token,
       refresh_token,
+      token_id: tokenId, // Trả về token_id để client sử dụng khi logout
     };
   }
 
@@ -239,6 +272,62 @@ export class AuthService {
     if (!isMatch) throw new Error("Mật khẩu cũ không đúng");
     user.password = newPassword;
     await user.save();
+  }
+
+  async refreshToken(refresh_token: string): Promise<{
+    access_token: string;
+    refresh_token: string;
+    token_id: string;
+  }> {
+    try {
+      const decoded = verifyToken(refresh_token);
+
+      const user = await User.findById(decoded.userId).populate("role");
+      if (!user || user.status === "DELETED") {
+        throw new Error("User not found or deleted");
+      }
+
+      if (!user.isActive) {
+        throw new Error("Account is deactivated");
+      }
+
+      const tokenValidation = await refreshTokenService.validateRefreshToken(
+        refresh_token
+      );
+      if (tokenValidation === null) {
+        console.log("Refresh token not found in Redis, but JWT is valid");
+      }
+
+      const newTokenId = crypto.randomBytes(32).toString("hex");
+
+      await refreshTokenService.saveRefreshToken(
+        decoded.userId,
+        newTokenId,
+        90 * 24 * 60 * 60
+      );
+
+      const newAccessToken = generateToken(user as IUser);
+      const newRefreshToken = generateRefreshToken(user as IUser);
+
+      return {
+        access_token: newAccessToken,
+        refresh_token: newRefreshToken,
+        token_id: newTokenId,
+      };
+    } catch (error) {
+      throw new Error("Invalid refresh token");
+    }
+  }
+
+  async revokeRefreshToken(tokenId: string): Promise<void> {
+    try {
+      // Revoke refresh token in Redis using tokenId
+      await refreshTokenService.revokeRefreshToken(tokenId);
+      console.log(`Refresh token revoked: ${tokenId}`);
+    } catch (error) {
+      console.error("Error revoking refresh token:", error);
+      throw error;
+    }
   }
 }
 

@@ -17,11 +17,16 @@ export class Endpoints {
 
   static readonly Epic = {
     GET_BY_PROJECT: (projectId: string) => `epic/project/${projectId}`,
+    GET_BY_ID: (epicId: string) => `epic/${epicId}`,
+    CREATE_EPIC: "epic",
     UPDATE_EPIC: (epicId: string) => `epic/${epicId}`,
+    DELETE_EPIC: (epicId: string) => `epic/${epicId}`,
+
   };
 
   static readonly Task = {
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
+    GET_BY_MILESTONE: (milestoneId: string) => `task/milestone/${milestoneId}`,
     CREATE_TASK: "task",
     UPDATE_TASK: (taskId: string) => `task/${taskId}`,
     DELETE_TASKS: "task/bulk-delete",
@@ -52,6 +57,8 @@ export class Endpoints {
   static readonly Project = {
     CREATE_PROJECT: "project",
     GET_BY_ID: (projectId: string) => `project/${projectId}`,
+    UPDATE_PROJECT: (projectId: string) => `project/${projectId}`,
+    DELETE_PROJECT: (projectId: string) => `project/${projectId}`,
   };
 
   static readonly ProjectContributor = {

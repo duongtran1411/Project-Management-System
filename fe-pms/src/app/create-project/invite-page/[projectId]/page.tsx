@@ -30,6 +30,8 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
+type NotificationType = "success" | "info" | "warning" | "error";
+
 export default function InvitePage() {
   const [api, notificationHolder] = notification.useNotification();
   const [messageApi, messageHoler] = message.useMessage();
@@ -63,6 +65,17 @@ export default function InvitePage() {
       message: "Hub project sucessfully created",
       description: "Just a few more steps to get it connected.",
       placement,
+    });
+  };
+
+  const openNotificationWithIcon = (
+    type: NotificationType,
+    title: string,
+    description: string
+  ) => {
+    api[type]({
+      message: title,
+      description: description,
     });
   };
 
@@ -104,7 +117,25 @@ export default function InvitePage() {
         projectId,
         projectRoleId,
       };
-      await inviteMemberMultiple(data);
+      const response = await inviteMemberMultiple(data);
+      if (response?.success && response?.success?.length > 0) {
+        response.success.forEach((item: any) => {
+          openNotificationWithIcon(
+            "success",
+            "Thêm thành viên thành công",
+            item.message
+          );
+        });
+      }
+      if (response?.errors && response?.errors?.length > 0) {
+        response.errors.forEach((item: any) => {
+          openNotificationWithIcon(
+            "error",
+            "Thêm thành viên thất bại",
+            item.error
+          );
+        });
+      }
       router.push(`/workspace/project-management/${projectId}`);
     } catch (e) {
       console.log(e);

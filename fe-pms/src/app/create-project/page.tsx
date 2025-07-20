@@ -41,6 +41,7 @@ export default function ProjectForm() {
         name: values.name,
         description: values.description,
         projectType: "SOFTWARE",
+        icon: "/project.png",
         projectLead: userId || "",
       };
 
@@ -129,6 +130,7 @@ export default function ProjectForm() {
                     width={60}
                     src="/scrum.png"
                     className=" object-cover"
+                    alt="Scrum"
                   ></Image>
                 </div>
                 <div className="py-[8px] px-[24px]">
@@ -153,6 +155,7 @@ export default function ProjectForm() {
                     width={60}
                     src="/networking.png"
                     className=" object-cover"
+                    alt="Team-managed"
                   ></Image>
                 </div>
 

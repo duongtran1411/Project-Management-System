@@ -53,7 +53,6 @@ a {
   }
 }
 
-
 /* Login page specific styles */
 .login-container {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -95,7 +94,7 @@ a {
 }
 
 .login-branding::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -409,11 +408,11 @@ a {
   margin-top: 1rem;
 }
 
-.google-login-container>div {
+.google-login-container > div {
   width: 100% !important;
 }
 
-.google-login-container>div>div {
+.google-login-container > div > div {
   width: 100% !important;
   height: 48px !important;
   border-radius: 12px !important;
@@ -421,7 +420,7 @@ a {
   transition: all 0.3s ease;
 }
 
-.google-login-container>div>div:hover {
+.google-login-container > div > div:hover {
   border-color: #667eea !important;
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1) !important;
 }
@@ -604,7 +603,7 @@ a {
     font-size: 14px !important;
   }
 
-  .google-login-container>div>div {
+  .google-login-container > div > div {
     height: 45px !important;
   }
 }
@@ -653,8 +652,13 @@ a {
   color: #ff4d4f !important;
 }
 
-.header-workspace-dropdown .ant-dropdown .ant-dropdown-menu-item-danger .anticon,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item-danger .anticon {
+.header-workspace-dropdown
+  .ant-dropdown
+  .ant-dropdown-menu-item-danger
+  .anticon,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item-danger
+  .anticon {
   color: #ff4d4f !important;
 }
 
@@ -665,19 +669,27 @@ a {
 }
 
 /* Force override for danger items in header workspace dropdowns */
-.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger {
+.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger {
   color: #ff4d4f !important;
 }
 
-.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover {
+.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover {
   background-color: #fff2f0 !important;
   color: #ff4d4f !important;
 }
 
-.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger .anticon,
-.ant-dropdown.header-workspace-dropdown .ant-dropdown-menu-item.ant-dropdown-menu-item-danger .anticon {
+.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger
+  .anticon,
+.ant-dropdown.header-workspace-dropdown
+  .ant-dropdown-menu-item.ant-dropdown-menu-item-danger
+  .anticon {
   color: #ff4d4f !important;
 }
 
@@ -797,7 +809,8 @@ a {
 /* Board Epic Dropdown styles */
 .board-epic-dropdown .ant-dropdown-menu {
   border-radius: 6px !important;
-  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid #f0f0f0 !important;
   padding: 4px 0 !important;
   min-width: 120px !important;
@@ -826,7 +839,8 @@ a {
 /* Board Assignee Dropdown styles */
 .board-assignee-dropdown .ant-dropdown-menu {
   border-radius: 6px !important;
-  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
   border: 1px solid #f0f0f0 !important;
   padding: 4px 0 !important;
   min-width: 200px !important;
@@ -852,4 +866,4 @@ a {
   color: inherit !important;
 }
 
-/* Priority Dropdown specific styles */
+/* React-big-calendar */

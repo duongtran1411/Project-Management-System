@@ -1,10 +1,13 @@
 "use client";
 
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 import { createTask } from "@/lib/services/task/task.service";
 import { Milestone } from "@/models/milestone/milestone.model";
 import { FieldType } from "@/types/types";
 import { Form, FormProps, Input, Modal } from "antd";
 import TextArea from "antd/es/input/TextArea";
+import useSWR from "swr";
 
 interface Props {
   projectId: string;
@@ -13,6 +16,12 @@ interface Props {
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   mutateTask: () => void;
 }
+
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 export const ModalCreateTask: React.FC<Props> = ({
   projectId,
@@ -24,6 +33,11 @@ export const ModalCreateTask: React.FC<Props> = ({
 }) => {
   const [form] = Form.useForm<FieldType>();
 
+  const { data: projectData } = useSWR(
+    `${Endpoints.Project.GET_BY_ID(projectId)}`,
+    fetcher
+  );
+
   const handleOk = () => {
     form.submit();
   };
@@ -33,19 +47,28 @@ export const ModalCreateTask: React.FC<Props> = ({
   };
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-    const data = {
-      name: values.taskName!,
-      description: values.taskDescription!,
-      projectId,
-      milestones: selectedMilestone._id,
-    };
+    const defaultAssign = projectData?.data?.defaultAssign;
+    let data;
+    if (defaultAssign) {
+      data = {
+        name: values.taskName!,
+        description: values.taskDescription!,
+        projectId,
+        milestones: selectedMilestone._id,
+        assignee: defaultAssign,
+      };
+    } else {
+      data = {
+        name: values.taskName!,
+        description: values.taskDescription!,
+        projectId,
+        milestones: selectedMilestone._id,
+      };
+    }
 
     await createTask(data);
-
-    // gọi mutate để refresh lại task list
     await mutateTask();
     setIsModalOpen(false);
-    // setSelectedMilestone(null);
     form.resetFields();
   };
 

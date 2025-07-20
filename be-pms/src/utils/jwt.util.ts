@@ -9,7 +9,7 @@ interface TokenPayload {
   avatar?: string;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const generateToken = (user: IUser): string => {
   let roleName = "";
