@@ -89,7 +89,29 @@ export class MilestoneService {
   }
 
   async getMilestonesByProject(projectId: string): Promise<IMilestone[]> {
-    const milestones = await Milestone.find({ projectId })
+    const milestones = await Milestone.find({ projectId})
+      .populate([
+        { path: "createdBy", select: "fullName email" },
+        { path: "updatedBy", select: "fullName email" },
+      ])
+      .sort({ createdAt: -1 });
+
+    return milestones;
+  }
+
+  async getMilestonesNotStart(projectId: string): Promise<IMilestone[]> {
+    const milestones = await Milestone.find({ projectId, status: 'NOT_START' })
+      .populate([
+        { path: "createdBy", select: "fullName email" },
+        { path: "updatedBy", select: "fullName email" },
+      ])
+      .sort({ createdAt: -1 });
+
+    return milestones;
+  }
+
+  async getMilestonesActive(projectId: string): Promise<IMilestone[]> {
+    const milestones = await Milestone.find({ projectId, status: 'ACTIVE' })
       .populate([
         { path: "createdBy", select: "fullName email" },
         { path: "updatedBy", select: "fullName email" },
@@ -184,6 +206,8 @@ export class MilestoneService {
 
     return milestone
   }
+
+  
 }
 
 export default new MilestoneService();

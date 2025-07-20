@@ -200,6 +200,59 @@ export class MilestoneController {
     }
   };
 
+  getMilestonesActiveByProject = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const milestones = await milestoneService.getMilestonesActive(
+        projectId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách milestone theo dự án thành công",
+        data: milestones,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get milestones by project error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lấy danh sách milestone theo dự án thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  getMilestonesNotStartByProject = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const milestones = await milestoneService.getMilestonesNotStart(
+        projectId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách milestone theo dự án thành công",
+        data: milestones,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get milestones by project error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lấy danh sách milestone theo dự án thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+
   getMilestonesByDateRange = async (
     req: Request,
     res: Response
@@ -293,9 +346,9 @@ export class MilestoneController {
   updateStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params
-      const {status} = req.body
+      const { status } = req.body
       const user = req.user
-      const milestone = await milestoneService.updateStatusMilestones(id, status,user)
+      const milestone = await milestoneService.updateStatusMilestones(id, status, user)
 
       if (!milestone) {
         res.status(400).json({
