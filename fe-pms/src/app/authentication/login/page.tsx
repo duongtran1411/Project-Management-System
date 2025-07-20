@@ -13,6 +13,7 @@ import { Image } from "antd";
 import Spinner from "@/components/common/spinner/spin";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth/auth-context";
+import PageWrapper from "@/components/common/spinner/PageWrapper";
 
 const { Title, Text } = Typography;
 
@@ -132,126 +133,130 @@ export default function Page() {
     return <Spinner />;
   }
   return (
-    <div className="login-page-container">
-      {/* Left Side - Branding */}
-      <div className="login-branding">
-        <div className="branding-content">
-          <div className="logo-container">
-            <Link href="/" className="logo-link">
-              <div className="logo-background">
-                <Image
-                  width={180}
-                  src="/Project Hub logo.png"
-                  alt="Project Hub Logo"
-                  preview={false}
-                  className="brand-logo"
+    <PageWrapper>
+      <div className="login-page-container">
+        {/* Left Side - Branding */}
+        <div className="login-branding">
+          <div className="branding-content">
+            <div className="logo-container">
+              <Link href="/" className="logo-link">
+                <div className="logo-background">
+                  <Image
+                    width={180}
+                    src="/Project Hub logo.png"
+                    alt="Project Hub Logo"
+                    preview={false}
+                    className="brand-logo"
+                  />
+                </div>
+              </Link>
+            </div>
+            <div className="brand-text">
+              <Title level={1} className="brand-title">
+                Chào mừng bạn trở lại
+              </Title>
+              <Text className="brand-subtitle">
+                Đăng nhập để tiếp tục quản lý dự án của bạn một cách hiệu quả
+              </Text>
+            </div>
+            <div className="brand-features">
+              <div className="feature-item">
+                <div className="feature-icon">📊</div>
+                <div className="feature-text">
+                  <Text strong>Quản lý dự án thông minh</Text>
+                  <Text type="secondary">
+                    Theo dõi tiến độ và tối ưu hóa workflow
+                  </Text>
+                </div>
+              </div>
+              <div className="feature-item">
+                <div className="feature-icon">👥</div>
+                <div className="feature-text">
+                  <Text strong>Làm việc nhóm hiệu quả</Text>
+                  <Text type="secondary">
+                    Cộng tác mượt mà với team của bạn
+                  </Text>
+                </div>
+              </div>
+              <div className="feature-item">
+                <div className="feature-icon">📈</div>
+                <div className="feature-text">
+                  <Text strong>Báo cáo chi tiết</Text>
+                  <Text type="secondary">
+                    Phân tích dữ liệu và đưa ra quyết định
+                  </Text>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Login Form */}
+        <div className="login-form-section">
+          <div className="form-container">
+            <Form onFinish={onFinish} layout="vertical">
+              <Form.Item
+                name="email"
+                rules={[
+                  { required: true, message: "Please input your email!" },
+                  {
+                    type: "email",
+                    message: "Email must be include @example.com!",
+                  },
+                ]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  placeholder="Email"
+                  onChange={(e) => setEmail(e.target.value)}
                 />
-              </div>
-            </Link>
-          </div>
-          <div className="brand-text">
-            <Title level={1} className="brand-title">
-              Chào mừng bạn trở lại
-            </Title>
-            <Text className="brand-subtitle">
-              Đăng nhập để tiếp tục quản lý dự án của bạn một cách hiệu quả
-            </Text>
-          </div>
-          <div className="brand-features">
-            <div className="feature-item">
-              <div className="feature-icon">📊</div>
-              <div className="feature-text">
-                <Text strong>Quản lý dự án thông minh</Text>
-                <Text type="secondary">
-                  Theo dõi tiến độ và tối ưu hóa workflow
-                </Text>
-              </div>
-            </div>
-            <div className="feature-item">
-              <div className="feature-icon">👥</div>
-              <div className="feature-text">
-                <Text strong>Làm việc nhóm hiệu quả</Text>
-                <Text type="secondary">Cộng tác mượt mà với team của bạn</Text>
-              </div>
-            </div>
-            <div className="feature-item">
-              <div className="feature-icon">📈</div>
-              <div className="feature-text">
-                <Text strong>Báo cáo chi tiết</Text>
-                <Text type="secondary">
-                  Phân tích dữ liệu và đưa ra quyết định
-                </Text>
-              </div>
-            </div>
+              </Form.Item>
+              <Form.Item
+                name="password"
+                rules={[
+                  { required: true, message: "Please input your Password!" },
+                ]}
+              >
+                <Input
+                  prefix={<LockOutlined />}
+                  type="password"
+                  placeholder="Password"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Form.Item>
+              <Form.Item>
+                <Flex justify="space-between" align="center">
+                  <Form.Item name="remember" valuePropName="checked" noStyle>
+                    <Checkbox>Remember me</Checkbox>
+                  </Form.Item>
+                  <Link
+                    href={"/authentication/forgot-password"}
+                    className="text-sm text-blue-500 hover:decoration-solid hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </Flex>
+              </Form.Item>
+
+              <Form.Item>
+                <Button block type="primary" htmlType="submit" className="mb-2">
+                  Log in
+                </Button>
+
+                <GoogleLogin
+                  onSuccess={(credentialResponse) => {
+                    setLoading(true); // Đảm bảo bật spinner ngay lập tức
+                    handleLoginGoogle(credentialResponse);
+                  }}
+                  onError={() => {
+                    showErrorToast("Đăng nhập Google thất bại");
+                  }}
+                />
+              </Form.Item>
+            </Form>
           </div>
         </div>
       </div>
-
-      {/* Right Side - Login Form */}
-      <div className="login-form-section">
-        <div className="form-container">
-          <Form onFinish={onFinish} layout="vertical">
-            <Form.Item
-              name="email"
-              rules={[
-                { required: true, message: "Please input your email!" },
-                {
-                  type: "email",
-                  message: "Email must be include @example.com!",
-                },
-              ]}
-            >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="Email"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item
-              name="password"
-              rules={[
-                { required: true, message: "Please input your Password!" },
-              ]}
-            >
-              <Input
-                prefix={<LockOutlined />}
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Form.Item>
-            <Form.Item>
-              <Flex justify="space-between" align="center">
-                <Form.Item name="remember" valuePropName="checked" noStyle>
-                  <Checkbox>Remember me</Checkbox>
-                </Form.Item>
-                <Link
-                  href={"/authentication/forgot-password"}
-                  className="text-sm text-blue-500 hover:decoration-solid hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </Flex>
-            </Form.Item>
-
-            <Form.Item>
-              <Button block type="primary" htmlType="submit" className="mb-2">
-                Log in
-              </Button>
-
-              <GoogleLogin
-                onSuccess={(credentialResponse) => {
-                  setLoading(true); // Đảm bảo bật spinner ngay lập tức
-                  handleLoginGoogle(credentialResponse);
-                }}
-                onError={() => {
-                  showErrorToast("Đăng nhập Google thất bại");
-                }}
-              />
-            </Form.Item>
-          </Form>
-        </div>
-      </div>
-    </div>
+    </PageWrapper>
   );
 }

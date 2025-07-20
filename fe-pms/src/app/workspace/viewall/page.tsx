@@ -8,6 +8,7 @@ import {
   SettingOutlined,
   StarOutlined,
   UserAddOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -235,23 +236,27 @@ const ProjectTable = () => {
   );
 
   return (
-    <div className="p-6 bg-white rounded shadow">
+    <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Projects</h2>
         <div className="flex gap-2">
-          <Button type="primary" onClick={handleCreateProject}>
-            Create project
-          </Button>
+          <Button
+            type="primary"
+            onClick={handleCreateProject}
+            icon={<PlusOutlined />}
+            size="large"
+          />
         </div>
       </div>
 
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-6">
         <Input
-          placeholder="Search projects"
-          className="w-[450px] h-[10px] board-search-input"
+          placeholder="Search projects..."
+          className="w-[350px] h-9"
           prefix={<SearchOutlined className="text-gray-400" />}
           value={searchTerm}
           onChange={handleSearch}
+          allowClear
         />
       </div>
 
@@ -260,12 +265,14 @@ const ProjectTable = () => {
         dataSource={paginatedProjects}
         pagination={false}
         rowKey="_id"
-        size="small"
+        size="middle"
+        className="custom-table"
         onRow={(record) => ({
           onClick: () => {
             router.push(`/workspace/project-management/${record._id}`);
           },
           style: { cursor: "pointer" },
+          className: "hover:bg-gray-50 transition-colors duration-200",
         })}
       />
       {/* Modal mời thành viên */}

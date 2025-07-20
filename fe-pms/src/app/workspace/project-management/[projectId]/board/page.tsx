@@ -8,9 +8,9 @@ import {
   Input,
   Dropdown,
   Checkbox,
-  Spin,
   Alert,
   Tooltip,
+  Skeleton,
 } from "antd";
 import {
   PlusOutlined,
@@ -25,6 +25,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import DetailTaskModal from "./detail-task/page";
+import LoadingWrapper from "@/components/common/spinner/LoadingWrapper";
 import {
   updateAssigneeTask,
   updateTaskStatus,
@@ -71,6 +72,37 @@ const moveTaskToStatus = (
   );
 };
 
+// Skeleton component for board loading
+const BoardSkeleton = () => (
+  <div className="p-6">
+    <div className="flex items-center gap-3 mb-6">
+      <Skeleton.Input active size="large" style={{ width: 450 }} />
+      <Skeleton.Button active size="large" />
+      <Skeleton.Button active size="large" />
+    </div>
+    <div className="flex gap-4">
+      {[1, 2, 3].map((col) => (
+        <div
+          key={col}
+          className="flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <Skeleton.Input active size="small" style={{ width: 100 }} />
+            <Skeleton.Button active size="small" />
+          </div>
+          <div className="space-y-3">
+            {[1, 2, 3].map((task) => (
+              <Card key={task} className="shadow-sm">
+                <Skeleton active paragraph={{ rows: 2 }} />
+              </Card>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const BoardPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const [search, setSearch] = useState("");
@@ -79,39 +111,57 @@ const BoardPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [epics, setEpics] = useState<Epic[]>([])
+  const [epics, setEpics] = useState<Epic[]>([]);
   const [contributor, setContributor] = useState<ProjectContributorTag[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Hydration check
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   const {
     data: taskData,
     error: taskError,
     isLoading,
     mutate: taskMutate,
   } = useSWR(
-    `${Endpoints.Task.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
+    projectId ? `${Endpoints.Task.GET_BY_PROJECT(projectId)}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000,
+    }
   );
 
   const { data: epicData, error: epicError } = useSWR(
-    `${Endpoints.Epic.GET_BY_PROJECT(
-      projectId
-    )}`,
-    fetcher
+    projectId ? `${Endpoints.Epic.GET_BY_PROJECT(projectId)}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000,
+    }
   );
 
   const { data: contributorData } = useSWR(
     projectId
       ? `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`
-      : "",
-    fetcher
+      : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000,
+    }
   );
 
   useEffect(() => {
     if (epicData) {
-      setEpics(epicData)
+      setEpics(epicData);
     }
-  }, [epicData])
+  }, [epicData]);
 
   const epicOptions = (epics || []).map((epic: Epic) => ({
     label: epic.name,
@@ -256,309 +306,321 @@ const BoardPage = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" tip="Loading..." fullscreen />
-      </div>
-    );
-  }
-
-  if (epicError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Alert
-          message="Error"
-          description="Không thể tải danh sách Epic."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
-  }
-
-  if (taskError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Alert
-          message="Error"
-          description="Không thể tải danh sách công việc."
-          type="error"
-          showIcon
-        />
-      </div>
-    );
+  if (!isHydrated) {
+    return <BoardSkeleton />;
   }
 
   return (
-    <div className="p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Input
-          placeholder="Search board"
-          allowClear
-          className="w-[450px] h-[10px] board-search-input"
-          prefix={<SearchOutlined className="text-gray-400" />}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <Dropdown
-          open={epicOpen}
-          onOpenChange={setEpicOpen}
-          popupRender={() => epicDropdown}
-          trigger={["click"]}
-          className="board-epic-dropdown"
-        >
-          <Button className="flex items-center font-semibold text-gray-700">
-            Epic <DownOutlined className="ml-1" />
+    <LoadingWrapper
+      isLoading={isLoading}
+      skeleton={<BoardSkeleton />}
+      delay={200}
+    >
+      <div className="p-6 fade-in">
+        <div className="flex items-center gap-3 mb-6">
+          <Input
+            placeholder="Search board"
+            allowClear
+            className="w-64"
+            prefix={<SearchOutlined className="text-gray-400" />}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Dropdown
+            open={epicOpen}
+            onOpenChange={setEpicOpen}
+            popupRender={() => epicDropdown}
+            trigger={["click"]}
+            className="board-epic-dropdown"
+          >
+            <Button className="flex items-center font-semibold text-gray-700">
+              Epic <DownOutlined className="ml-1" />
+            </Button>
+          </Dropdown>
+          <Button
+            type="text"
+            onClick={() => {
+              setSearch("");
+              setSelectedEpics([]);
+            }}
+            className="font-semibold text-gray-600"
+          >
+            Clear Filters
           </Button>
-        </Dropdown>
-        <Button
-          type="text"
-          onClick={() => {
-            setSearch("");
-            setSelectedEpics([]);
-          }}
-          className="font-semibold text-gray-600"
-        >
-          Clear Filters
-        </Button>
-      </div>
+        </div>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4">
-          {columnDefs.map((col) => {
-            const filtered = filterTasks(getTasksByStatus(col.status));
-            return (
-              <Droppable
-                droppableId={col.status}
-                key={col.status}
-                isDropDisabled={false}
-                isCombineEnabled={false}
-                ignoreContainerClipping={false}
-              >
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${snapshot.isDraggingOver ? "bg-blue-50" : ""
-                      }`}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <h2 className="font-semibold text-gray-700">
-                          {col.title}
-                        </h2>
-                        <span className="text-gray-500">{filtered.length}</span>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex gap-4">
+            {columnDefs.map((col) => {
+              const filtered = filterTasks(getTasksByStatus(col.status));
+              return (
+                <Droppable
+                  droppableId={col.status}
+                  key={col.status}
+                  isDropDisabled={false}
+                  isCombineEnabled={false}
+                  ignoreContainerClipping={false}
+                >
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
+                        snapshot.isDraggingOver ? "bg-blue-50" : ""
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <h2 className="font-semibold text-gray-700">
+                            {col.title}
+                          </h2>
+                          <span className="text-gray-500">
+                            {filtered.length}
+                          </span>
+                        </div>
+                        {col.status === "TO_DO" && (
+                          <Button
+                            type="text"
+                            icon={<PlusOutlined />}
+                            className="!flex items-center"
+                          >
+                            Create
+                          </Button>
+                        )}
                       </div>
-                      {col.status === "TO_DO" && (
-                        <Button
-                          type="text"
-                          icon={<PlusOutlined />}
-                          className="!flex items-center"
-                        >
-                          Create
-                        </Button>
-                      )}
-                    </div>
-                    <div className="space-y-3">
-                      {filtered.map((task, idx) => (
-                        <Draggable
-                          draggableId={task._id ?? `${idx}`}
-                          index={idx}
-                          key={task._id}
-                        >
-                          {(provided, snapshot) => (
-                            <Card
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              key={task._id}
-                              className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${snapshot.isDragging
-                                ? "ring-2 ring-blue-400"
-                                : ""
+                      <div className="space-y-3">
+                        {filtered.map((task, idx) => (
+                          <Draggable
+                            draggableId={task._id ?? `${idx}`}
+                            index={idx}
+                            key={task._id}
+                          >
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                key={task._id}
+                                className={`transition-shadow shadow-sm cursor-pointer hover:shadow-md ${
+                                  snapshot.isDragging
+                                    ? "ring-2 ring-blue-400"
+                                    : ""
                                 }`}
-                              styles={{ body: { padding: "12px" } }}
-                              onClick={() => {
-                                setSelectedTask(task);
-                                setIsModalOpen(true);
-                              }}
-                            >
-                              <div className="space-y-2">
-                                <p
-                                  className={`text-gray-700 font-medium ${col.status === "DONE" ? "line-through" : ""
-                                    }`}>
-                                  {task.name}
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                  <span
-                                    className={
-                                      task.epic?.name
-                                        ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
+                                styles={{ body: { padding: "12px" } }}
+                                onClick={() => {
+                                  setSelectedTask(task);
+                                  setIsModalOpen(true);
+                                }}
+                              >
+                                <div className="space-y-2">
+                                  <p
+                                    className={`text-gray-700 font-medium ${
+                                      col.status === "DONE"
+                                        ? "line-through"
                                         : ""
-                                    }
+                                    }`}
                                   >
-                                    {task.epic?.name}
-                                  </span>
-                                </div>
-                                {task.dueDate ? (
-                                  new Date(task.dueDate).getTime() <
-                                    Date.now() ? (
-                                    <div className="inline-flex items-center px-2 py-1 text-sm text-orange-300 border-2 border-orange-300 rounded gap-x-2">
-                                      <ClockCircleOutlined />
-                                      {format(
-                                        new Date(task.dueDate),
-                                        "dd/MM/yyyy"
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <div className="inline-flex items-center px-2 py-1 text-sm font-semibold text-gray-500 border-2 border-gray-300 rounded gap-x-2">
-                                      <CalendarOutlined />
-                                      {format(
-                                        new Date(task.dueDate),
-                                        "dd/MM/yyyy"
-                                      )}
-                                    </div>
-                                  )
-                                ) : null}
-
-                                <div className="flex items-start justify-end gap-x-2">
-                                  <Tooltip title={task.priority}>
-                                    <span className="font-medium text-gray-600">
-                                      {task.priority
-                                        ? renderPriority(task.priority)
-                                        : ""}
+                                    {task.name}
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    <span
+                                      className={
+                                        task.epic?.name
+                                          ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
+                                          : ""
+                                      }
+                                    >
+                                      {task.epic?.name}
                                     </span>
-                                  </Tooltip>
-                                  <Dropdown
-                                    menu={{
-                                      items: [
-                                        ...(task.assignee?._id
-                                          ? [
-                                            {
-                                              key: task.assignee._id,
-                                              label: (
-                                                <div className="flex items-center gap-2 bg-gray-100">
-                                                  <Avatar
-                                                    src={task.assignee.avatar}
-                                                    size="small"
-                                                  />
-                                                  <div>
-                                                    <p className="font-medium">
-                                                      {task.assignee.fullName}
-                                                    </p>
-                                                    <p className="text-xs text-gray-400">
-                                                      {task.assignee.email}
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                              ),
-                                            },
-                                          ]
-                                          : []),
-                                        {
-                                          key: "unassigned",
-                                          label: (
-                                            <div className="flex items-center gap-2">
-                                              <Avatar
-                                                src={<UserOutlined />}
-                                                size="small"
-                                                className="bg-gray-400"
-                                              ></Avatar>
-                                              <div>
-                                                <p className="font-medium">
-                                                  Unassigned
-                                                </p>
-                                              </div>
-                                            </div>
-                                          ),
-                                        },
-                                        ...contributor
-                                          .filter((t) => {
-                                            return (
-                                              t.userId._id !==
-                                              task.assignee?._id
-                                            );
-                                          })
-                                          .map((e) => ({
-                                            key: e.userId._id,
+                                  </div>
+                                  {task.dueDate ? (
+                                    new Date(task.dueDate).getTime() <
+                                    Date.now() ? (
+                                      <div className="inline-flex items-center px-2 py-1 text-sm text-orange-300 border-2 border-orange-300 rounded gap-x-2">
+                                        <ClockCircleOutlined />
+                                        {format(
+                                          new Date(task.dueDate),
+                                          "dd/MM/yyyy"
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="inline-flex items-center px-2 py-1 text-sm font-semibold text-gray-500 border-2 border-gray-300 rounded gap-x-2">
+                                        <CalendarOutlined />
+                                        {format(
+                                          new Date(task.dueDate),
+                                          "dd/MM/yyyy"
+                                        )}
+                                      </div>
+                                    )
+                                  ) : null}
+
+                                  <div className="flex items-start justify-end gap-x-2">
+                                    <Tooltip title={task.priority}>
+                                      <span className="font-medium text-gray-600">
+                                        {task.priority
+                                          ? renderPriority(task.priority)
+                                          : ""}
+                                      </span>
+                                    </Tooltip>
+                                    <Dropdown
+                                      menu={{
+                                        items: [
+                                          ...(task.assignee?._id
+                                            ? [
+                                                {
+                                                  key: task.assignee._id,
+                                                  label: (
+                                                    <div className="flex items-center gap-2 bg-gray-100">
+                                                      <Avatar
+                                                        src={
+                                                          task.assignee.avatar
+                                                        }
+                                                        size="small"
+                                                      />
+                                                      <div>
+                                                        <p className="font-medium">
+                                                          {
+                                                            task.assignee
+                                                              .fullName
+                                                          }
+                                                        </p>
+                                                        <p className="text-xs text-gray-400">
+                                                          {task.assignee.email}
+                                                        </p>
+                                                      </div>
+                                                    </div>
+                                                  ),
+                                                },
+                                              ]
+                                            : []),
+                                          {
+                                            key: "unassigned",
                                             label: (
                                               <div className="flex items-center gap-2">
                                                 <Avatar
-                                                  src={e.userId.avatar}
+                                                  src={<UserOutlined />}
                                                   size="small"
-                                                >
-                                                  {e.userId.fullName[0]}
-                                                </Avatar>
+                                                  className="bg-gray-400"
+                                                ></Avatar>
                                                 <div>
                                                   <p className="font-medium">
-                                                    {e.userId.fullName}
-                                                  </p>
-                                                  <p className="text-xs text-gray-400">
-                                                    {e.userId.email}
+                                                    Unassigned
                                                   </p>
                                                 </div>
                                               </div>
                                             ),
-                                          })),
-                                      ],
-                                      onClick: ({ key, domEvent }) => {
-                                        setIsModalOpen(false);
-                                        domEvent.stopPropagation();
-                                        if (task._id && key) {
-                                          updateAssignee(task._id, key);
-                                        }
-                                      },
-                                    }}
-                                    trigger={["click"]}
-                                    className="board-assignee-dropdown"
-                                  >
-                                    <Tooltip
-                                      title={`Assignee: ${task.assignee?.fullName || "Unassigned"
-                                        }`}>
-                                      <Avatar
-                                        className={`cursor-pointer text-white ${task.assignee?.fullName ===
+                                          },
+                                          ...contributor
+                                            .filter((t) => {
+                                              return (
+                                                t.userId._id !==
+                                                task.assignee?._id
+                                              );
+                                            })
+                                            .map((e) => ({
+                                              key: e.userId._id,
+                                              label: (
+                                                <div className="flex items-center gap-2">
+                                                  <Avatar
+                                                    src={e.userId.avatar}
+                                                    size="small"
+                                                  >
+                                                    {e.userId.fullName[0]}
+                                                  </Avatar>
+                                                  <div>
+                                                    <p className="font-medium">
+                                                      {e.userId.fullName}
+                                                    </p>
+                                                    <p className="text-xs text-gray-400">
+                                                      {e.userId.email}
+                                                    </p>
+                                                  </div>
+                                                </div>
+                                              ),
+                                            })),
+                                        ],
+                                        onClick: ({ key, domEvent }) => {
+                                          setIsModalOpen(false);
+                                          domEvent.stopPropagation();
+                                          if (task._id && key) {
+                                            updateAssignee(task._id, key);
+                                          }
+                                        },
+                                      }}
+                                      trigger={["click"]}
+                                      className="board-assignee-dropdown"
+                                    >
+                                      <Tooltip
+                                        title={`Assignee: ${
+                                          task.assignee?.fullName ||
                                           "Unassigned"
-                                          ? "bg-gray-400"
-                                          : ""
-                                          }`}
-                                        size="default"
-                                        src={task.assignee?.avatar}
-                                        onClick={(e) => e?.stopPropagation()}
+                                        }`}
                                       >
-                                        {task.assignee?.fullName?.[0] || (
-                                          <UserOutlined />
-                                        )}
-                                      </Avatar>
-                                    </Tooltip>
-                                  </Dropdown>
+                                        <Avatar
+                                          className={`cursor-pointer text-white ${
+                                            task.assignee?.fullName ===
+                                            "Unassigned"
+                                              ? "bg-gray-400"
+                                              : ""
+                                          }`}
+                                          size="default"
+                                          src={task.assignee?.avatar}
+                                          onClick={(e) => e?.stopPropagation()}
+                                        >
+                                          {task.assignee?.fullName?.[0] || (
+                                            <UserOutlined />
+                                          )}
+                                        </Avatar>
+                                      </Tooltip>
+                                    </Dropdown>
+                                  </div>
                                 </div>
-                              </div>
-                            </Card>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+                              </Card>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </Droppable>
-            );
-          })}
-        </div>
-      </DragDropContext>
+                  )}
+                </Droppable>
+              );
+            })}
+          </div>
+        </DragDropContext>
 
-      {/* Modal chi tiết task */}
-      {selectedTask && (
-        <DetailTaskModal
-          open={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            taskMutate();
-          }}
-          task={selectedTask}
-        />
-      )}
-    </div>
+        {/* Modal chi tiết task */}
+        {selectedTask && isModalOpen && (
+          <DetailTaskModal
+            open={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              taskMutate();
+            }}
+            task={selectedTask}
+          />
+        )}
+      </div>
+    </LoadingWrapper>
   );
+
+  // Error handling
+  if (epicError || taskError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Alert
+          message="Error"
+          description={
+            epicError
+              ? "Không thể tải danh sách Epic."
+              : "Không thể tải danh sách công việc."
+          }
+          type="error"
+          showIcon
+        />
+      </div>
+    );
+  }
 };
 
 export default BoardPage;
