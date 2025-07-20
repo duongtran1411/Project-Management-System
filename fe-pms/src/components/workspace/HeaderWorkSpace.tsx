@@ -28,8 +28,6 @@ import NotificationPopup from "./NotificationPopup";
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
   const { userInfo } = useAuth();
-  const avatar = userInfo?.avatar?.trim() || undefined;
-  const userName = userInfo?.fullname || "";
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "home":
@@ -121,8 +119,12 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
               className="header-workspace-dropdown"
             >
               <Space className="cursor-pointer">
-                <Avatar src={avatar} />
-                <span className="text-gray-700">{userName}</span>
+                {userInfo?.avatar ? (
+                  <Avatar src={userInfo?.avatar} />
+                ) : (
+                  <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
+                )}
+                <span className="text-gray-700">{userInfo?.fullname}</span>
               </Space>
             </Dropdown>
           ) : (

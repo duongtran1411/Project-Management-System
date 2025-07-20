@@ -4,6 +4,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Task } from "@/models/task/task.model";
 import { Avatar, Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
+import { WorklogComponent } from "../worklog/Worklog";
 import { ChangeDescription } from "./ChangeDescription";
 import { ChangeDueDate } from "./ChangeDueDate";
 import { ChangeName } from "./ChangeName";
@@ -36,6 +37,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   const [reporter, setReporter] = useState(task?.reporter || null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState<string>(task?.name || "");
+  const [activeTab, setActiveTab] = useState<
+    "all" | "comments" | "history" | "worklog"
+  >("comments");
 
   useEffect(() => {
     if (task) {
@@ -172,34 +176,66 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
           {/* Tabs */}
           <div className="flex mb-2 space-x-2">
-            <Button size="small">All</Button>
-            <Button size="small" type="primary">
+            <Button
+              size="small"
+              type={activeTab === "all" ? "primary" : "default"}
+              onClick={() => setActiveTab("all")}
+            >
+              All
+            </Button>
+            <Button
+              size="small"
+              type={activeTab === "comments" ? "primary" : "default"}
+              onClick={() => setActiveTab("comments")}
+            >
               Comments
             </Button>
-            <Button size="small">History</Button>
-            <Button size="small">Work log</Button>
+            <Button
+              size="small"
+              type={activeTab === "history" ? "primary" : "default"}
+              onClick={() => setActiveTab("history")}
+            >
+              History
+            </Button>
+            <Button
+              size="small"
+              type={activeTab === "worklog" ? "primary" : "default"}
+              onClick={() => setActiveTab("worklog")}
+            >
+              Work log
+            </Button>
           </div>
 
-          {/* Comment Input */}
-          <div className="mt-4">
-            <Input.TextArea
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              autoSize={{ minRows: 2, maxRows: 5 }}
-            />
-            <div className="flex mt-2 space-x-2">
-              <Button type="primary" size="small" disabled={!newComment.trim()}>
-                Save
-              </Button>
-              <Button size="small" onClick={() => setNewComment("")}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-
-          {/* Render Comments */}
-          <div className="mt-6 space-y-4"></div>
+          {/* Activity Content */}
+          {activeTab === "comments" && (
+            <>
+              {/* Comment Input */}
+              <div className="mt-4">
+                <Input.TextArea
+                  placeholder="Add a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  autoSize={{ minRows: 2, maxRows: 5 }}
+                />
+                <div className="flex mt-2 space-x-2">
+                  <Button
+                    type="primary"
+                    size="small"
+                    disabled={!newComment.trim()}
+                  >
+                    Save
+                  </Button>
+                  <Button size="small" onClick={() => setNewComment("")}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+              {/* Render Comments */}
+              <div className="mt-6 space-y-4"></div>
+            </>
+          )}
+          {/* Worklog */}
+          {activeTab === "worklog" && <WorklogComponent task={task} />}
         </div>
       </div>
       {/* Thêm các trường khác nếu muốn */}
