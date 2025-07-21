@@ -11,7 +11,7 @@ import {
     RightOutlined,
     UserOutlined
 } from "@ant-design/icons";
-import { Avatar, Button, Input, Select, Table, Tag } from "antd";
+import { Avatar, Button, Input, Select, Table, Tag, DatePicker } from "antd";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -40,6 +40,7 @@ const EpicPage = () => {
     const [editingReporterTaskId, setEditingReporterTaskId] = useState<string | null>(null);
     const [editingReporterValue, setEditingReporterValue] = useState<string>("");
     const [searchText, setSearchText] = useState("");
+
 
 
     const { data: epicData, mutate } = useSWR(
@@ -128,6 +129,7 @@ const EpicPage = () => {
             setEditingStatusValue("");
         }
     };
+
 
 
     const handleUpdateTaskStatus = async (taskId: string) => {
@@ -255,8 +257,6 @@ const EpicPage = () => {
 
 
 
-
-
     const epicRows = (epicData?.data || []).filter((epic: any) =>
         epic.name.toLowerCase().includes(searchText.toLowerCase())
     ).map((epic: any) => ({
@@ -284,7 +284,7 @@ const EpicPage = () => {
                     summary: task.name,
                     status: task.status,
                     assignee: task.assignee || "Unassigned",
-                    dueDate: new Date(task.createdAt).toLocaleDateString(),
+                    dueDate: task.dueDate || "",
                     priority: task.priority || "None",
                     created: new Date(task.createdAt).toLocaleDateString(),
                     updated: new Date(task.updatedAt).toLocaleDateString(),
@@ -544,7 +544,8 @@ const EpicPage = () => {
             render: (date: string) => (
                 <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                     <CalendarOutlined />
-                    <span>{dayjs(date).format("MMM D, YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+
                 </div>
             ),
         },
@@ -594,7 +595,8 @@ const EpicPage = () => {
             render: (date: string) => (
                 <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                     <CalendarOutlined />
-                    <span>{dayjs(date).format("MMM D, YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+
                 </div>
             ),
         },
@@ -606,7 +608,8 @@ const EpicPage = () => {
             render: (date: string) => (
                 <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                     <CalendarOutlined />
-                    <span>{dayjs(date).format("MMM D, YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+
                 </div>
             ),
         },
