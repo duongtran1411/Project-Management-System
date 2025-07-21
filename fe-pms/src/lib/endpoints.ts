@@ -118,6 +118,7 @@ export class Endpoints {
   };
 
   static readonly PeopleYouWorkWith = {
+    GET_ALL: "people-you-work-with",
     GET_BY_PROJECT: (projectId: string) =>
       `people-you-work-with/project/${projectId}`,
   };

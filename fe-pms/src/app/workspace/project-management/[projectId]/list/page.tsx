@@ -5,13 +5,11 @@ import axiosService from "@/lib/services/axios.service";
 import { getContributorsByProjectId } from "@/lib/services/projectContributor/projectContributor.service";
 import {
     CalendarOutlined,
-    CommentOutlined,
     DownOutlined,
-    PlusOutlined,
     RightOutlined,
     UserOutlined
 } from "@ant-design/icons";
-import { Avatar, Button, Input, Select, Table, Tag, DatePicker } from "antd";
+import { Avatar, Input, Select, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
