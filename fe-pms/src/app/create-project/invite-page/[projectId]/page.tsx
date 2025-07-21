@@ -10,6 +10,7 @@ import {
   message,
   Tag,
 } from "antd";
+const { Option } = Select;
 import { useParams, useRouter } from "next/navigation";
 import type { NotificationArgsProps } from "antd";
 import React, { useEffect, useMemo, useState } from "react";
@@ -167,7 +168,7 @@ export default function InvitePage() {
               Member
             </Text> */}
             <div className="mt-4 flex items-center space-x-2"></div>
-
+            name
             <Button
               className="mt-4 font-semibold bg-gray-100 text-gray-600"
               type="default"
@@ -175,34 +176,59 @@ export default function InvitePage() {
             >
               Manage invites
             </Button>
-
             {showInviteInput && (
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Enter names or emails
-                </label>
-                <Select
-                  mode="tags"
-                  style={{ width: "100%" }}
-                  placeholder="Enter emails"
-                  value={invites}
-                  open={false}
-                  onChange={handleChangeInvites}
-                  tagRender={(props) => {
-                    const { label, closable, onClose } = props;
-                    return (
-                      <Tag
-                        color="blue"
-                        closable={closable}
-                        onClose={onClose}
-                        style={{ marginRight: 3 }}
-                        icon={<MailOutlined />}
-                      >
-                        {label}
-                      </Tag>
-                    );
-                  }}
-                />
+                {/* Input email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter names or emails
+                  </label>
+                  <Select
+                    mode="tags"
+                    style={{ width: "100%" }}
+                    placeholder="Enter emails"
+                    value={invites}
+                    open={false}
+                    onChange={handleChangeInvites}
+                    tagRender={(props) => {
+                      const { label, closable, onClose } = props;
+                      return (
+                        <Tag
+                          color="blue"
+                          closable={closable}
+                          onClose={onClose}
+                          style={{ marginRight: 3 }}
+                          icon={<MailOutlined />}
+                        >
+                          {label}
+                        </Tag>
+                      );
+                    }}
+                  />
+                </div>
+
+                {/* Select role  */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Role
+                  </label>
+                  <Select
+                    style={{ width: "100%" }}
+                    placeholder="Select role"
+                    value={projectRoleId}
+                    onChange={(value) => setProjectRoleId(value)}
+                  >
+                    {projectRoleData?.data
+                      .filter(
+                        (role: ProjectRole) => role.name !== "PROJECT_ADMIN"
+                      )
+                      .map((role: ProjectRole) => (
+                        <Option key={role._id} value={role._id}>
+                          {role.name}
+                        </Option>
+                      ))}
+                  </Select>
+                </div>
               </div>
             )}
           </Card>

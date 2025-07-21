@@ -3,8 +3,10 @@
 import {
   BarsOutlined,
   FilterOutlined,
+  RocketOutlined,
   SearchOutlined,
   TeamOutlined,
+  UnorderedListOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -37,7 +39,10 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
   }, []);
 
   const fetcher = (url: string) =>
-    axiosService.getAxiosInstance().get(url).then((res) => res.data);
+    axiosService
+      .getAxiosInstance()
+      .get(url)
+      .then((res) => res.data);
 
   const { data: projectList, isLoading } = useSWR(
     userId ? Endpoints.ProjectContributor.GET_PROJECTS_BY_USER(userId) : null,
@@ -52,9 +57,9 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
         icon: <UserOutlined />,
       },
       {
-        label: "View all projects",
-        key: "view-all",
-        icon: <BarsOutlined />,
+        label: "Projects",
+        key: "projects",
+        icon: <RocketOutlined />,
         children:
           projectList?.data.map((project: Project) => ({
             key: project._id,
@@ -74,6 +79,15 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
               </Link>
             ),
           })) || [],
+      },
+      {
+        label: (
+          <Link href="/workspace/viewall" className="flex items-center gap-2">
+            View all projects
+          </Link>
+        ),
+        key: "view-all-projects",
+        icon: <UnorderedListOutlined />,
       },
       {
         label: "Filters",
@@ -119,6 +133,7 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
           },
         ],
       },
+
       {
         label: (
           <Link href="/workspace/teams" className="flex items-center gap-2">
@@ -148,12 +163,13 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
 
   return (
     <div
-      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${colapsed ? "w-max" : "w-64"
-        } transition-all duration-300`}
+      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${
+        colapsed ? "w-max" : "w-64"
+      } transition-all duration-300`}
     >
       <Menu
         mode="inline"
-        defaultSelectedKeys={["view-all"]}
+        defaultSelectedKeys={["view-all-projects"]}
         style={{ borderRight: 0 }}
         items={menuItems}
         inlineCollapsed={colapsed}
