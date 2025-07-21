@@ -148,9 +148,22 @@ class NotificationService {
 
       case "PROJECT_UPDATE":
         const projectName = metadata?.projectName || "a project";
+        const updateType = metadata?.updateType;
+        const updateDescription = metadata?.updateDescription;
+
+        if (updateType === "invitation") {
+          return {
+            title: `${senderName} invited you to ${projectName}`,
+            message:
+              updateDescription ||
+              `${senderName} invited you to join ${projectName}`,
+          };
+        }
+
         return {
-          title: `${senderName} updated a project`,
-          message: `${senderName} updated ${projectName}`,
+          title: `${senderName} updated ${projectName}`,
+          message:
+            updateDescription || `${senderName} updated project ${projectName}`,
         };
 
       case "EPIC_UPDATE":

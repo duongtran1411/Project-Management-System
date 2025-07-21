@@ -110,6 +110,8 @@ const notificationSchema = new Schema<INotification>(
       epicName: String,
       milestoneName: String,
       commentText: String,
+      updateType: String,
+      updateDescription: String,
       mentionedUsers: [
         {
           type: Schema.Types.ObjectId,
@@ -193,6 +195,8 @@ export interface CreateNotificationData {
     epicName?: string;
     milestoneName?: string;
     commentText?: string;
+    updateType?: string;
+    updateDescription?: string;
     mentionedUsers?: string[];
     assigneeUpdate?: {
       oldAssignee?: string;

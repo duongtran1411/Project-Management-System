@@ -99,6 +99,8 @@ export class ProjectContributorService {
         entityId: projectId,
         metadata: {
           projectName: project.name,
+          updateType: "invitation",
+          updateDescription: "You have been invited to join this project",
         },
       });
     } catch (error) {
