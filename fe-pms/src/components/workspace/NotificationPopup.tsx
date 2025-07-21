@@ -31,6 +31,7 @@ import {
 } from "antd";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useSocket } from "@/hooks/useSocket";
+import { useSocketEvent } from "@/hooks/useSocketEvent";
 
 const { Text, Title } = Typography;
 
@@ -45,69 +46,58 @@ const NotificationPopup: React.FC = () => {
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const { socket, connected, on, off } = useSocket();
+  const { connected } = useSocket();
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
     setUserId(currentUserId);
   }, []);
 
-  useEffect(() => {
-    if (!socket || !userId) return;
-
-    const cleanupFunctions: (() => void)[] = [];
-
-    const newNotificationCleanup = on(
-      "new-notification",
-      (data: { notification: INotification }) => {
-        setNotifications((prev) => [data.notification, ...prev]);
-        setStats((prev) =>
-          prev
-            ? { ...prev, unread: prev.unread + 1, total: prev.total + 1 }
-            : null
-        );
-      }
-    );
-    if (newNotificationCleanup) cleanupFunctions.push(newNotificationCleanup);
-
-    const notificationReadCleanup = on(
-      "notification-read",
-      (data: { notificationId: string }) => {
-        setNotifications((prev) =>
-          prev.map((notification) =>
-            notification._id === data.notificationId
-              ? { ...notification, isRead: true }
-              : notification
-          )
-        );
-        setStats((prev) =>
-          prev ? { ...prev, unread: Math.max(0, prev.unread - 1) } : null
-        );
-      }
-    );
-    if (notificationReadCleanup) cleanupFunctions.push(notificationReadCleanup);
-
-    const allNotificationsReadCleanup = on("all-notifications-read", () => {
+  useSocketEvent(
+    "new-notification",
+    (data: { notification: INotification }) => {
+      setNotifications((prev) => [data.notification, ...prev]);
+      setStats((prev) =>
+        prev
+          ? { ...prev, unread: prev.unread + 1, total: prev.total + 1 }
+          : null
+      );
+    },
+    [userId]
+  );
+  useSocketEvent(
+    "notification-read",
+    (data: { notificationId: string }) => {
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification._id === data.notificationId
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+      setStats((prev) =>
+        prev ? { ...prev, unread: Math.max(0, prev.unread - 1) } : null
+      );
+    },
+    [userId]
+  );
+  useSocketEvent(
+    "all-notifications-read",
+    () => {
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, isRead: true }))
       );
       setStats((prev) => (prev ? { ...prev, unread: 0 } : null));
-    });
-    if (allNotificationsReadCleanup)
-      cleanupFunctions.push(allNotificationsReadCleanup);
-
-    const statsUpdateCleanup = on(
-      "notification-stats-updated",
-      (data: { stats: NotificationStats }) => {
-        setStats(data.stats);
-      }
-    );
-    if (statsUpdateCleanup) cleanupFunctions.push(statsUpdateCleanup);
-
-    return () => {
-      cleanupFunctions.forEach((cleanup) => cleanup());
-    };
-  }, [socket, userId, on, off]);
+    },
+    [userId]
+  );
+  useSocketEvent(
+    "notification-stats-updated",
+    (data: { stats: NotificationStats }) => {
+      setStats(data.stats);
+    },
+    [userId]
+  );
 
   const fetchNotifications = useCallback(
     async (pageNum: number = 1, append: boolean = false) => {
