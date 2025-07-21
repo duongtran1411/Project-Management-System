@@ -82,6 +82,7 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
+    GET_ROLE_PROJECT_ID: (projectId: string) => `project-contributor/project/role/${projectId}`
   };
 
   static readonly ProjectRole = {

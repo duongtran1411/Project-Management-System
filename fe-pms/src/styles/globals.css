@@ -322,7 +322,7 @@ a {
   display: block;
 }
 
-.custom-input {
+/* .custom-input {
   height: 50px !important;
   border-radius: 12px !important;
   border: 2px solid #e5e7eb !important;
@@ -339,7 +339,7 @@ a {
   border-color: #667eea !important;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
   background: white !important;
-}
+} */
 
 .input-icon {
   color: #9ca3af !important;
@@ -348,23 +348,23 @@ a {
 }
 
 /* Fix Ant Design input alignment */
-.ant-input-affix-wrapper {
+/* .ant-input-affix-wrapper {
   height: 50px !important;
   border-radius: 12px !important;
   border: 2px solid #e5e7eb !important;
   background: #f9fafb !important;
   transition: all 0.3s ease !important;
-}
+} */
 
-.ant-input-affix-wrapper:hover,
+/* .ant-input-affix-wrapper:hover,
 .ant-input-affix-wrapper:focus,
 .ant-input-affix-wrapper-focused {
   border-color: #667eea !important;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
   background: white !important;
-}
+} */
 
-.ant-input-affix-wrapper .ant-input {
+/* .ant-input-affix-wrapper .ant-input {
   background: transparent !important;
   border: none !important;
   height: 100% !important;
@@ -381,7 +381,7 @@ a {
   margin-right: 12px !important;
   color: #9ca3af !important;
   font-size: 16px !important;
-}
+} */
 
 .divider {
   margin: 2rem 0 !important;
@@ -596,9 +596,9 @@ a {
     font-size: 1.75rem !important;
   }
 
-  .custom-input {
+  /* .custom-input {
     height: 45px !important;
-  }
+  } */
 }
 
 @media (max-width: 480px) {
@@ -649,10 +649,10 @@ a {
     font-size: 0.9rem !important;
   }
 
-  .custom-input {
+  /* .custom-input {
     height: 45px !important;
     font-size: 14px !important;
-  }
+  } */
 
   .login-button {
     height: 45px !important;
