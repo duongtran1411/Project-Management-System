@@ -53,6 +53,9 @@ export const ModalDeleteProject: React.FC<Props> = ({
       open={isOpen}
       onOk={handleOk}
       onCancel={handleCancel}
+      okButtonProps={{
+        danger: true,
+      }}
     >
       <p>
         Are you sure you want to delete project: <strong>{projectname}</strong>{" "}

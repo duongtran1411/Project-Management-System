@@ -5,6 +5,7 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
+import { WorklogComponent } from "@/components/workspace/worklog/Worklog";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { createComment } from "@/lib/services/comment/comment.service";
@@ -16,13 +17,13 @@ import {
   updateReporterForTask,
   updateTaskDate,
   updateTaskName,
-  updateTaskReporter,
   updateTaskStatus,
 } from "@/lib/services/task/task.service";
 import { Assignee } from "@/models/assignee/assignee.model";
 import { Comment } from "@/models/comment/comment";
 import { Epic } from "@/models/epic/epic.model";
 import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
+import { Reporter } from "@/models/reporter/reporter.model";
 import { Task } from "@/models/task/task.model";
 import {
   ArrowDownOutlined,
@@ -36,8 +37,8 @@ import {
   Button,
   DatePicker,
   Dropdown,
+  Image,
   Input,
-  Menu,
   MenuProps,
   Modal,
   Select,
@@ -45,11 +46,10 @@ import {
   Tag,
   Tooltip,
 } from "antd";
+import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import dayjs from "dayjs";
-import { Reporter } from "@/models/reporter/reporter.model";
 
 interface DetailTaskModalProps {
   open: boolean;
@@ -93,8 +93,13 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [name, setName] = useState<string>("");
   const [status, setStatus] = useState(task.status || "TO_DO");
   const [reporter, setReporter] = useState<Reporter>();
+  const [activeTab, setActiveTab] = useState<
+    "all" | "comments" | "history" | "worklog"
+  >("comments");
+
   useEffect(() => {
     setCurrentTask(task);
+    console.log("cur", currentTask);
   }, [task]);
   const getMemberProject = async (
     url: string
@@ -148,11 +153,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     }
     return Promise.reject();
   };
-  const {
-    data: dataEpic,
-    error: errorEpic,
-    isLoading: loadingEpic,
-  } = useSWR(
+  const { data: dataEpic } = useSWR(
     projectId ? `${Endpoints.Epic.GET_BY_PROJECT(projectId)}` : "",
     getEpicTask
   );
@@ -193,7 +194,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
     if (task._id) {
-      const response = await updateDescriptionTask(task._id, description);
+      await updateDescriptionTask(task._id, description);
     }
   };
 
@@ -205,7 +206,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const handleSaveName = async () => {
     setIsEditingName(false);
     if (task._id) {
-      const response = await updateTaskName(task._id, name);
+      await updateTaskName(task._id, name);
     }
   };
 
@@ -347,7 +348,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       const response = await updateReporterForTask(taskId, reporter);
       console.log(response);
       if (response.success) {
-        showSuccessToast(response.message)
+        showSuccessToast(response.message);
         setReporter(response.data.reporter);
       }
     } catch (error: any) {
@@ -372,7 +373,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       onCancel={onClose}
       footer={null}
       width={1200}
-      styles={{ body: { padding: 0 } }}>
+      styles={{ body: { padding: 0 } }}
+    >
       <div className="flex">
         {/* Left section */}
         <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
@@ -397,7 +399,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
           ) : (
             <div
               onClick={() => setIsEditingName(true)}
-              className="cursor-pointer min-h-[50px]">
+              className="cursor-pointer min-h-[50px]"
+            >
               {name ? (
                 <h2 className="font-extrabold text-4xl">{name}</h2>
               ) : (
@@ -419,7 +422,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                   <Button
                     type="primary"
                     size="small"
-                    onClick={handleSaveDescription}>
+                    onClick={handleSaveDescription}
+                  >
                     Save
                   </Button>
                   <Button size="small" onClick={handleCancelDescription}>
@@ -430,7 +434,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             ) : (
               <div
                 onClick={() => setIsEditingDescription(true)}
-                className="cursor-pointer min-h-[50px]">
+                className="cursor-pointer min-h-[50px]"
+              >
                 {description ? (
                   <p className="text-gray-500">{description}</p>
                 ) : (
@@ -470,83 +475,118 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
             {/* Tabs */}
             <div className="flex mb-2 space-x-2">
-              <Button size="small">All</Button>
-              <Button size="small" type="primary">
+              <Button
+                size="small"
+                type={activeTab === "all" ? "primary" : "default"}
+                onClick={() => setActiveTab("all")}
+              >
+                All
+              </Button>
+              <Button
+                size="small"
+                type={activeTab === "comments" ? "primary" : "default"}
+                onClick={() => setActiveTab("comments")}
+              >
                 Comments
               </Button>
-              <Button size="small">History</Button>
-              <Button size="small">Work log</Button>
+              <Button
+                size="small"
+                type={activeTab === "history" ? "primary" : "default"}
+                onClick={() => setActiveTab("history")}
+              >
+                History
+              </Button>
+              <Button
+                size="small"
+                type={activeTab === "worklog" ? "primary" : "default"}
+                onClick={() => setActiveTab("worklog")}
+              >
+                Work log
+              </Button>
             </div>
 
-            {/* Comment Input */}
-            <div className="mt-4">
-              {/* Add mentions quick select */}
-              {Array.isArray(contributor) && contributor.length > 0 && (
-                <div className="mb-2 flex flex-wrap items-center">
-                  <span className="mr-2">Add mentions:</span>
-                  {contributor.map((e) => (
-                    <Button
-                      key={e._id}
-                      size="small"
-                      className="mr-2 mb-2 flex items-center"
-                      icon={
-                        <Avatar src={e.userId.avatar} size="small">
-                          {e.userId.fullName[0]}
-                        </Avatar>
-                      }
-                      onClick={() => {
-                        const mention = `@${e.userId.fullName} `;
-                        setNewComment((prev) => prev + mention);
-                      }}>
-                      {e.userId.fullName}
-                    </Button>
-                  ))}
-                </div>
-              )}
-
-              <Input.TextArea
-                placeholder="Add comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                autoSize={{ minRows: 2, maxRows: 5 }}
-              />
-
-              <div className="flex mt-2 space-x-2">
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={handleComment}
-                  disabled={!newComment.trim()}>
-                  Save
-                </Button>
-                <Button size="small" onClick={() => setNewComment("")}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-
-            {/* Render Comments */}
-            <div className="mt-4 space-y-3">
-              {Array.isArray(comments) &&
-                comments.map((c, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <img
-                      src={c.author.avatar}
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <div>
-                      <p className="font-semibold">{c.author.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {c.attachments?.filename}
-                      </p>
-                      <div
-                        className="mt-1"
-                        dangerouslySetInnerHTML={{ __html: c.content }}
-                      />
+            {/* Comments */}
+            {activeTab === "comments" && (
+              <>
+                {/* Comment Input */}
+                <div className="mt-4">
+                  {/* Add mentions quick select */}
+                  {Array.isArray(contributor) && contributor.length > 0 && (
+                    <div className="mb-2 flex flex-wrap items-center">
+                      <span className="mr-2">Add mentions:</span>
+                      {contributor.map((e) => (
+                        <Button
+                          key={e._id}
+                          size="small"
+                          className="mr-2 mb-2 flex items-center"
+                          icon={
+                            <Avatar src={e.userId.avatar} size="small">
+                              {e.userId.fullName[0]}
+                            </Avatar>
+                          }
+                          onClick={() => {
+                            const mention = `@${e.userId.fullName} `;
+                            setNewComment((prev) => prev + mention);
+                          }}
+                        >
+                          {e.userId.fullName}
+                        </Button>
+                      ))}
                     </div>
+                  )}
+
+                  <Input.TextArea
+                    placeholder="Add comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    autoSize={{ minRows: 2, maxRows: 5 }}
+                  />
+
+                  <div className="flex mt-2 space-x-2">
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={handleComment}
+                      disabled={!newComment.trim()}
+                    >
+                      Save
+                    </Button>
+                    <Button size="small" onClick={() => setNewComment("")}>
+                      Cancel
+                    </Button>
                   </div>
-                ))}
-            </div>
+                </div>
+
+                {/* Render Comments */}
+                <div className="mt-4 space-y-3">
+                  {Array.isArray(comments) &&
+                    comments.map((c, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <Image
+                          src={c.author.avatar}
+                          className="rounded-full"
+                          alt="avatar"
+                          width={10}
+                          height={10}
+                        />
+                        <div>
+                          <p className="font-semibold">{c.author.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {c.attachments?.filename}
+                          </p>
+                          <div
+                            className="mt-1"
+                            dangerouslySetInnerHTML={{ __html: c.content }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {/* Worklog */}
+            {activeTab === "worklog" && <WorklogComponent task={task} />}
           </div>
         </div>
 
@@ -560,14 +600,16 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 onClick: handleMenuClick,
               }}
               trigger={["click"]}
-              className="">
+              className=""
+            >
               <Tag
                 color={statusColors[status as Status]}
                 style={{
                   cursor: "pointer",
                   fontWeight: 600,
                   padding: "6px 12px",
-                }}>
+                }}
+              >
                 {status.replaceAll("_", " ")} <DownOutlined />
               </Tag>
             </Dropdown>
@@ -611,7 +653,8 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                           <Avatar
                             src={<UserOutlined />}
                             size="small"
-                            className="bg-gray-400"></Avatar>
+                            className="bg-gray-400"
+                          ></Avatar>
                           <div>
                             <p className="font-medium">Unassigned</p>
                           </div>
@@ -646,17 +689,20 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                     }
                   },
                 }}
-                trigger={["click"]}>
+                trigger={["click"]}
+              >
                 <Tooltip
                   title={`Assignee: ${assignee?.fullName || "Unassigned"}`}
-                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
+                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+                >
                   <Avatar
                     className={`cursor-pointer text-white ${
                       assignee?.fullName === "Unassigned" ? "bg-gray-400" : ""
                     }`}
                     size="default"
                     src={assignee?.avatar}
-                    onClick={(e) => e?.stopPropagation()}>
+                    onClick={(e) => e?.stopPropagation()}
+                  >
                     {assignee?.fullName?.[0] || <UserOutlined />}
                   </Avatar>
                   <p>{assignee?.fullName}</p>
@@ -785,15 +831,18 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                     }
                   },
                 }}
-                trigger={["click"]}>
+                trigger={["click"]}
+              >
                 <Tooltip
                   title={`Reporter: ${reporter?.fullName || "Unassigned"}`}
-                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
+                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+                >
                   <Avatar
                     className={`cursor-pointer text-white`}
                     size="default"
                     src={reporter?.avatar}
-                    onClick={(e) => e?.stopPropagation()}>
+                    onClick={(e) => e?.stopPropagation()}
+                  >
                     {reporter?.fullName?.[0] || <UserOutlined />}
                   </Avatar>
                   <p>

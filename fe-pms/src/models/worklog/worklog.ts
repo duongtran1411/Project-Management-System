@@ -31,7 +31,7 @@ export interface Worklog {
 export interface WorklogModel {
   taskId: string;
   timeSpent: number;
-  timeRemaining?: number;
+  timeRemain?: number;
   startDate?: string;
   description?: string;
   contributor: string;

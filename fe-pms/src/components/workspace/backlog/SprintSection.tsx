@@ -450,6 +450,9 @@ const SprintSection: React.FC<Props> = ({
         open={isDeleteTaskModalOpen}
         onOk={handleDeleteTask}
         onCancel={() => setIsDeleteTaskModalOpen(false)}
+        okButtonProps={{
+          danger: true,
+        }}
       >
         <p>Are you sure you want to delete {selectedTaskIds.length} task(s)?</p>
       </Modal>
