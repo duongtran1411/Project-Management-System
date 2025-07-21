@@ -12,6 +12,20 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Async email sending function that doesn't block the API
+export function sendEmailAsync(
+  emailFunction: () => Promise<void>,
+  delayMs: number = 1000
+) {
+  setTimeout(async () => {
+    try {
+      await emailFunction();
+    } catch (error) {
+      console.error("Failed to send email:", error);
+    }
+  }, delayMs);
+}
+
 export async function sendPasswordEmail(
   to: string,
   name: string,
