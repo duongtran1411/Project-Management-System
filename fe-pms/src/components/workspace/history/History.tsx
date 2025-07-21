@@ -42,7 +42,6 @@ const History: React.FC<{ taskId: string }> = ({ taskId }) => {
           <div className="flex items-start gap-3 bg-gray-50 pt-4 my-3">
             {data?.data?.updatedBy?.avatar ? (
               <Avatar
-                className="bg-purple-700"
                 size="small"
                 src={data?.data?.updatedBy?.avatar}
               />
@@ -93,7 +92,6 @@ const History: React.FC<{ taskId: string }> = ({ taskId }) => {
           <div className="flex items-start gap-3 bg-gray-50 pt-4 my-3">
             {data?.data?.createdBy?.avatar ? (
               <Avatar
-                className="bg-purple-700"
                 size="small"
                 src={data?.data?.createdBy?.avatar}
               />

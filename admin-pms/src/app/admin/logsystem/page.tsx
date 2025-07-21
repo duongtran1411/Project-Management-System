@@ -1,7 +1,7 @@
 "use client";
 import { createStyles } from "@/components/common/antd/createStyle";
 import Spinner from "@/components/common/spinner/spin";
-import { showErrorToast } from "@/components/common/toast/toast";
+import { showErrorToast, showSuccessToast } from "@/components/common/toast/toast";
 import { Constants } from "@/lib/constants";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
@@ -28,6 +28,8 @@ import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
 import { Filter } from "@/models/filter/Filter";
 import dayjs, { Dayjs } from "dayjs";
 import { format, parseISO } from "date-fns";
+import RemoveLogButton from "@/components/common/modal/deleteLog";
+import { removeLog } from "@/lib/services/logsystem/logsystem";
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 const { Search } = Input;
@@ -173,6 +175,9 @@ export default function Page() {
     startDate: undefined,
     endDate: undefined,
   };
+
+  const [isRemoveLogModalOpen, setIsRemoveLogModalOpen] = useState(false);
+  const [daysToKeep, setDaysToKeep] = useState(0);
   useEffect(() => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (token) {
@@ -204,7 +209,7 @@ export default function Page() {
     if (filter?.startDate) params.set("startDate", filter.startDate);
     if (filter?.endDate) params.set("endDate", filter.endDate);
     if (filter?.status) params.set("status", filter.status);
-    if (filter?.action) params.set("action", filter.action);
+    if (filter?.search) params.set("action", filter.search);
     return params.toString();
   }, [pagination, filter]);
 
@@ -216,7 +221,7 @@ export default function Page() {
     return response.data.data;
   };
 
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     userId ? `${Endpoints.ActivityLog.GET_ALL}?${queryString}` : "",
     fetcher
   );
@@ -230,6 +235,19 @@ export default function Page() {
       setActivityLogs(data);
     }
   }, [data]);
+
+  const handleRemoveLog = async (days: number) => {
+    try {
+      const response = await removeLog(days);
+      if (response.successs) {
+        setIsRemoveLogModalOpen(false);
+        showSuccessToast(response.message)
+        mutate();
+      }
+    } catch (error: any) {
+      showErrorToast(error?.message || "Xóa log thất bại");
+    }
+  };
 
   if (isLoading) {
     return <Spinner />;
@@ -248,6 +266,12 @@ export default function Page() {
           Filter <FilterOutlined />
         </Button>
       </Tooltip>
+
+      <Button
+        className="bg-red-500 text-white"
+        onClick={() => setIsRemoveLogModalOpen(true)}>
+        Remove Log <DeleteOutlined />
+      </Button>
       {showFilter && (
         <div className="flex justify-start mx-7">
           <Space direction="horizontal" size={12}>
@@ -327,9 +351,6 @@ export default function Page() {
           </Space>
         </div>
       )}
-      <Button className="bg-red-500 text-white">
-        Remove Log <DeleteOutlined />
-      </Button>
       <div className="flex justify-center items-center w-50">
         <Table
           size="small"
@@ -351,6 +372,13 @@ export default function Page() {
           onChange={handlePageSize}
         />
       </div>
+      <RemoveLogButton
+        open={isRemoveLogModalOpen}
+        onCancel={() => {
+          setIsRemoveLogModalOpen(false);
+        }}
+        onConfirm={(day: number) => handleRemoveLog(day)}
+      />
     </div>
   );
 }

@@ -227,8 +227,8 @@ export class TaskService {
     const task = await Task.findById(taskId).populate([
       { path: "assignee", select: "fullName email avatar" },
       { path: "reporter", select: "fullName email avatar" },
-      { path: "createdBy", select: "fullName email " },
-      { path: "updatedBy", select: "fullName email " },
+      { path: "createdBy", select: "fullName email avatar" },
+      { path: "updatedBy", select: "fullName email avatar" },
       { path: "projectId", select: "name description" },
       { path: "epic", select: "name description" },
       { path: "milestones", select: "name description" },

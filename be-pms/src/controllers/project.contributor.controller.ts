@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import projectContributorService from "../services/project.contributor.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
@@ -274,6 +274,37 @@ export class ProjectContributorController {
       });
     }
   };
+
+  getRoleByProjectId = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const user = req.user
+      const role = await projectContributorService.getRoleContributorByProjectId(user, projectId)
+      if (!role) {
+        res.status(400).json({
+          success: false,
+          message: "Không thể lấy role theo projectId",
+          status: 400,
+        });
+      }
+
+      res.status(200).json({
+        status: 200,
+        message: 'Lấy role project thành công',
+        success: true,
+        data: {
+          role: role,
+          user: user
+        }
+      })
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Không thể lấy role theo projectId",
+        statusCode: 400,
+      });
+    }
+  }
 }
 
 export default new ProjectContributorController();

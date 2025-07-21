@@ -48,6 +48,7 @@ import {
 } from "react-beautiful-dnd";
 import useSWR from "swr";
 import DetailTaskModal from "./detail-task/page";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 const fetcher = (url: string) =>
   axiosService
@@ -91,6 +92,9 @@ const BoardPage = () => {
   const [isOpenMileStoneModal, setIsOpenMileStoneModal] =
     useState<boolean>(false);
   const [showCreateInput, setShowCreateInput] = useState(false);
+  const {role} = useRole();
+
+  const isReadOnly = role.name === "CONTRIBUTOR";
 
   const {
     data: taskData,
@@ -424,7 +428,7 @@ const BoardPage = () => {
           <Input
             placeholder="Search board"
             allowClear
-            className="w-[450px] h-[10px] board-search-input"
+            className="w-[450px] h-[30px] board-search-input"
             prefix={<SearchOutlined className="text-gray-400" />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -494,7 +498,7 @@ const BoardPage = () => {
           </Button>
         </div>
         <div>
-          <Button
+          <Button disabled={isReadOnly}
             className="bg-blue-500 text-zinc-200"
             onClick={() => {
               setIsOpenMileStoneModal(true);
@@ -598,19 +602,21 @@ const BoardPage = () => {
                                       {
                                         key: "change_parent",
                                         label: "Change parent",
-                                        children: epics.map((epic) => ({
+                                        disabled: true,
+                                        children: Array.isArray(epics) ? epics.map((epic) => ({
                                           key: `parent_${epic._id}`,
                                           label: (
                                             <span className="font-medium text-purple-600">
                                               {epic.name}
                                             </span>
                                           ),
-                                        })),
+                                        })) : [],
                                       },
                                       {
                                         key: "delete",
                                         label: "Delete",
                                         danger: true,
+                                        disabled: true,
                                       },
                                     ],
                                     onClick: ({ key, domEvent }) => {
