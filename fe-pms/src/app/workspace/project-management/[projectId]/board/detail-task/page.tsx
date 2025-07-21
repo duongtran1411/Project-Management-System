@@ -8,19 +8,44 @@ import {
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { createComment } from "@/lib/services/comment/comment.service";
-import { updateAssigneeTask, updateDescriptionTask, updateEpicTask, updatePriorityTask, updateTaskDate, updateTaskName } from "@/lib/services/task/task.service";
+import {
+  updateAssigneeTask,
+  updateDescriptionTask,
+  updateEpicTask,
+  updatePriorityTask,
+  updateTaskDate,
+  updateTaskName,
+} from "@/lib/services/task/task.service";
 import { Assignee } from "@/models/assignee/assignee.model";
 import { Comment } from "@/models/comment/comment";
 import { Epic } from "@/models/epic/epic.model";
 import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
 import { Task } from "@/models/task/task.model";
-import { ArrowDownOutlined, ArrowUpOutlined, FlagOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, Button, DatePicker, Dropdown, Input, Modal, Select, Space, Tag, Tooltip } from "antd";
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  FlagOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  DatePicker,
+  Dropdown,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Tag,
+  Tooltip,
+} from "antd";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import dayjs from 'dayjs';
- 
+import dayjs from "dayjs";
+import { useSocket } from "@/hooks/useSocket";
+import { useSocketEvent } from "@/hooks/useSocketEvent";
+
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
@@ -36,20 +61,40 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>();
+  const [comments, setComments] = useState<Comment[]>([]);
   const [contributor, setContributors] = useState<ProjectContributorTag[]>([]);
   const { projectId } = useParams<{ projectId: string }>();
   const [assignee, setAssignee] = useState<Assignee>();
   const [epics, setEpics] = useState<Epic[]>([]);
   const [epic, setEpic] = useState<Epic>();
-  const [currentTask, setCurrentTask] = useState<Task | null>(task);
+  // const [currentTask, setCurrentTask] = useState<Task | null>(task);
   const [startDate, setStartDate] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
+  const { emit } = useSocket();
   useEffect(() => {
-    setCurrentTask(task);
-  }, [task]);
+    if (!open || !task?._id) return;
+    emit("open-comment-task", task._id);
+    return () => {
+      emit("leave-comment-task", task._id);
+    };
+  }, [open, task?._id, emit]);
+
+  useSocketEvent(
+    "new-comment",
+    (data: any) => {
+      if (data?.taskId === task._id) {
+        setComments((prev) => {
+          if (!prev.some((c) => c._id === data.comment._id)) {
+            return [...prev, data.comment];
+          }
+          return prev;
+        });
+      }
+    },
+    [task?._id]
+  );
   const getMemberProject = async (
     url: string
   ): Promise<ProjectContributorTag[]> => {
@@ -102,11 +147,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     }
     return Promise.reject();
   };
-  const {
-    data: dataEpic,
-    error: errorEpic,
-    isLoading: loadingEpic,
-  } = useSWR(
+  const { data: dataEpic } = useSWR(
     projectId ? `${Endpoints.Epic.GET_BY_PROJECT(projectId)}` : "",
     getEpicTask
   );
@@ -191,9 +232,21 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const priorityOptions = [
-    { key: 'High',value: "HIGH", icon: <ArrowUpOutlined className="text-red-500" /> },
-    { key: 'Medium',value: "MEDIUM", icon: <FlagOutlined className="text-yellow-500" /> },
-    { key: 'Low',value: "LOW", icon: <ArrowDownOutlined className="text-blue-500" /> }
+    {
+      key: "High",
+      value: "HIGH",
+      icon: <ArrowUpOutlined className="text-red-500" />,
+    },
+    {
+      key: "Medium",
+      value: "MEDIUM",
+      icon: <FlagOutlined className="text-yellow-500" />,
+    },
+    {
+      key: "Low",
+      value: "LOW",
+      icon: <ArrowDownOutlined className="text-blue-500" />,
+    },
   ];
 
   const updateAssignee = async (taskId: string, assignee: string) => {
@@ -254,10 +307,13 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     }
   };
 
-  const updatePriority = async (value:string)=>{
-    debugger
+  const updatePriority = async (value: string) => {
+    debugger;
     try {
-      const response = await updatePriorityTask(task._id ? task._id : "",value);
+      const response = await updatePriorityTask(
+        task._id ? task._id : "",
+        value
+      );
       setDueDate(response.priority);
     } catch (error: any) {
       const message =
@@ -265,7 +321,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       showErrorToast(message);
       return null;
     }
-  }
+  };
 
   if (error || errorComment) {
     showErrorToast(error ? error : errorComment);
@@ -287,37 +343,35 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
         {/* Left section */}
         <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
           {/* Title */}
-          
-            {isEditingName ? (
-              <div>
-                <Input.TextArea
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoSize={{ minRows: 3, maxRows: 10 }}
-                />
-                <div className="flex mt-2 space-x-2">
-                  <Button
-                    type="primary"
-                    size="small"
-                    onClick={handleSaveName}>
-                    Save
-                  </Button>
-                  <Button size="small" onClick={handleCancelName}>
-                    Cancel
-                  </Button>
-                </div>
+
+          {isEditingName ? (
+            <div>
+              <Input.TextArea
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoSize={{ minRows: 3, maxRows: 10 }}
+              />
+              <div className="flex mt-2 space-x-2">
+                <Button type="primary" size="small" onClick={handleSaveName}>
+                  Save
+                </Button>
+                <Button size="small" onClick={handleCancelName}>
+                  Cancel
+                </Button>
               </div>
-            ) : (
-              <div
-                onClick={() => setIsEditingName(true)}
-                className="cursor-pointer min-h-[50px]">
-                {name ? (
-                  <h2 className="font-extrabold text-4xl">{name}</h2>
-                ) : (
-                  <p className="text-gray-500">Add a name...</p>
-                )}
-              </div>
-            )}
+            </div>
+          ) : (
+            <div
+              onClick={() => setIsEditingName(true)}
+              className="cursor-pointer min-h-[50px]"
+            >
+              {name ? (
+                <h2 className="font-extrabold text-4xl">{name}</h2>
+              ) : (
+                <p className="text-gray-500">Add a name...</p>
+              )}
+            </div>
+          )}
           {/* Description */}
           <div className="mb-4">
             <h3 className="mb-2 text-xl font-semibold">Description</h3>
@@ -372,9 +426,9 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 value: opt.value,
               }))}
               onChange={(value) => {
-                console.log('priority',value);
-                setPriority(value)
-                updatePriority(value)
+                console.log("priority", value);
+                setPriority(value);
+                updatePriority(value);
               }}
             />
           </div>
@@ -580,9 +634,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 value={epic?._id || null}
                 onChange={(value) => {
                   const selectedEpic = epics.find((e) => e._id === value);
-                  setCurrentTask((prev) =>
-                    prev ? { ...prev, epic: selectedEpic } : null
-                  );
                   if (selectedEpic) {
                     updateEpic(selectedEpic._id);
                   }
