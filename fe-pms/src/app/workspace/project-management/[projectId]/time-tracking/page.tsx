@@ -21,6 +21,7 @@ import {
   Dropdown,
   Input,
   Select,
+  Spin,
   Table,
   Tag,
   Typography,
@@ -40,22 +41,6 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-interface TimeTrackingStats {
-  totalTimeSpent: number;
-  totalTimeRemaining: number;
-  totalTasks: number;
-  uniqueContributors: number;
-  completionRate: number;
-}
-
-interface ContributorStats {
-  contributor: any;
-  totalTimeSpent: number;
-  totalTimeRemaining: number;
-  tasksWorkedOn: number;
-  completionRate: number;
-}
-
 const TimeTrackingReportPage: React.FC = () => {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -72,6 +57,23 @@ const TimeTrackingReportPage: React.FC = () => {
     `${Endpoints.Worklog.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
+  // Fetch statistic data
+  const { data: statisticData, isLoading: statisticLoading } = useSWR(
+    `${Endpoints.Worklog.STATISTIC_BY_PROJECT(projectId)}`,
+    fetcher
+  );
+
+  const completionRate =
+    statisticData?.data?.totalSpentTime + statisticData?.data?.totalRemainTime >
+    0
+      ? (statisticData?.data?.totalSpentTime /
+          (statisticData?.data?.totalSpentTime +
+            statisticData?.data?.totalRemainTime)) *
+        100
+      : 0;
+  // Fetch top contributors data
+  const { data: topContributorsData, isLoading: topContributorsLoading } =
+    useSWR(`${Endpoints.Worklog.WORKLOG_TOPS}`, fetcher);
 
   console.log("worklogData", worklogData);
 
@@ -112,86 +114,6 @@ const TimeTrackingReportPage: React.FC = () => {
 
     return filtered;
   }, [worklogData?.data, dateRange, selectedContributor, searchTerm]);
-
-  // Calculate statistics
-  const stats: TimeTrackingStats = useMemo(() => {
-    const totalTimeSpent = filteredWorklogs.reduce(
-      (sum: number, log: Worklog) => sum + (log.timeSpent || 0),
-      0
-    );
-    const totalTimeRemaining = filteredWorklogs.reduce(
-      (sum: number, log: Worklog) => sum + (log.timeRemain || 0),
-      0
-    );
-    const uniqueContributors = new Set(
-      filteredWorklogs.map((log: Worklog) => log.contributor?._id)
-    ).size;
-    const uniqueTasks = new Set(
-      filteredWorklogs.map((log: Worklog) => log.taskId?._id)
-    ).size;
-    const completionRate =
-      totalTimeSpent + totalTimeRemaining > 0
-        ? (totalTimeSpent / (totalTimeSpent + totalTimeRemaining)) * 100
-        : 0;
-
-    return {
-      totalTimeSpent,
-      totalTimeRemaining,
-      totalTasks: uniqueTasks,
-      uniqueContributors,
-      completionRate,
-    };
-  }, [filteredWorklogs]);
-
-  // Get unique contributors for filter
-  const uniqueContributors = useMemo(() => {
-    if (!worklogData?.data) return [];
-    const contributors = worklogData.data
-      .map((log: Worklog) => log.contributor)
-      .filter(Boolean);
-    return contributors.filter(
-      (contributor: any, index: number, self: any[]) =>
-        index === self.findIndex((c) => c._id === contributor._id)
-    );
-  }, [worklogData?.data]);
-
-  // Calculate contributor statistics
-  const contributorStats: ContributorStats[] = useMemo(() => {
-    const contributorMap = new Map();
-
-    filteredWorklogs.forEach((worklog: Worklog) => {
-      const contributorId = worklog.contributor?._id;
-      if (!contributorId) return;
-
-      if (!contributorMap.has(contributorId)) {
-        contributorMap.set(contributorId, {
-          contributor: worklog.contributor,
-          totalTimeSpent: 0,
-          totalTimeRemaining: 0,
-          tasksWorkedOn: new Set(),
-          completionRate: 0,
-        });
-      }
-
-      const stat = contributorMap.get(contributorId);
-      stat.totalTimeSpent += worklog.timeSpent || 0;
-      stat.totalTimeRemaining += worklog.timeRemain || 0;
-      stat.tasksWorkedOn.add(worklog.taskId?._id);
-    });
-
-    return Array.from(contributorMap.values())
-      .map((stat) => ({
-        ...stat,
-        tasksWorkedOn: stat.tasksWorkedOn.size,
-        completionRate:
-          stat.totalTimeSpent + stat.totalTimeRemaining > 0
-            ? (stat.totalTimeSpent /
-                (stat.totalTimeSpent + stat.totalTimeRemaining)) *
-              100
-            : 0,
-      }))
-      .sort((a, b) => b.totalTimeSpent - a.totalTimeSpent);
-  }, [filteredWorklogs]);
 
   // Table columns
   const worklogColumns = [
@@ -270,154 +192,162 @@ const TimeTrackingReportPage: React.FC = () => {
   return (
     <div className="p-6">
       {/* Header with filters */}
-      <div className="flex items-center gap-3 mb-6 flex-row justify-between">
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Search time logs..."
-            allowClear
-            className="w-[450px] h-[10px] board-search-input"
-            prefix={<SearchOutlined className="text-gray-400" />}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {isLoading ? (
+        <Spin size="large" />
+      ) : (
+        <div className="flex items-center gap-3 mb-6 flex-row justify-between">
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Search time logs..."
+              allowClear
+              className="w-[450px] h-[10px] board-search-input"
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
-          <Dropdown
-            trigger={["click"]}
-            dropdownRender={() => (
-              <div className="bg-white p-4 rounded-lg shadow-lg border">
-                <Text strong className="block mb-2">
-                  Date Range:
-                </Text>
-                <RangePicker
-                  value={dateRange}
-                  onChange={(dates) =>
-                    setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])
-                  }
-                  style={{ width: "100%" }}
-                  placeholder={["Start Date", "End Date"]}
-                />
-              </div>
-            )}
-          >
-            <Button className="flex items-center font-semibold text-gray-700">
-              <CalendarOutlined className="mr-1" />
-              Date Range <DownOutlined className="ml-1" />
-            </Button>
-          </Dropdown>
+            <Dropdown
+              trigger={["click"]}
+              dropdownRender={() => (
+                <div className="bg-white p-4 rounded-lg shadow-lg border">
+                  <Text strong className="block mb-2">
+                    Date Range:
+                  </Text>
+                  <RangePicker
+                    value={dateRange}
+                    onChange={(dates) =>
+                      setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs])
+                    }
+                    style={{ width: "100%" }}
+                    placeholder={["Start Date", "End Date"]}
+                  />
+                </div>
+              )}
+            >
+              <Button className="flex items-center font-semibold text-gray-700">
+                <CalendarOutlined className="mr-1" />
+                Date Range <DownOutlined className="ml-1" />
+              </Button>
+            </Dropdown>
 
-          <Dropdown
-            trigger={["click"]}
-            dropdownRender={() => (
-              <div className="bg-white p-4 rounded-lg shadow-lg border min-w-[250px]">
-                <Text strong className="block mb-2">
-                  Contributors:
-                </Text>
-                <Select
-                  value={selectedContributor}
-                  onChange={setSelectedContributor}
-                  placeholder="Select contributor"
-                  style={{ width: "100%" }}
-                  allowClear
-                >
-                  {uniqueContributors.map((contributor: any) => (
-                    <Option key={contributor._id} value={contributor._id}>
-                      <div className="flex items-center gap-2">
-                        <Avatar src={contributor.avatar} size="small">
-                          {contributor.fullName?.[0]}
-                        </Avatar>
-                        {contributor.fullName}
-                      </div>
-                    </Option>
-                  ))}
-                </Select>
-              </div>
-            )}
+            <Dropdown
+              trigger={["click"]}
+              dropdownRender={() => (
+                <div className="bg-white p-4 rounded-lg shadow-lg border min-w-[250px]">
+                  <Text strong className="block mb-2">
+                    Contributors:
+                  </Text>
+                  <Select
+                    value={selectedContributor}
+                    onChange={setSelectedContributor}
+                    placeholder="Select contributor"
+                    style={{ width: "100%" }}
+                    allowClear
+                  >
+                    {topContributorsData?.data?.map((contributor: any) => (
+                      <Option key={contributor._id} value={contributor._id}>
+                        <div className="flex items-center gap-2">
+                          <Avatar src={contributor.avatar} size="small">
+                            {contributor.fullName?.[0]}
+                          </Avatar>
+                          {contributor.fullName}
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+              )}
+            >
+              <Button className="flex items-center font-semibold text-gray-700">
+                <FilterOutlined className="mr-1" />
+                Contributors <DownOutlined className="ml-1" />
+              </Button>
+            </Dropdown>
+          </div>
+
+          <Button
+            onClick={() => {
+              setDateRange(null);
+              setSelectedContributor(null);
+              setSearchTerm("");
+            }}
+            className="font-semibold text-gray-600"
           >
-            <Button className="flex items-center font-semibold text-gray-700">
-              <FilterOutlined className="mr-1" />
-              Contributors <DownOutlined className="ml-1" />
-            </Button>
-          </Dropdown>
+            Clear Filters
+          </Button>
         </div>
-
-        <Button
-          onClick={() => {
-            setDateRange(null);
-            setSelectedContributor(null);
-            setSearchTerm("");
-          }}
-          className="font-semibold text-gray-600"
-        >
-          Clear Filters
-        </Button>
-      </div>
+      )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <Card className="border border-gray-200 rounded-lg shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <ClockCircleOutlined className="text-green-600 text-lg" />
-            </div>
-            <div>
-              <Text type="secondary" className="text-sm">
-                Total Time Spent
-              </Text>
-              <div className="text-2xl font-bold text-gray-800">
-                {stats.totalTimeSpent}h
+      {statisticLoading ? (
+        <Spin size="large" />
+      ) : (
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <Card className="border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <ClockCircleOutlined className="text-green-600 text-lg" />
+              </div>
+              <div>
+                <Text type="secondary" className="text-sm">
+                  Total Time Spent
+                </Text>
+                <div className="text-2xl font-bold text-gray-800">
+                  {statisticData?.data?.totalSpentTime}h
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card className="border border-gray-200 rounded-lg shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <CalendarOutlined className="text-orange-600 text-lg" />
-            </div>
-            <div>
-              <Text type="secondary" className="text-sm">
-                Time Remaining
-              </Text>
-              <div className="text-2xl font-bold text-gray-800">
-                {stats.totalTimeRemaining}h
+          <Card className="border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <CalendarOutlined className="text-orange-600 text-lg" />
+              </div>
+              <div>
+                <Text type="secondary" className="text-sm">
+                  Time Remaining
+                </Text>
+                <div className="text-2xl font-bold text-gray-800">
+                  {statisticData?.data?.totalRemainTime}h
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card className="border border-gray-200 rounded-lg shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <CheckCircleOutlined className="text-blue-600 text-lg" />
-            </div>
-            <div>
-              <Text type="secondary" className="text-sm">
-                Tasks Tracked
-              </Text>
-              <div className="text-2xl font-bold text-gray-800">
-                {stats.totalTasks}
+          <Card className="border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <CheckCircleOutlined className="text-blue-600 text-lg" />
+              </div>
+              <div>
+                <Text type="secondary" className="text-sm">
+                  Tasks Tracked
+                </Text>
+                <div className="text-2xl font-bold text-gray-800">
+                  {statisticData?.data?.totalTask}h
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card className="border border-gray-200 rounded-lg shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <TeamOutlined className="text-purple-600 text-lg" />
-            </div>
-            <div>
-              <Text type="secondary" className="text-sm">
-                Contributors
-              </Text>
-              <div className="text-2xl font-bold text-gray-800">
-                {stats.uniqueContributors}
+          <Card className="border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <TeamOutlined className="text-purple-600 text-lg" />
+              </div>
+              <div>
+                <Text type="secondary" className="text-sm">
+                  Contributors
+                </Text>
+                <div className="text-2xl font-bold text-gray-800">
+                  {statisticData?.data?.totalContributor}
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      )}
 
       {/* Progress Overview */}
       <Card className="border border-gray-200 rounded-lg shadow-sm mb-6">
@@ -426,23 +356,25 @@ const TimeTrackingReportPage: React.FC = () => {
             Project Progress
           </Title>
           <Text className="text-lg font-semibold text-gray-600">
-            {Math.round(stats.completionRate)}% Complete
+            {Math.round(completionRate)}% Complete
           </Text>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div
             className="bg-gradient-to-r from-[#667eea] to-[#764ba2] h-3 rounded-full transition-all duration-300"
-            style={{ width: `${Math.round(stats.completionRate)}%` }}
+            style={{ width: `${Math.round(completionRate)}%` }}
           ></div>
         </div>
         <Text type="secondary" className="text-sm mt-2 block">
-          {stats.totalTimeSpent}h completed of{" "}
-          {stats.totalTimeSpent + stats.totalTimeRemaining}h total estimated
+          {statisticData?.data?.totalSpentTime}h completed of{" "}
+          {statisticData?.data?.totalSpentTime +
+            statisticData?.data?.totalRemainTime}
+          h total estimated
         </Text>
       </Card>
 
       {/* Contributors Section */}
-      <Card className="border border-gray-200 rounded-lg shadow-sm mb-6">
+      {/* <Card className="border border-gray-200 rounded-lg shadow-sm mb-6">
         <Title level={4} className="mb-4 text-gray-700">
           Top Contributors
         </Title>
@@ -472,7 +404,7 @@ const TimeTrackingReportPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </Card>
+      </Card> */}
 
       {/* Time Logs Table */}
       <Card className="border border-gray-200 rounded-lg shadow-sm">

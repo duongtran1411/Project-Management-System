@@ -82,7 +82,8 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
-    GET_ROLE_PROJECT_ID: (projectId: string) => `project-contributor/project/role/${projectId}`
+    GET_ROLE_PROJECT_ID: (projectId: string) =>
+      `project-contributor/project/role/${projectId}`,
   };
 
   static readonly ProjectRole = {
@@ -133,5 +134,9 @@ export class Endpoints {
     CREATE_WORKLOG: "worklog",
     UPDATE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
     DELETE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
+    STATISTIC_BY_PROJECT: (projectId: string) =>
+      `worklog/statistics/project/${projectId}`,
+    WORKLOG_TOPS: "worklog/top-contributors",
+    WORKLOG_BY_CONTRIBUTOR: (userId: string) => `worklog/contributor/${userId}`,
   };
 }
