@@ -53,7 +53,7 @@ export class WorklogService {
   async getWorklogsByTaskId(taskId: string): Promise<any[]> {
     const worklogs = await Worklog.find({ taskId }).populate([
       { path: "contributor", select: "fullName email avatar" },
-      { path: "taskId", select: "name title" },
+      { path: "taskId", select: "title" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
@@ -88,11 +88,9 @@ export class WorklogService {
   }
 
   async getWorklogStatisticsByProjectId(projectId: string): Promise<any> {
-    // First, get all tasks in the project
     const tasks = await Task.find({ projectId }).select("_id");
     const taskIds = tasks.map((task) => task._id);
 
-    // Get worklog statistics using aggregation
     const statistics = await Worklog.aggregate([
       {
         $match: {
