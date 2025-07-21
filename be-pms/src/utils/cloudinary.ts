@@ -20,6 +20,16 @@ class CloudDinaryService {
     });
   }
 
+  deleteImage(publicId: string) {
+    return cloudinary.uploader.destroy(publicId);
+  }
+
+  deleteVideo(publicId: string) {
+    return cloudinary.uploader.destroy(publicId, {
+      resource_type: "video",
+    });
+  }
+
   getImageUrl(publicId: string, options?: any) {
     return cloudinary.url(publicId, options);
   }

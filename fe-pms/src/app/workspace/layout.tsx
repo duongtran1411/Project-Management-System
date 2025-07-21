@@ -15,14 +15,18 @@ export default function RootLayout({
   };
   return (
     <NoFOUCWrapper>
-      <div>
+      <div className="h-screen flex flex-col">
         <HeaderWorkSpace onCollapse={onCollapse} />
-        <div>
-          <div className="flex h-screen">
-            <div className={`w-max bg-gray-100 w-max`}>
-              <MenuWorkSpace colapsed={colapsed} />
-            </div>
-            <div className="flex-1 p-4 bg-white">{children}</div>
+        <div className="flex flex-1 overflow-hidden">
+          <div
+            className={`${
+              colapsed ? "w-16" : "w-64"
+            } flex-shrink-0 bg-gray-100 border-r border-gray-300 transition-all duration-300`}
+          >
+            <MenuWorkSpace colapsed={colapsed} />
+          </div>
+          <div className="flex-1 overflow-auto bg-white">
+            <div className="p-4 min-h-full">{children}</div>
           </div>
         </div>
       </div>

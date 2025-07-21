@@ -393,38 +393,52 @@ class NotificationService {
         "name" in comment.task
       ) {
         task = comment.task;
+        console.log("Task found:", {
+          taskId: task._id,
+          taskName: task.name,
+          projectId: task.projectId,
+          projectIdType: typeof task.projectId,
+        });
+
         if (
           task.projectId &&
           typeof task.projectId === "object" &&
           "_id" in task.projectId
         ) {
           project = await Project.findById(task.projectId._id);
+          console.log("Project found by _id:", project?._id);
         } else if (task.projectId) {
           project = await Project.findById(task.projectId);
+          console.log("Project found by direct ID:", project?._id);
         }
       }
 
       const notifications = await Promise.all(
         mentionedUserIds.map(async (userId) => {
+          const metadata = {
+            commentText,
+            taskName:
+              task && typeof task === "object" && "name" in task
+                ? task.name
+                : undefined,
+            taskId: task?._id?.toString(),
+            projectId: project?._id?.toString(),
+            projectName:
+              project && typeof project === "object" && "name" in project
+                ? project.name
+                : undefined,
+            mentionedUsers: mentionedUserIds,
+          };
+
+          console.log("Creating notification with metadata:", metadata);
+
           const notificationData: CreateNotificationData = {
             recipientId: userId,
             senderId,
             type: "MENTION",
             entityType: "Comment",
             entityId: commentId,
-            metadata: {
-              commentText,
-              taskName:
-                task && typeof task === "object" && "name" in task
-                  ? task.name
-                  : undefined,
-              taskId: task?._id?.toString(),
-              projectName:
-                project && typeof project === "object" && "name" in project
-                  ? project.name
-                  : undefined,
-              mentionedUsers: mentionedUserIds,
-            },
+            metadata,
           };
           return this.createNotification(notificationData);
         })
@@ -467,6 +481,7 @@ class NotificationService {
               taskName: task?.name,
               taskId: task?._id?.toString(),
               taskStatus: task?.status,
+              projectId: project?._id?.toString(),
               projectName:
                 typeof project === "object" &&
                 project &&

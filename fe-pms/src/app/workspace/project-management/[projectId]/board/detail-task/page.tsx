@@ -74,15 +74,15 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       open={open}
       onCancel={onClose}
       footer={null}
-      width={1600}
+      width="95vw"
       styles={{
         body: { padding: 0 },
-        content: { maxHeight: "95vh" },
+        content: { maxHeight: "90vh" },
       }}
     >
-      <div className="flex h-[85vh]">
+      <div className="flex flex-col lg:flex-row h-[80vh] min-h-[600px]">
         {/* Left section - Comments */}
-        <div className="w-4/5 p-6 overflow-y-auto">
+        <div className="flex-1 p-4 lg:p-6 overflow-y-auto border-b lg:border-b-0 lg:border-r border-gray-200">
           <TaskHeader task={task} />
           <CommentSection
             taskId={task._id || ""}
@@ -93,23 +93,25 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
         </div>
 
         {/* Right section - Task Details */}
-        <TaskDetails
-          task={task}
-          status={status}
-          assignee={assignee}
-          reporter={reporter}
-          epic={epic}
-          epics={epics}
-          contributor={contributor}
-          startDate={startDate}
-          dueDate={dueDate}
-          onStatusChange={onStatusChange}
-          onAssigneeChange={onAssigneeChange}
-          onReporterChange={onReporterChange}
-          onEpicChange={onEpicChange}
-          onStartDateChange={onStartDateChange}
-          onDueDateChange={onDueDateChange}
-        />
+        <div className="w-full lg:w-80 xl:w-96 flex-shrink-0">
+          <TaskDetails
+            task={task}
+            status={status}
+            assignee={assignee}
+            reporter={reporter}
+            epic={epic}
+            epics={epics}
+            contributor={contributor}
+            startDate={startDate}
+            dueDate={dueDate}
+            onStatusChange={onStatusChange}
+            onAssigneeChange={onAssigneeChange}
+            onReporterChange={onReporterChange}
+            onEpicChange={onEpicChange}
+            onStartDateChange={onStartDateChange}
+            onDueDateChange={onDueDateChange}
+          />
+        </div>
       </div>
     </Modal>
   );

@@ -11,4 +11,7 @@ export interface Comment {
     filename: string;
     url: string;
   }[];
+  createdAt?: string;
+  isEdited?: boolean;
+  editedAt?: string;
 }

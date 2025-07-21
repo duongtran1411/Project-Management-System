@@ -34,6 +34,45 @@ export const createComment = async (
   }
 };
 
+export const updateComment = async (
+  commentId: string,
+  content: string,
+  mentions?: string[]
+) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .put(`${Endpoints.Comment.UPDATE_COMMENT(commentId)}`, {
+        content,
+        mentions,
+      });
+    return response.data;
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(
+        error.response?.data?.message || "Fail to update comment!"
+      );
+    }
+    return null;
+  }
+};
+
+export const deleteComment = async (commentId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .delete(`${Endpoints.Comment.DELETE_COMMENT(commentId)}`);
+    return response.data;
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(
+        error.response?.data?.message || "Fail to delete comment!"
+      );
+    }
+    return null;
+  }
+};
+
 // export const getComment = async (taskId: string) => {
 //     try {
 //         const response = await axiosService.getAxiosInstance().post(`${Endpoints.Comment.GET_COMMENT_BY_TASK}`)

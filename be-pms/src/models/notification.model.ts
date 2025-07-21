@@ -104,6 +104,7 @@ const notificationSchema = new Schema<INotification>(
     metadata: {
       taskName: String,
       taskId: String,
+      projectId: String,
       taskStatus: String,
       projectName: String,
       epicName: String,
@@ -186,6 +187,7 @@ export interface CreateNotificationData {
   metadata?: {
     taskName?: string;
     taskId?: string;
+    projectId?: string;
     taskStatus?: string;
     projectName?: string;
     epicName?: string;
