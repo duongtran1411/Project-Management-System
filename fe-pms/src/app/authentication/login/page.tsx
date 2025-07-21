@@ -203,8 +203,7 @@ export default function Page() {
                     type: "email",
                     message: "Email must be include @example.com!",
                   },
-                ]}
-              >
+                ]}>
                 <Input
                   prefix={<UserOutlined />}
                   placeholder="Email"
@@ -215,8 +214,12 @@ export default function Page() {
                 name="password"
                 rules={[
                   { required: true, message: "Please input your Password!" },
-                ]}
-              >
+                  {
+                    pattern: /^[A-Za-z\d]{8,}$/,
+                    message:
+                      "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
+                  },
+                ]}>
                 <Input
                   prefix={<LockOutlined />}
                   type="password"
@@ -231,8 +234,7 @@ export default function Page() {
                   </Form.Item>
                   <Link
                     href={"/authentication/forgot-password"}
-                    className="text-sm text-blue-500 hover:decoration-solid hover:underline"
-                  >
+                    className="text-sm text-blue-500 hover:decoration-solid hover:underline">
                     Forgot password?
                   </Link>
                 </Flex>

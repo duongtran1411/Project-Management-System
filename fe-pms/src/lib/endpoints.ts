@@ -5,6 +5,7 @@ export class Endpoints {
     LOGIN_WITH_GOOGLE: "auth/google-login",
     FORGOT_PASSWORD: "auth/forgot-password",
     CHANGE_PASSWORD: "auth/change-password",
+    VERIFY_FORGOT_PASSWORD: 'auth/verify-otp-reset-password'
   };
 
   static readonly User = {

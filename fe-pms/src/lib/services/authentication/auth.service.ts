@@ -99,3 +99,24 @@ export const changePassword = async (data: any) => {
     }
   }
 };
+
+export const verifyOTP = async (otp: string, token: string, newPassword: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(Endpoints.Auth.VERIFY_FORGOT_PASSWORD, {
+        token: token,
+        otp: otp,
+        newPassword: newPassword
+      });
+
+
+    return response.data;
+  } catch (error: any) {
+    const errorMessage =
+      error?.data?.response?.messsage || error?.message || "đã có lỗi xảy ra";
+    if (errorMessage) {
+      showErrorToast(errorMessage);
+    }
+  }
+}
