@@ -127,8 +127,15 @@ export class WorklogService {
     );
   }
 
-  async getTopContributors(limit: number = 6): Promise<any[]> {
+  async getTopContributorsByProject(
+    projectId: string,
+    limit: number = 6
+  ): Promise<any[]> {
+    const tasks = await Task.find({ projectId }).select("_id");
+    const taskIds = tasks.map((task) => task._id);
+
     const topContributors = await Worklog.aggregate([
+      { $match: { taskId: { $in: taskIds } } },
       {
         $group: {
           _id: "$contributor",
@@ -145,12 +152,8 @@ export class WorklogService {
           totalTask: { $size: "$totalTask" },
         },
       },
-      {
-        $sort: { totalSpentTime: -1 },
-      },
-      {
-        $limit: limit,
-      },
+      { $sort: { totalSpentTime: -1 } },
+      { $limit: limit },
       {
         $lookup: {
           from: "users",
@@ -159,9 +162,7 @@ export class WorklogService {
           as: "contributorInfo",
         },
       },
-      {
-        $unwind: "$contributorInfo",
-      },
+      { $unwind: "$contributorInfo" },
       {
         $project: {
           contributor: {
@@ -176,7 +177,6 @@ export class WorklogService {
         },
       },
     ]);
-
     return topContributors;
   }
 }
