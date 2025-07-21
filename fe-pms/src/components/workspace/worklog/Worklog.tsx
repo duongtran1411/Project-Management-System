@@ -68,7 +68,7 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-8">
+    <div className="flex flex-col items-center justify-center py-8 max-w-[400px] mx-auto">
       {!worklogData?.data || worklogData?.data?.length === 0 ? (
         <>
           <Image

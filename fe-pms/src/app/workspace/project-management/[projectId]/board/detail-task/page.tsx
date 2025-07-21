@@ -50,6 +50,7 @@ import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import History from "../../../../../../components/workspace/history/History";
 
 interface DetailTaskModalProps {
   open: boolean;
@@ -583,6 +584,11 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                     ))}
                 </div>
               </>
+            )}
+
+            {/* History */}
+            {activeTab === "history" && task._id && (
+              <History taskId={task._id} />
             )}
 
             {/* Worklog */}
