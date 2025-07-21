@@ -415,6 +415,9 @@ const SprintSection: React.FC<Props> = ({
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
+        okButtonProps={{
+          danger: true,
+        }}
       >
         <p>
           Are you sure you want to delete sprint{" "}
@@ -422,7 +425,7 @@ const SprintSection: React.FC<Props> = ({
         </p>
       </Modal>
 
-      {/* show when checkbop is checked */}
+      {/* show when checkbox is checked */}
       {selectedTaskIds.length > 0 && (
         <div className="fixed bottom-4 left-4 right-4 bg-gray-700 border shadow-md rounded-md p-3 flex items-center justify-between z-50 w-max m-auto text-white">
           <div

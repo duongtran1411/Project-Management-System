@@ -44,7 +44,7 @@ export const ChangeStartDate: React.FC<Props> = ({
     <div className="mb-4">
       {!isPickingStartDate && (
         <span
-          className="text-gray-600 hover:bg-gray-200 px-2 py-1 rounded-[3px] cursor-pointer"
+          className="text-gray-600 hover:bg-gray-200 py-1 rounded-[3px]cursor-pointer"
           onClick={() => setIsPickingStartDate(true)}
         >
           {startDate?.slice(0, 10) || "Add start date"}
