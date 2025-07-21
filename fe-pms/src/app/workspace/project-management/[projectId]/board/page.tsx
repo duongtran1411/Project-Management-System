@@ -1,32 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import CreateTaskInput from "@/components/common/modal/createTask";
+import DeleteTaskModal from "@/components/common/modal/deleteTask";
+import MileStoneskModal from "@/components/common/modal/mileStoneModal";
+import Spinner from "@/components/common/spinner/spin";
 import {
-  Card,
-  Avatar,
-  Button,
-  Input,
-  Dropdown,
-  Checkbox,
-  Spin,
-  Alert,
-  Tooltip,
-} from "antd";
-import {
-  PlusOutlined,
-  DownOutlined,
-  UserOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  ArrowUpOutlined,
-  FlagOutlined,
-  ArrowDownOutlined,
-  FileDoneOutlined,
-  SearchOutlined,
-  MoreOutlined,
-  EditOutlined,
-} from "@ant-design/icons";
-import DetailTaskModal from "./detail-task/page";
+  showErrorToast,
+  showSuccessToast,
+} from "@/components/common/toast/toast";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 import {
   createTaskBoard,
   deleteOneTask,
@@ -35,29 +18,36 @@ import {
   updateMileStoneForTasks,
   updateTaskStatus,
 } from "@/lib/services/task/task.service";
+import { Epic } from "@/models/epic/epic.model";
+import { Milestone } from "@/models/milestone/milestone.model";
+import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
+import { Task } from "@/models/task/task.model";
+import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  DownOutlined,
+  EditOutlined,
+  FileDoneOutlined,
+  FlagOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import { Avatar, Button, Card, Checkbox, Dropdown, Input, Tooltip } from "antd";
+import { format } from "date-fns";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   DragDropContext,
-  Droppable,
   Draggable,
+  Droppable,
   DropResult,
 } from "react-beautiful-dnd";
-import { Endpoints } from "@/lib/endpoints";
-import axiosService from "@/lib/services/axios.service";
 import useSWR from "swr";
-import { format } from "date-fns";
-import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
-import {
-  showErrorToast,
-  showSuccessToast,
-} from "@/components/common/toast/toast";
-import { Task } from "@/models/task/task.model";
-import { Epic } from "@/models/epic/epic.model";
-import DeleteTaskModal from "@/components/common/modal/deleteTask";
-import { Milestone } from "@/models/milestone/milestone.model";
-import MileStoneskModal from "@/components/common/modal/mileStoneModal";
-import Spinner from "@/components/common/spinner/spin";
-import CreateTaskInput from "@/components/common/modal/createTask";
+import DetailTaskModal from "./detail-task/page";
 
 const fetcher = (url: string) =>
   axiosService
@@ -126,7 +116,7 @@ const BoardPage = () => {
   const {
     data: mileStonesData,
     error: mileStonesError,
-    isLoading: mileStonesLoading,
+
     mutate: mileStonesMutate,
   } = useSWR(
     projectId ? `${Endpoints.Milestone.GET_BY_ACTIVE(projectId)}` : "",
@@ -217,7 +207,8 @@ const BoardPage = () => {
       {epicOptions.map((epic) => (
         <div
           key={epic.id}
-          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
+          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50"
+        >
           <Checkbox
             checked={selectedEpics.includes(epic.id)}
             onChange={() =>
@@ -226,7 +217,8 @@ const BoardPage = () => {
                   ? prev.filter((e) => e !== epic.id)
                   : [...prev, epic.value]
               )
-            }>
+            }
+          >
             <span className="font-medium">{epic.label}</span>
           </Checkbox>
         </div>
@@ -298,7 +290,7 @@ const BoardPage = () => {
 
   const hanldeUpadateStatus = async (taskId: string, status: string) => {
     try {
-      const response = await updateTaskStatus(taskId, status);
+      await updateTaskStatus(taskId, status);
       taskMutate();
     } catch (error: any) {
       const message =
@@ -341,7 +333,8 @@ const BoardPage = () => {
       <Checkbox.Group
         value={selectedAssignees}
         onChange={setSelectedAssignees}
-        className="flex flex-col  gap-2">
+        className="flex flex-col  gap-2"
+      >
         <Checkbox key="unassigned" value="unassigned">
           <Avatar
             src={<UserOutlined />}
@@ -355,7 +348,8 @@ const BoardPage = () => {
             <Checkbox
               key={contributor.userId?._id}
               value={contributor?.userId?._id}
-              className="flex flex-row items-center">
+              className="flex flex-row items-center"
+            >
               <Avatar
                 src={contributor?.userId?.avatar}
                 size="small"
@@ -373,7 +367,8 @@ const BoardPage = () => {
       {mileStoneOptions.map((ms) => (
         <div
           key={ms.id}
-          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
+          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50"
+        >
           <Checkbox
             checked={selectedMilestones.includes(ms.id)}
             onChange={() =>
@@ -382,7 +377,8 @@ const BoardPage = () => {
                   ? prev.filter((e) => e !== ms.id)
                   : [...prev, ms.value]
               )
-            }>
+            }
+          >
             <span className="font-medium">{ms.label}</span>
           </Checkbox>
         </div>
@@ -440,17 +436,20 @@ const BoardPage = () => {
                 max={{
                   count: 2,
                   style: { color: "#f56a00", backgroundColor: "#fde3cf" },
-                }}>
+                }}
+              >
                 <Avatar
                   style={{ backgroundColor: "#f56a00" }}
-                  src={contributors[0]?.userId?.avatar}></Avatar>
+                  src={contributors[0]?.userId?.avatar}
+                ></Avatar>
                 {Array.isArray(contributors) && contributors.length > 0 && (
                   <Avatar
                     style={{
                       backgroundColor: "#f0f1f3",
                       color: "black",
                       fontSize: "12px",
-                    }}>
+                    }}
+                  >
                     +{contributors.length}
                   </Avatar>
                 )}
@@ -463,7 +462,8 @@ const BoardPage = () => {
               trigger={["click"]}
               open={milestonesOpen}
               onOpenChange={setMilestonesOpen}
-              className="board-epic-dropdown">
+              className="board-epic-dropdown"
+            >
               <Button className="flex items-center font-semibold text-gray-700">
                 Milestone <DownOutlined className="ml-1" />
               </Button>
@@ -474,7 +474,8 @@ const BoardPage = () => {
             onOpenChange={setEpicOpen}
             popupRender={() => epicDropdown}
             trigger={["click"]}
-            className="board-epic-dropdown">
+            className="board-epic-dropdown"
+          >
             <Button className="flex items-center font-semibold text-gray-700">
               Epic <DownOutlined className="ml-1" />
             </Button>
@@ -487,7 +488,8 @@ const BoardPage = () => {
               setSelectedAssignees([]);
               setSelectedMilestones([]);
             }}
-            className="font-semibold text-gray-600">
+            className="font-semibold text-gray-600"
+          >
             Clear Filters
           </Button>
         </div>
@@ -496,7 +498,8 @@ const BoardPage = () => {
             className="bg-blue-500 text-zinc-200"
             onClick={() => {
               setIsOpenMileStoneModal(true);
-            }}>
+            }}
+          >
             Complete MileStone
           </Button>
         </div>
@@ -512,14 +515,16 @@ const BoardPage = () => {
                 key={col.status}
                 isDropDisabled={false}
                 isCombineEnabled={false}
-                ignoreContainerClipping={false}>
+                ignoreContainerClipping={false}
+              >
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
                       snapshot.isDraggingOver ? "bg-blue-50" : ""
-                    }`}>
+                    }`}
+                  >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <h2 className="font-semibold text-gray-700">
@@ -533,7 +538,8 @@ const BoardPage = () => {
                         <Draggable
                           draggableId={task._id ?? `${idx}`}
                           index={idx}
-                          key={task._id}>
+                          key={task._id}
+                        >
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
@@ -549,10 +555,12 @@ const BoardPage = () => {
                               onClick={() => {
                                 setSelectedTask(task);
                                 setIsModalOpen(true);
-                              }}>
+                              }}
+                            >
                               <div
                                 className="absolute top-2 right-2 hidden group-hover:flex"
-                                key={task._id}>
+                                key={task._id}
+                              >
                                 <Dropdown
                                   trigger={["click"]}
                                   menu={{
@@ -635,7 +643,8 @@ const BoardPage = () => {
                                         );
                                       }
                                     },
-                                  }}>
+                                  }}
+                                >
                                   <Button
                                     type="text"
                                     icon={
@@ -651,7 +660,8 @@ const BoardPage = () => {
                                 <p
                                   className={`text-gray-700 font-medium ${
                                     col.status === "DONE" ? "line-through" : ""
-                                  }`}>
+                                  }`}
+                                >
                                   {task.name}
                                   <EditOutlined className="mx-1 hover:bg-gray-300" />
                                 </p>
@@ -661,7 +671,8 @@ const BoardPage = () => {
                                       task.epic?.name
                                         ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
                                         : ""
-                                    }>
+                                    }
+                                  >
                                     {task.epic?.name}
                                   </span>
                                 </div>
@@ -727,7 +738,8 @@ const BoardPage = () => {
                                               <Avatar
                                                 src={<UserOutlined />}
                                                 size="small"
-                                                className="bg-gray-400"></Avatar>
+                                                className="bg-gray-400"
+                                              ></Avatar>
                                               <div>
                                                 <p className="font-medium">
                                                   Unassigned
@@ -749,7 +761,8 @@ const BoardPage = () => {
                                               <div className="flex items-center gap-2">
                                                 <Avatar
                                                   src={e.userId?.avatar}
-                                                  size="small">
+                                                  size="small"
+                                                >
                                                   {e.userId?.fullName[0]}
                                                 </Avatar>
                                                 <div>
@@ -773,11 +786,13 @@ const BoardPage = () => {
                                       },
                                     }}
                                     trigger={["click"]}
-                                    className="board-assignee-dropdown">
+                                    className="board-assignee-dropdown"
+                                  >
                                     <Tooltip
                                       title={`Assignee: ${
                                         task.assignee?.fullName || "Unassigned"
-                                      }`}>
+                                      }`}
+                                    >
                                       <Avatar
                                         className={`cursor-pointer text-white ${
                                           task.assignee?.fullName ===
@@ -787,7 +802,8 @@ const BoardPage = () => {
                                         }`}
                                         size="default"
                                         src={task.assignee?.avatar}
-                                        onClick={(e) => e?.stopPropagation()}>
+                                        onClick={(e) => e?.stopPropagation()}
+                                      >
                                         {task.assignee?.fullName?.[0] || (
                                           <UserOutlined />
                                         )}
@@ -808,7 +824,8 @@ const BoardPage = () => {
                           type="text"
                           icon={<PlusOutlined />}
                           className="!flex items-center"
-                          onClick={() => setShowCreateInput(!showCreateInput)}>
+                          onClick={() => setShowCreateInput(!showCreateInput)}
+                        >
                           {showCreateInput ? "Close" : "Create"}
                         </Button>
                         {showCreateInput && (
