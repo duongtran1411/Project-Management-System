@@ -47,11 +47,6 @@ export default function AdminLayout({
 
   const items: MenuProps["items"] = [
     {
-      label: "Profile",
-      key: "profile",
-      icon: <UserOutlined />,
-    },
-    {
       type: "divider",
     },
     {

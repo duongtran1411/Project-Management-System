@@ -289,7 +289,7 @@ export default function Page() {
                 }}
               />
             </Tooltip>
-            <Select
+            {/* <Select
               style={{ width: 200 }}
               mode="tags"
               allowClear
@@ -307,7 +307,7 @@ export default function Page() {
               <Option value="DEL">
                 <Tag color="red">DELETE</Tag>
               </Option>
-            </Select>
+            </Select> */}
             <Select
               defaultValue={selectedStatus}
               style={{ width: 200 }}
