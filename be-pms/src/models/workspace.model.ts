@@ -5,7 +5,6 @@ export interface IWorkspace extends Document {
   description?: string;
   projectIds?: mongoose.Types.ObjectId[];
   ownerId?: mongoose.Types.ObjectId;
-  contributors?: mongoose.Types.ObjectId[];
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
