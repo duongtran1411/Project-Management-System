@@ -2,14 +2,17 @@
 
 import { formatDateTime } from "@/lib/utils";
 import { Task } from "@/models/task/task.model";
-import { Avatar, Button, Input, Tag } from "antd";
+import { Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { WorklogComponent } from "../worklog/Worklog";
+import ChangeAssigneeInDetailTask from "./ChangeAssigneeInDetailTask";
 import { ChangeDescription } from "./ChangeDescription";
 import { ChangeDueDate } from "./ChangeDueDate";
 import { ChangeName } from "./ChangeName";
+import ChangePriority from "./ChangePriority";
 import ChangeReporter from "./ChangeReporter";
 import { ChangeStartDate } from "./ChangeStartDate";
+import ChangeEpic from "./ChangeEpic";
 
 interface TaskDetailProps {
   task: Task | null;
@@ -82,7 +85,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
         <div className="mb-4 flex items-center justify-content">
           <span className="mr-2 text-sm text-gray-500">Priority:</span>
 
-          <span className="text-gray-600">{task.priority || "None"}</span>
+          <ChangePriority
+            taskId={task._id}
+            priority={task.priority || "None"}
+            mutateTask={mutateTask}
+          />
         </div>
 
         {/* Detail */}
@@ -93,27 +100,35 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
             <div className="grid grid-cols-2 gap-y-6 items-center">
               <span className="font-semibold text-gray-600 ">Assignee:</span>
               <div className="flex items-center space-x-2 ">
-                {task.assignee?.avatar ? (
-                  <div className="flex items-center gap-1 p-2">
-                    <Avatar src={task.assignee?.avatar} size="small" />
-                    <p className="text-sm">{task.assignee?.fullName}</p>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 p-2">
-                    <Avatar>U</Avatar>
-                    <p>Unassignee</p>
-                  </div>
-                )}
+                <ChangeAssigneeInDetailTask
+                  taskId={task._id}
+                  assignee={task.assignee}
+                  mutateTask={mutateTask}
+                />
               </div>
               {/* Labels */}
               <span className="font-semibold text-gray-600">Labels</span>
-              <div className="flex flex-wrap gap-1">integrated</div>
+              {task.labels && task.labels?.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {task.labels.map((label: string) => (
+                    <Tag color="blue" key={label}>
+                      {label}
+                    </Tag>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1">
+                  <Tag color="blue">None</Tag>
+                </div>
+              )}
 
               {/* Epic */}
               <span className="font-semibold text-gray-600">Parents</span>
-              <div className="flex flex-wrap gap-1">
-                <Tag color="purple">{task.epic?.name}</Tag>
-              </div>
+              <ChangeEpic
+                taskId={task._id}
+                epic={task.epic?.name || "None"}
+                mutateTask={mutateTask}
+              />
 
               {/* Start Date */}
               <span className="font-semibold text-gray-600">Start Date:</span>
@@ -142,7 +157,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
               {/* Milestone */}
               <span className="font-semibold text-gray-600">Sprint:</span>
-              <span className="text-blue-600">
+              <span className="text-blue-600 font-normal">
                 {task.milestones?.name || "None"}
               </span>
 

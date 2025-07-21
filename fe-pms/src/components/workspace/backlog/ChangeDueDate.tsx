@@ -43,7 +43,7 @@ export const ChangeDueDate: React.FC<Props> = ({
     <div className="mb-4">
       {!isPickingDueDate && (
         <span
-          className="text-gray-600 hover:bg-gray-200 px-2 py-1 rounded-[3px] cursor-pointer"
+          className="text-gray-600 hover:bg-gray-200 py-1 rounded-[3px] cursor-pointer"
           onClick={() => setIsPickingDueDate(true)}
         >
           {dueDate?.slice(0, 10) || "Add due date"}

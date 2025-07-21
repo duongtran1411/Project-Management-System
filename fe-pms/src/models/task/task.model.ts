@@ -10,7 +10,8 @@ export interface Task {
   priority?: string;
   assignee?: Assignee;
   epic?: Epic;
-  reporter?: Reporter
+  labels?: string[];
+  reporter?: Reporter;
   startDate?: string;
   dueDate?: string;
   milestones?: {
@@ -49,6 +50,7 @@ export interface TaskApiResponse {
     _id: string;
     name: string;
   };
+  labels?: string[];
 }
 
 export interface UITask {

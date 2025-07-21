@@ -1,15 +1,15 @@
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { updateTaskReporter } from "@/lib/services/task/task.service";
+import { updateTaskAssignee } from "@/lib/services/task/task.service";
 import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 
 interface Props {
   taskId: string | undefined;
-  reporter: any;
+  assignee: any;
   mutateTask: () => void;
-  setReporter: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const fetcher = (url: string) =>
@@ -18,22 +18,33 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-const ChangeReporter: React.FC<Props> = ({
+const ChangeAssigneeInDetailTask: React.FC<Props> = ({
   taskId,
-  reporter,
+  assignee,
   mutateTask,
-  setReporter,
 }) => {
   const params = useParams();
   const projectId = params.projectId as string;
-  const { data: contributorData } = useSWR(
-    `${Endpoints.User.GET_BY_PROJECT(projectId)}`,
+  const [members, setMembers] = useState<string[]>([]); //contributors & project_admin
+
+  const { data: contributorsData } = useSWR(
+    `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`,
     fetcher
   );
 
+  useEffect(() => {
+    if (contributorsData?.data) {
+      const listMember = contributorsData?.data.filter((member: any) => {
+        return member.projectRoleId?.name !== "STAKEHOLDER";
+      });
+
+      setMembers(listMember);
+    }
+  }, [contributorsData?.data]);
+
   const menuItems: MenuProps["items"] = [
     {
-      key: "unassigned",
+      key: "null",
       label: (
         <div className="flex items-center gap-3 p-2">
           <Avatar>U</Avatar>
@@ -41,7 +52,7 @@ const ChangeReporter: React.FC<Props> = ({
         </div>
       ),
     },
-    ...(contributorData?.data.map((option: any) => ({
+    ...(members.map((option: any) => ({
       key: option.userId._id,
       label: (
         <div className="flex items-center gap-3 p-2">
@@ -55,8 +66,8 @@ const ChangeReporter: React.FC<Props> = ({
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
-        const response = await updateTaskReporter(taskId, key);
-        if (response) setReporter(response.reporter);
+        const assigneeId = key === "null" ? null : key;
+        await updateTaskAssignee(taskId, assigneeId);
         await mutateTask();
       }
     } catch (e) {
@@ -69,20 +80,20 @@ const ChangeReporter: React.FC<Props> = ({
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
     >
-      <div className="flex items-center gap-2 rounded-full cursor-pointer">
-        {reporter?.avatar ? (
-          <>
-            <Avatar src={reporter?.avatar} />
-            <span>{reporter?.fullName}</span>
-          </>
+      <div className="flex rounded-full cursor-pointer">
+        {assignee?.avatar ? (
+          <div className="flex items-center gap-1 py-2">
+            <Avatar src={assignee?.avatar} />
+            <p className="text-sm">{assignee?.fullName}</p>
+          </div>
         ) : (
-          <>
+          <div className="flex items-center gap-3 py-2">
             <Avatar>U</Avatar>
-            <span>Unassignee</span>
-          </>
+            <p>Unassignee</p>
+          </div>
         )}
       </div>
     </Dropdown>
   );
 };
-export default ChangeReporter;
+export default ChangeAssigneeInDetailTask;

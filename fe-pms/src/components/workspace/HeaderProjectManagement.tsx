@@ -54,7 +54,6 @@ const HeaderProjectManagement = () => {
     fetcherWithToken
   );
 
-
   const menuItems = [
     {
       key: "Summary",
@@ -93,6 +92,12 @@ const HeaderProjectManagement = () => {
       label: "List",
       icon: <BarsOutlined />,
       url: `/workspace/project-management/${projectId}/list`,
+    },
+    {
+      key: "Time Tracking",
+      label: "Time Tracking",
+      icon: <ClockCircleOutlined />,
+      url: `/workspace/project-management/${projectId}/time-tracking`,
     },
   ];
 

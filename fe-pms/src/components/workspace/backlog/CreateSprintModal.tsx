@@ -33,6 +33,7 @@ const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         startDate: values.startDate,
         endDate: values.endDate,
         projectId,
+        status: "NOT_START",
       };
       onCreate(formatted);
       form.resetFields();
