@@ -21,20 +21,7 @@ export default function ProgressChartAnt() {
   );
 
   return (
-    <div className="w-full max-w-xl space-y-6">
-      {/* Legend */}
-      <div className="flex items-center gap-4 text-sm">
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-green-600" /> Done
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-blue-500" /> In progress
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-gray-400" /> To do
-        </div>
-      </div>
-
+    <div className="w-full max-w-xl space-y-6 h-[270px] overflow-y-auto mt-6">
       {/* Tasks */}
       {statisticsEpic?.data?.epicStats.map((task: any) => (
         <div key={task.name}>

@@ -13,6 +13,7 @@ import ChangePriority from "./ChangePriority";
 import ChangeReporter from "./ChangeReporter";
 import { ChangeStartDate } from "./ChangeStartDate";
 import ChangeEpic from "./ChangeEpic";
+import History from "../history/History";
 
 interface TaskDetailProps {
   task: Task | null;
@@ -249,6 +250,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               <div className="mt-6 space-y-4"></div>
             </>
           )}
+
+          {/* History */}
+          {activeTab === "history" && task._id && <History taskId={task._id} />}
           {/* Worklog */}
           {activeTab === "worklog" && <WorklogComponent task={task} />}
         </div>

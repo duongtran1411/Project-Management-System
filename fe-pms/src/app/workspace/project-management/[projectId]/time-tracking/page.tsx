@@ -486,15 +486,8 @@ const TimeTrackingReportPage: React.FC = () => {
           dataSource={filteredWorklogs}
           columns={worklogColumns}
           rowKey="_id"
-          pagination={{
-            pageSize: 20,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`,
-          }}
           loading={isLoading}
-          scroll={{ x: 1000 }}
+          scroll={{ x: 1000, y: 600 }}
           className="custom-table"
         />
       </Card>

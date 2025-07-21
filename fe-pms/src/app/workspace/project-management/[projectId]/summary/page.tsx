@@ -194,6 +194,7 @@ export default function SummaryPage() {
               dataSource={statisticsContributor?.contributorStats}
               pagination={false}
               size="small"
+              scroll={{ y: 180 }}
               rowKey="_id"
             />
           </Card>
@@ -201,14 +202,25 @@ export default function SummaryPage() {
       </Row>
 
       {/* Epic Progress Bard */}
-      {/* Sprint/Report Section */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl w-[567px] height-[320px] overflow-auto">
+          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
             <div className="font-semibold mb-2">Epic progress</div>
             <span className="text-sm text-gray-500 mb-2">
               See how your epics are progressing at a glance.
             </span>
+            {/* Legend */}
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-green-600" /> Done
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-blue-500" /> In progress
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-gray-400" /> To do
+              </div>
+            </div>
 
             <ProgressChart />
           </Card>
