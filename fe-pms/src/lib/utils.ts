@@ -21,5 +21,20 @@ export const formatDate = (date: string) => {
   return formattedDate;
 };
 
+export const formatDateTime = (date: string) => {
+  const dateObj = new Date(date);
+  const formatted = dateObj.toLocaleString("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return formatted;
+};
+
 export const isValidEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

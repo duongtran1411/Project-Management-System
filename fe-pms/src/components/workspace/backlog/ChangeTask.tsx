@@ -1,5 +1,5 @@
-import { updateTask } from "@/lib/services/task/task";
-import { Task } from "@/types/types";
+import { updateTaskStatus } from "@/lib/services/task/task.service";
+
 import { Dropdown, MenuProps, Tag } from "antd";
 
 interface Props {
@@ -26,11 +26,8 @@ const menuItems: MenuProps["items"] = statusOptions.map((option) => ({
 const ChangeTask: React.FC<Props> = ({ taskId, status, mutateTask }) => {
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
-      const data: Task = {
-        status: key,
-      };
       if (taskId) {
-        await updateTask(taskId, data);
+        await updateTaskStatus(taskId, key);
         await mutateTask();
       }
     } catch (e) {

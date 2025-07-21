@@ -39,6 +39,7 @@ router.post("/", authenticate, milestoneController.createMilestone);
  *   get:
  *     summary: Lấy danh sách milestone
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: query
  *         name: projectId
@@ -52,7 +53,7 @@ router.post("/", authenticate, milestoneController.createMilestone);
  *     responses:
  *       200: { description: Lấy danh sách milestone thành công }
  */
-router.get("/", milestoneController.getAllMilestones);
+router.get("/", authenticate, milestoneController.getAllMilestones);
 
 /**
  * @openapi
@@ -60,6 +61,7 @@ router.get("/", milestoneController.getAllMilestones);
  *   get:
  *     summary: Lấy thông tin milestone theo ID
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -69,7 +71,7 @@ router.get("/", milestoneController.getAllMilestones);
  *       200: { description: Lấy thông tin milestone thành công }
  *       404: { description: Không tìm thấy milestone }
  */
-router.get("/:id", milestoneController.getMilestoneById);
+router.get("/:id", authenticate, milestoneController.getMilestoneById);
 
 /**
  * @openapi
@@ -110,6 +112,7 @@ router.put("/:id", authenticate, milestoneController.updateMilestone);
  *   delete:
  *     summary: Xóa milestone
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: id
@@ -119,7 +122,7 @@ router.put("/:id", authenticate, milestoneController.updateMilestone);
  *       200: { description: Xóa milestone thành công }
  *       404: { description: Không tìm thấy milestone }
  */
-router.delete("/:id", milestoneController.deleteMilestone);
+router.delete("/:id", authenticate, milestoneController.deleteMilestone);
 
 /**
  * @openapi
@@ -127,6 +130,7 @@ router.delete("/:id", milestoneController.deleteMilestone);
  *   get:
  *     summary: Lấy danh sách milestone theo dự án
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -135,7 +139,7 @@ router.delete("/:id", milestoneController.deleteMilestone);
  *     responses:
  *       200: { description: Lấy danh sách milestone theo dự án thành công }
  */
-router.get("/project/:projectId", milestoneController.getMilestonesByProject);
+router.get("/project/:projectId", authenticate, milestoneController.getMilestonesByProject);
 
 /**
  * @openapi
@@ -143,6 +147,7 @@ router.get("/project/:projectId", milestoneController.getMilestonesByProject);
  *   get:
  *     summary: Lấy danh sách milestone theo khoảng thời gian
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: query
  *         name: startDate
@@ -158,7 +163,7 @@ router.get("/project/:projectId", milestoneController.getMilestonesByProject);
  *     responses:
  *       200: { description: Lấy danh sách milestone theo khoảng thời gian thành công }
  */
-router.get("/date-range", milestoneController.getMilestonesByDateRange);
+router.get("/date-range", authenticate, milestoneController.getMilestonesByDateRange);
 
 /**
  * @openapi
@@ -166,6 +171,7 @@ router.get("/date-range", milestoneController.getMilestonesByDateRange);
  *   get:
  *     summary: Lấy danh sách milestone sắp tới
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: query
  *         name: projectId
@@ -176,7 +182,7 @@ router.get("/date-range", milestoneController.getMilestonesByDateRange);
  *     responses:
  *       200: { description: Lấy danh sách milestone sắp tới thành công }
  */
-router.get("/upcoming", milestoneController.getUpcomingMilestones);
+router.get("/upcoming", authenticate, milestoneController.getUpcomingMilestones);
 
 /**
  * @openapi
@@ -184,6 +190,7 @@ router.get("/upcoming", milestoneController.getUpcomingMilestones);
  *   get:
  *     summary: Lấy danh sách milestone quá hạn
  *     tags: [Milestone]
+ *     security: [bearerAuth: []]
  *     parameters:
  *       - in: query
  *         name: projectId
@@ -191,6 +198,66 @@ router.get("/upcoming", milestoneController.getUpcomingMilestones);
  *     responses:
  *       200: { description: Lấy danh sách milestone quá hạn thành công }
  */
-router.get("/overdue", milestoneController.getOverdueMilestones);
+router.get("/overdue", authenticate, milestoneController.getOverdueMilestones);
 
+/**
+ * @openapi
+ * /milestone/{id}/status:
+ *   patch:
+ *     summary: Cập nhật trạng thái của milestones
+ *     tags: [Milestone]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: id của milestones
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status: { type: string }
+ *     responses:
+ *       200: { description: cập nhật trạng thái milestone thành công }
+ *       400: { description: cập nhật trạng thái milestone không thành công}
+ */
+router.patch('/:id/status', authenticate, milestoneController.updateStatus)
+
+
+/**
+ * @openapi
+ * /milestone/active/project/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách milestone active theo dự án
+ *     tags: [Milestone]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
+ *     responses:
+ *       200: { description: Lấy danh sách milestone với status active theo dự án thành công }
+ */
+router.get("/active/project/:projectId", authenticate, milestoneController.getMilestonesActiveByProject);
+
+/**
+ * @openapi
+ * /milestone/notstart/project/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách milestone notstart theo dự án
+ *     tags: [Milestone]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string, example: "60d21b4667d0d8992e610c85" }
+ *     responses:
+ *       200: { description: Lấy danh sách milestone với status not start theo dự án thành công }
+ */
+router.get("/notstart/project/:projectId", authenticate, milestoneController.getMilestonesNotStartByProject);
 export default router;

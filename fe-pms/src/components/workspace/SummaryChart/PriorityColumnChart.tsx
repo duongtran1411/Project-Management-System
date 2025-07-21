@@ -3,8 +3,11 @@ import React, { useEffect, useState } from "react";
 import { Column } from "@ant-design/charts";
 import axiosService from "@/lib/services/axios.service";
 import { Endpoints } from "@/lib/endpoints";
-import { PriorityStat, PriorityStatsResponse } from "@/types/types";
 import { useParams } from "next/navigation";
+import {
+  PriorityStat,
+  PriorityStatsResponse,
+} from "@/models/statistic/statistic.model";
 
 const PriorityBarChart = () => {
   const [data, setData] = useState<PriorityStat[]>([]);

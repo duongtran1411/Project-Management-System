@@ -1,44 +1,34 @@
 "use client";
 
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
 import { Progress, Tooltip } from "antd";
+import { useParams } from "next/navigation";
+import useSWR from "swr";
 
-type Task = {
-  key: string;
-  title: string;
-  done: number;
-  inProgress: number;
-  toDo: number;
-};
-
-const tasks: Task[] = [
-  { key: "SCRUM-44", title: "CLIENT", done: 73, inProgress: 4, toDo: 23 },
-  { key: "SCRUM-43", title: "BACKEND-API", done: 91, inProgress: 5, toDo: 4 },
-  { key: "SCRUM-8", title: "SRS Document", done: 100, inProgress: 0, toDo: 0 },
-];
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 export default function ProgressChartAnt() {
-  return (
-    <div className="w-full max-w-xl space-y-6">
-      {/* Legend */}
-      <div className="flex items-center gap-4 text-sm">
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-green-600" /> Done
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-blue-500" /> In progress
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-4 bg-gray-400" /> To do
-        </div>
-      </div>
+  const params = useParams();
+  const projectId = params.projectId as string;
+  const { data: statisticsEpic } = useSWR(
+    `${Endpoints.Statistics.STATISTIC_EPIC(projectId)}`,
+    fetcher
+  );
 
+  return (
+    <div className="w-full max-w-xl space-y-6 h-[270px] overflow-y-auto mt-6">
       {/* Tasks */}
-      {tasks.map((task) => (
-        <div key={task.key}>
+      {statisticsEpic?.data?.epicStats.map((task: any) => (
+        <div key={task.name}>
           <div className="flex items-center gap-2 font-semibold">
             <span className="text-purple-500">⚡</span>
-            <span>{task.key}</span>
-            <span className="text-gray-700">{task.title}</span>
+
+            <span className="text-gray-700">{task.epicName}</span>
           </div>
 
           <Tooltip
@@ -46,7 +36,7 @@ export default function ProgressChartAnt() {
             color="white"
             title={
               <div className="text-sm text-gray-700 p-2 ">
-                <div className="font-semibold mb-1">{task.title}</div>
+                <div className="font-semibold mb-1">{task.epicName}</div>
                 <div className="flex items-center gap-2">
                   <span className="inline-block w-4 h-3 bg-green-600 rounded-sm" />
                   <span>Done</span>
@@ -60,14 +50,14 @@ export default function ProgressChartAnt() {
                 <div className="flex items-center gap-2">
                   <span className="inline-block w-4 h-3 bg-gray-400 rounded-sm" />
                   <span>To do</span>
-                  <span className="ml-auto">{task.toDo}</span>
+                  <span className="ml-auto">{task.todo}</span>
                 </div>
               </div>
             }
           >
             <Progress
-              percent={task.done + task.inProgress}
-              success={{ percent: task.done, strokeColor: "##6a9a24" }} // Tailwind green-600
+              percent={task.donePercent + task.inProgressPercent}
+              success={{ percent: task.donePercent, strokeColor: "#6a9a24" }}
               showInfo={true}
               percentPosition={{ align: "start", type: "inner" }}
               size={{ height: 23 }}

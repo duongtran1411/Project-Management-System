@@ -1,7 +1,7 @@
 "use client";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { Task } from "@/types/types";
+import { Task } from "@/models/task/task.model";
 import { CheckSquareOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { Tag, Avatar, Spin } from "antd";
 import { useParams } from "next/navigation";
@@ -28,7 +28,7 @@ const ActivityRecent = () => {
     fetcher
   );
   return (
-    <div className="bg-white overflow-hidden h-[290px]">
+    <div className="bg-white overflow-hidden h-[270px]">
       <h3 className="text-md font-semibold mb-1">Recent activity</h3>
       <p className="text-sm text-gray-500 mb-4">
         Stay up to date with what’s happening across the project.
@@ -55,7 +55,7 @@ const ActivityRecent = () => {
                   <Avatar
                     className="bg-purple-700"
                     size="small"
-                    src={activity.createdBy.avatar}
+                    src={activity?.createdBy?.avatar}
                   />
                 ) : (
                   <Avatar className="bg-gray-400" size="small">
@@ -96,14 +96,14 @@ const ActivityRecent = () => {
                   <span className="text-gray-400 text-xs">
                     <ClockCircleOutlined className="mr-1" />
                     {activity.createdAt === activity.updatedAt
-                      ? `${activity?.createdAt.slice(
+                      ? `${activity?.createdAt?.slice(
                           0,
                           10
-                        )} ${activity?.createdAt.slice(11, 19)}`
-                      : `${activity?.updatedAt.slice(
+                        )} ${activity?.createdAt?.slice(11, 19)}`
+                      : `${activity?.updatedAt?.slice(
                           0,
                           10
-                        )} ${activity?.updatedAt.slice(11, 19)}`}
+                        )} ${activity?.updatedAt?.slice(11, 19)}`}
                   </span>
                 </div>
               </div>

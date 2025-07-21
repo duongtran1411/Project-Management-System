@@ -3,16 +3,20 @@ import { useContext, createContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Constants } from "../constants";
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { isTokenValid } from "@/helpers/auth/checktoken";
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  userInfo: TokenPayload | null;
+  loginSuccess: (token: string) => void;
+  setUserInfo: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userInfo, setUserInfo] = useState<TokenPayload | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,9 +26,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (currentPath.startsWith("/authentication")) {
       if (token && isTokenValid(token)) {
         setIsLoggedIn(true);
+        const decoded = jwtDecode<TokenPayload>(token);
+        setUserInfo(decoded);
       } else {
         setIsLoggedIn(false);
+        setUserInfo(null);
       }
+      return;
     }
 
     if (!token || !isTokenValid(token)) {
@@ -36,13 +44,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setIsLoggedIn(true);
     const decoded = jwtDecode<TokenPayload>(token);
-    if (decoded.role === "USER" && !currentPath.startsWith('/')) {
+    setUserInfo(decoded);
+    if (decoded.role === "USER" && !currentPath.startsWith("/")) {
       router.replace("/");
     }
   }, []);
 
+  const loginSuccess = (token: string) => {
+    localStorage.setItem(Constants.API_TOKEN_KEY, token);
+    const decoded = jwtDecode<TokenPayload>(token);
+    setUserInfo(decoded);
+    setIsLoggedIn(true);
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, userInfo, loginSuccess, setUserInfo }}
+    >
       {children}
     </AuthContext.Provider>
   );

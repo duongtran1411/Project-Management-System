@@ -1,6 +1,9 @@
 import { Router } from "express";
 import taskController from "../controllers/task.controller";
-import { authenticate } from "../middlewares/auth.middleware";
+import {
+  authenticate,
+  authorizeProjectRole,
+} from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -156,7 +159,55 @@ router.get("/:id", authenticate, taskController.getTaskById);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.put("/:id", authenticate, taskController.updateTask);
+router.put(
+  "/:id",
+  authenticate,
+  authorizeProjectRole("PROJECT_ADMIN"),
+  taskController.updateTask
+);
+
+/**
+ * @openapi
+ * /task/bulk-delete:
+ *   delete:
+ *     summary: Xóa nhiều task cùng lúc
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [taskIds]
+ *             properties:
+ *               taskIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Danh sách ID của các task cần xóa
+ *                 example: ["60d21b4667d0d8992e610c85", "60d21b4667d0d8992e610c86"]
+ *     responses:
+ *       200:
+ *         description: Xóa task thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     success: { type: number }
+ *                     failed: { type: number }
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ *       401:
+ *         description: Không có quyền truy cập
+ */
+router.delete("/bulk-delete", authenticate, taskController.deleteManyTasks);
 
 /**
  * @openapi
@@ -329,49 +380,370 @@ router.patch("/:id/status", authenticate, taskController.updateTaskStatus);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch("/:id/priority", authenticate, taskController.updateTaskPriority);
+router.patch(
+  "/:id/priority",
+  authenticate,
+  taskController.updateTaskPriority
+);
 
 /**
  * @openapi
- * /task/bulk-delete:
- *   post:
- *     summary: Xóa nhiều task cùng lúc
+ * /task/{id}/name:
+ *   patch:
+ *     summary: Cập nhật tên task
  *     tags: [Task]
  *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required: [taskIds]
+ *             required: [name]
  *             properties:
- *               taskIds:
+ *               name: { type: string }
+ *     responses:
+ *       200: { description: Cập nhật tên task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/name",
+  authenticate,
+  taskController.updateTaskName
+);
+
+/**
+ * @openapi
+ * /task/{id}/description:
+ *   patch:
+ *     summary: Cập nhật mô tả task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [description]
+ *             properties:
+ *               description: { type: string }
+ *     responses:
+ *       200: { description: Cập nhật mô tả task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/description",
+  authenticate,
+  taskController.updateTaskDescription
+);
+
+/**
+ * @openapi
+ * /task/{id}/assignee:
+ *   patch:
+ *     summary: Cập nhật người được giao task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               assignee:
+ *                 type: string
+ *                 nullable: true
+ *                 description: ID của người được giao task. Gửi null để hủy giao task
+ *     responses:
+ *       200: { description: Cập nhật người được giao task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/assignee",
+  authenticate,
+  taskController.updateTaskAssignee
+);
+
+/**
+ * @openapi
+ * /task/{id}/reporter:
+ *   patch:
+ *     summary: Cập nhật người báo cáo task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [reporter]
+ *             properties:
+ *               reporter: { type: string }
+ *     responses:
+ *       200: { description: Cập nhật người báo cáo task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/reporter",
+  authenticate,
+  taskController.updateTaskReporter
+);
+
+/**
+ * @openapi
+ * /task/{id}/epic:
+ *   patch:
+ *     summary: Cập nhật epic của task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [epic]
+ *             properties:
+ *               epic: { type: string }
+ *     responses:
+ *       200: { description: Cập nhật epic task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/epic",
+  authenticate,
+  taskController.updateTaskEpic
+);
+
+/**
+ * @openapi
+ * /task/{id}/milestone:
+ *   patch:
+ *     summary: Cập nhật milestone của task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [milestone]
+ *             properties:
+ *               milestone: { type: string }
+ *     responses:
+ *       200: { description: Cập nhật milestone task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/milestone",
+  authenticate,
+  taskController.updateTaskMilestone
+);
+
+/**
+ * @openapi
+ * /task/{id}/dates:
+ *   patch:
+ *     summary: Cập nhật ngày tháng của task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               startDate: { type: string, format: date }
+ *               dueDate: { type: string, format: date }
+ *     responses:
+ *       200: { description: Cập nhật ngày tháng task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/dates",
+  authenticate,
+  taskController.updateTaskDates
+);
+
+/**
+ * @openapi
+ * /task/{id}/labels:
+ *   patch:
+ *     summary: Cập nhật labels của task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của task
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [labels]
+ *             properties:
+ *               labels:
  *                 type: array
- *                 items:
- *                   type: string
- *                 description: Danh sách ID của các task cần xóa
- *                 example: ["60d21b4667d0d8992e610c85", "60d21b4667d0d8992e610c86"]
+ *                 items: { type: string }
+ *     responses:
+ *       200: { description: Cập nhật labels task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch(
+  "/:id/labels",
+  authenticate,
+  taskController.updateTaskLabels
+);
+
+
+/**
+ * @openapi
+ * /task/count/{milestoneId}:
+ *   get:
+ *     summary: lấy số lượng task theo milestoneId
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: milestoneId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của milestone
+ *     responses:
+ *       200: { description: lấy số lượng task không thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get('/count/:milestoneId', authenticate, taskController.countTaskNotDoneByMileStone)
+
+
+/**
+ * @openapi
+ * /task/board/{projectId}:
+ *   get:
+ *     summary: Lấy danh sách task theo projectId
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của project
  *     responses:
  *       200:
- *         description: Xóa task thành công
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 message: { type: string }
- *                 data:
- *                   type: object
- *                   properties:
- *                     success: { type: number }
- *                     failed: { type: number }
+ *         description: Lấy danh sách task theo projectId thành công
  *       400:
  *         description: Dữ liệu không hợp lệ
  *       401:
  *         description: Không có quyền truy cập
  */
-router.post("/bulk-delete", authenticate, taskController.deleteManyTasks);
+
+router.get(
+  "/board/:projectId",
+  authenticate,
+  taskController.getTaskByProjectId
+);
+
+
+
+/**
+ * @openapi
+ * /task/updatemilestones/task/{milestoneId}:
+ *   patch:
+ *     summary: Cập nhật milestones cho task
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: milestoneId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của milestones
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [milestonesIdMove]
+ *             properties:
+ *               milestonesIdMove:
+ *                 type: string
+ *     responses:
+ *       200: { description: Cập nhật milestones task thành công }
+ *       404: { description: Không tìm thấy task }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch('/updatemilestones/task/:milestoneId',authenticate,taskController.updateMileStonesForTask)
 
 export default router;

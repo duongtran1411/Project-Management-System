@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateMilestone } from "@/types/types";
+import { CreateMilestone } from "@/models/milestone/milestone.model";
 import { Modal, Form, Input, DatePicker } from "antd";
 
 const { TextArea } = Input;
@@ -33,6 +33,7 @@ const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
         startDate: values.startDate,
         endDate: values.endDate,
         projectId,
+        status: "NOT_START",
       };
       onCreate(formatted);
       form.resetFields();

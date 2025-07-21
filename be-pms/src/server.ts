@@ -4,7 +4,14 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import { connectDB } from "./config/mongodb";
 import routes from "./routes";
-import { seedAdminRole, seedAdminUser, seedUserRole } from "./config/seed";
+import {
+  seedAdminRole,
+  seedAdminUser,
+  seedUserRole,
+  seedProjectAdminRole,
+  seedContributorRole,
+  seedAllRoles,
+} from "./config/seed";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger";
 import "./models";
@@ -80,8 +87,7 @@ const startServer = async () => {
     if (process.env.SKIP_DB !== "true") {
       await connectDB();
       console.log("✅ Connected to MongoDB");
-      await seedAdminRole();
-      await seedUserRole();
+      await seedAllRoles();
       await seedAdminUser();
     } else {
       console.log("⚠️  Skipping MongoDB connection (SKIP_DB=true)");

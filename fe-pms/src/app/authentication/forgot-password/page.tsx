@@ -3,18 +3,21 @@ import { Form, Input, Button } from "antd";
 import { MailOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { useState } from "react";
-import { forgotPassword } from "@/lib/services/authentication/auth";
+import { forgotPassword } from "@/lib/services/authentication/auth.service";
 import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
 import Link from "next/link";
+
 export default function Page() {
   const [email, setEmail] = useState<string>("");
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+
   const onFinish = async () => {
     try {
-      debugger;
+      setLoading(true);
       const response = await forgotPassword(email);
       if (response.success) {
         setIsSuccess(true);
@@ -28,50 +31,89 @@ export default function Page() {
       if (errorMessage) {
         showErrorToast(errorMessage);
       }
+    } finally {
+      setLoading(false);
     }
   };
-  return (
-    <div className="border-2 rounded-xl border-gray-200 shadow-xl">
-      <Form
-        name="login"
-        initialValues={{ remember: true }}
-        style={{ maxWidth: 360 }}
-        onFinish={onFinish}
-        className="pl-4 pt-6">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "start",
-            marginBottom: "20px",
-          }}>
-          <Typography className="font-semibold text-3xl">
-            Enter your email
-          </Typography>
-        </div>
-        <Form.Item
-          name="email"
-          rules={[
-            { required: true, message: "Please input your email!" },
-            { type: "email", message: "Email must be include @example.com!" },
-          ]}>
-          <Input
-            prefix={<MailOutlined />}
-            placeholder="@example.com"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Form.Item>
 
-        <Form.Item>
-          <Button block type="primary" htmlType="submit" className="mb-2">
-            Send new password
-          </Button>
-          {isSuccess && (
-            <Button block type="text" className="mb-2">
-              <Link href={"/authentication/login"}>Back to Login</Link>
-            </Button>
-          )}
-        </Form.Item>
-      </Form>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <Typography.Title level={2} className="text-gray-900 font-bold">
+            Quên mật khẩu
+          </Typography.Title>
+          <Typography.Text className="text-gray-600">
+            Nhập email của bạn để nhận mật khẩu mới
+          </Typography.Text>
+        </div>
+
+        <div className="bg-white py-8 px-6 shadow-lg rounded-lg border border-gray-200">
+          <Form
+            name="forgotPassword"
+            layout="vertical"
+            onFinish={onFinish}
+            className="space-y-6"
+          >
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[
+                { required: true, message: "Vui lòng nhập email của bạn!" },
+                { type: "email", message: "Email không hợp lệ!" },
+              ]}
+            >
+              <Input
+                size="large"
+                prefix={<MailOutlined className="text-gray-400" />}
+                placeholder="example@email.com"
+                onChange={(e) => setEmail(e.target.value)}
+                className="rounded-md"
+              />
+            </Form.Item>
+
+            <Form.Item className="mb-0">
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={loading}
+                className="w-full h-12 text-base font-medium rounded-md"
+              >
+                Gửi mật khẩu mới
+              </Button>
+            </Form.Item>
+
+            {isSuccess && (
+              <div className="text-center">
+                <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                  <Typography.Text className="text-green-800">
+                    Email đã được gửi thành công! Vui lòng kiểm tra hộp thư của
+                    bạn.
+                  </Typography.Text>
+                </div>
+                <Button
+                  type="text"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  <Link href="/authentication/login">← Quay lại đăng nhập</Link>
+                </Button>
+              </div>
+            )}
+
+            {!isSuccess && (
+              <div className="text-center">
+                <Button
+                  type="text"
+                  className="text-gray-600 hover:text-gray-800"
+                >
+                  <Link href="/authentication/login">← Quay lại đăng nhập</Link>
+                </Button>
+              </div>
+            )}
+          </Form>
+        </div>
+      </div>
     </div>
   );
 }

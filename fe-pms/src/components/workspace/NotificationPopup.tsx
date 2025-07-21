@@ -13,7 +13,7 @@ import {
 import {
   INotification,
   NotificationStats,
-} from "@/models/notification/notification";
+} from "@/models/notification/notification.model";
 import {
   BellOutlined,
   CheckCircleOutlined,
@@ -29,7 +29,8 @@ import {
   Tabs,
   Typography,
 } from "antd";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { useSocket } from "@/hooks/useSocket";
 
 const { Text, Title } = Typography;
 
@@ -44,62 +45,107 @@ const NotificationPopup: React.FC = () => {
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  const { socket, connected, on, off } = useSocket();
+
   useEffect(() => {
-    const userId = getCurrentUserId();
-    setUserId(userId);
+    const currentUserId = getCurrentUserId();
+    setUserId(currentUserId);
   }, []);
 
-  const handleToggleUnread = useCallback((checked: boolean) => {
-    setShowOnlyUnread(checked);
-    setDropdownOpen(true);
-  }, []);
+  useEffect(() => {
+    if (!socket || !userId) return;
 
-  const handleSwitchClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-  }, []);
+    const cleanupFunctions: (() => void)[] = [];
 
-  const handleMarkAllAsReadClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleMarkAllAsRead();
-  }, []);
-
-  const fetchNotifications = async (
-    pageNum: number = 1,
-    append: boolean = false
-  ) => {
-    if (!userId) return;
-
-    setLoading(true);
-    try {
-      const response = await getNotifications({
-        recipientId: userId,
-        page: pageNum,
-        limit: 10,
-        isArchived: false,
-        isRead: showOnlyUnread ? false : undefined,
-      });
-
-      if (response && response.notifications) {
-        if (append) {
-          setNotifications((prev) => [...prev, ...response.notifications]);
-        } else {
-          setNotifications(response.notifications);
-        }
-        setHasMore(response.page < response.totalPages);
-        setPage(response.page);
-      } else {
-        if (!append) {
-          setHasMore(false);
-        }
+    const newNotificationCleanup = on(
+      "new-notification",
+      (data: { notification: INotification }) => {
+        setNotifications((prev) => [data.notification, ...prev]);
+        setStats((prev) =>
+          prev
+            ? { ...prev, unread: prev.unread + 1, total: prev.total + 1 }
+            : null
+        );
       }
-    } catch (error) {
-      console.error("Failed to fetch notifications:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    );
+    if (newNotificationCleanup) cleanupFunctions.push(newNotificationCleanup);
 
-  const fetchStats = async () => {
+    const notificationReadCleanup = on(
+      "notification-read",
+      (data: { notificationId: string }) => {
+        setNotifications((prev) =>
+          prev.map((notification) =>
+            notification._id === data.notificationId
+              ? { ...notification, isRead: true }
+              : notification
+          )
+        );
+        setStats((prev) =>
+          prev ? { ...prev, unread: Math.max(0, prev.unread - 1) } : null
+        );
+      }
+    );
+    if (notificationReadCleanup) cleanupFunctions.push(notificationReadCleanup);
+
+    const allNotificationsReadCleanup = on("all-notifications-read", () => {
+      setNotifications((prev) =>
+        prev.map((notification) => ({ ...notification, isRead: true }))
+      );
+      setStats((prev) => (prev ? { ...prev, unread: 0 } : null));
+    });
+    if (allNotificationsReadCleanup)
+      cleanupFunctions.push(allNotificationsReadCleanup);
+
+    const statsUpdateCleanup = on(
+      "notification-stats-updated",
+      (data: { stats: NotificationStats }) => {
+        setStats(data.stats);
+      }
+    );
+    if (statsUpdateCleanup) cleanupFunctions.push(statsUpdateCleanup);
+
+    return () => {
+      cleanupFunctions.forEach((cleanup) => cleanup());
+    };
+  }, [socket, userId, on, off]);
+
+  const fetchNotifications = useCallback(
+    async (pageNum: number = 1, append: boolean = false) => {
+      if (!userId) return;
+
+      setLoading(true);
+      try {
+        const response = await getNotifications({
+          recipientId: userId,
+          page: pageNum,
+          limit: 10,
+          isArchived: false,
+          isRead: showOnlyUnread ? false : undefined,
+        });
+
+        if (response && response.notifications) {
+          if (append) {
+            setNotifications((prev) => [...prev, ...response.notifications]);
+          } else {
+            setNotifications(response.notifications);
+          }
+          setHasMore(response.page < response.totalPages);
+          setPage(response.page);
+        } else {
+          if (!append) {
+            setHasMore(false);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, showOnlyUnread]
+  );
+
+  const fetchStats = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -110,246 +156,275 @@ const NotificationPopup: React.FC = () => {
     } catch (error) {
       console.error("Failed to fetch notification stats:", error);
     }
-  };
+  }, [userId]);
 
-  const handleMarkAsRead = async (notificationId: string) => {
-    if (!userId) return;
+  const handleMarkAsRead = useCallback(
+    async (notificationId: string) => {
+      if (!userId) return;
 
-    try {
-      const updatedNotification = await markNotificationAsRead(
-        notificationId,
-        userId
-      );
-      if (updatedNotification) {
-        setNotifications((prev) =>
-          prev.map((notif) =>
-            notif._id === notificationId ? { ...notif, isRead: true } : notif
-          )
+      try {
+        const updatedNotification = await markNotificationAsRead(
+          notificationId,
+          userId
         );
-        setDropdownOpen(true);
-        fetchStats();
+        if (updatedNotification) {
+          await Promise.all([fetchNotifications(), fetchStats()]);
+        }
+      } catch (error) {
+        console.error("Failed to mark notification as read:", error);
       }
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-    }
-  };
+    },
+    [userId, fetchNotifications, fetchStats]
+  );
 
-  const handleMarkAllAsRead = async () => {
-    if (!userId) return;
-
+  const handleMarkAllAsRead = useCallback(async () => {
     try {
-      const result = await markAllNotificationsAsRead(userId);
+      const result = await markAllNotificationsAsRead();
       if (result) {
-        setNotifications((prev) =>
-          prev.map((notif) => ({ ...notif, isRead: true }))
-        );
-        setDropdownOpen(true);
-        fetchStats();
+        await Promise.all([fetchNotifications(), fetchStats()]);
       }
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
     }
-  };
+  }, [fetchNotifications, fetchStats]);
+
+  const handleToggleUnread = useCallback((checked: boolean) => {
+    setShowOnlyUnread(checked);
+    setDropdownOpen(true);
+  }, []);
+
+  const handleSwitchClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleMarkAllAsReadClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      handleMarkAllAsRead();
+    },
+    [handleMarkAllAsRead]
+  );
+
+  const handleLoadMore = useCallback(() => {
+    fetchNotifications(page + 1, true);
+  }, [fetchNotifications, page]);
 
   useEffect(() => {
     if (userId) {
-      fetchNotifications();
-      fetchStats();
+      Promise.all([fetchNotifications(), fetchStats()]);
     }
-  }, [userId, showOnlyUnread]);
+  }, [userId, fetchNotifications, fetchStats]);
 
-  useEffect(() => {
-    if (dropdownOpen) {
-      const timer = setTimeout(() => {
-        setDropdownOpen(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [notifications, stats]);
+  const notificationGroups = useMemo(
+    () => groupNotificationsByDate(notifications),
+    [notifications]
+  );
 
-  const renderNotificationItem = (notification: INotification) => (
-    <div
-      key={notification._id}
-      className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
-        !notification.isRead ? "bg-blue-50" : "bg-white"
-      }`}
-      onClick={() => handleMarkAsRead(notification._id)}
-    >
-      <div className="flex items-start gap-3">
-        <Avatar
-          src={
-            typeof notification.senderId === "object" &&
-            notification.senderId.avatar
-              ? notification.senderId.avatar
-              : undefined
-          }
-          style={{ backgroundColor: "#1890ff" }}
-          size={32}
-        >
-          {getUserAvatar(notification.senderId)}
-        </Avatar>
+  const unreadCount = useMemo(() => stats?.unread || 0, [stats]);
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <Text className="text-sm font-medium text-gray-900">
-              {notification.title}
-            </Text>
-            <Text className="text-xs text-gray-500">
-              {formatTimeAgo(notification.createdAt)}
-            </Text>
-            {!notification.isRead && (
-              <div className="w-2 h-2 bg-blue-500 rounded-full ml-auto" />
-            )}
-          </div>
+  const renderNotificationItem = useCallback(
+    (notification: INotification) => (
+      <div
+        key={notification._id}
+        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
+          !notification.isRead ? "bg-blue-50" : "bg-white"
+        }`}
+        onClick={() => handleMarkAsRead(notification._id)}
+      >
+        <div className="flex items-start gap-3">
+          <Avatar
+            src={
+              typeof notification.senderId === "object" &&
+              notification.senderId.avatar
+                ? notification.senderId.avatar
+                : undefined
+            }
+            style={{ backgroundColor: "#1890ff" }}
+            size={32}
+          >
+            {getUserAvatar(notification.senderId)}
+          </Avatar>
 
-          {notification.metadata?.taskName && (
-            <div className="flex items-center gap-2 mb-2">
-              <CheckOutlined className="text-gray-400 text-xs" />
-              <Text className="text-sm text-gray-700">
-                {notification.metadata.taskName}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Text className="text-sm font-medium text-gray-900">
+                {notification.title}
               </Text>
-            </div>
-          )}
-
-          {notification.metadata?.commentText && (
-            <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-              <Text className="text-sm text-gray-700">
-                {notification.metadata.commentText}
+              <Text className="text-xs text-gray-500">
+                {formatTimeAgo(notification.createdAt)}
               </Text>
+              {!notification.isRead && (
+                <div className="w-2 h-2 bg-blue-500 rounded-full ml-auto" />
+              )}
             </div>
-          )}
 
-          {notification.metadata?.mentionedUsers &&
-            notification.metadata.mentionedUsers.length > 0 && (
-              <div className="mt-2">
-                <Text className="text-xs text-blue-600">
-                  +{notification.metadata.mentionedUsers.length} mention from{" "}
-                  {notification.title}
+            {notification.metadata?.taskName && (
+              <div className="flex items-center gap-2 mb-2">
+                <CheckOutlined className="text-gray-400 text-xs" />
+                <Text className="text-sm text-gray-700">
+                  {notification.metadata.taskName}
                 </Text>
               </div>
             )}
+
+            {notification.metadata?.commentText && (
+              <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <Text className="text-sm text-gray-700">
+                  {notification.metadata.commentText}
+                </Text>
+              </div>
+            )}
+
+            {notification.metadata?.mentionedUsers &&
+              notification.metadata.mentionedUsers.length > 0 && (
+                <div className="mt-2">
+                  <Text className="text-xs text-blue-600">
+                    +{notification.metadata.mentionedUsers.length} mention from{" "}
+                    {notification.title}
+                  </Text>
+                </div>
+              )}
+          </div>
         </div>
       </div>
-    </div>
+    ),
+    [handleMarkAsRead]
   );
 
-  const notificationGroups = groupNotificationsByDate(notifications);
-
-  const items = [
-    {
-      key: "1",
-      label: (
-        <div
-          className="w-[500px] max-h-[600px] flex flex-col"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="flex-shrink-0 bg-white border-b border-gray-200">
-            <div className="flex items-center justify-between p-4">
-              <Title level={5} className="mb-0">
-                Notifications
-              </Title>
-              <div className="flex items-center gap-2">
+  const items = useMemo(
+    () => [
+      {
+        key: "1",
+        label: (
+          <div
+            className="w-[500px] max-h-[600px] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 bg-white border-b border-gray-200">
+              <div className="flex items-center justify-between p-4">
+                <Title level={5} className="mb-0">
+                  Notifications
+                  {!connected && (
+                    <Text className="text-xs text-red-500 ml-2">(Offline)</Text>
+                  )}
+                </Title>
                 <div className="flex items-center gap-2">
-                  <Text className="text-xs text-gray-600">
-                    Only show unread
-                  </Text>
-                  <div onClick={handleSwitchClick}>
-                    <Switch
-                      size="small"
-                      checked={showOnlyUnread}
-                      onChange={handleToggleUnread}
-                    />
+                  <div className="flex items-center gap-2">
+                    <Text className="text-xs text-gray-600">
+                      Only show unread
+                    </Text>
+                    <div onClick={handleSwitchClick}>
+                      <Switch
+                        size="small"
+                        checked={showOnlyUnread}
+                        onChange={handleToggleUnread}
+                      />
+                    </div>
                   </div>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<CheckCircleOutlined />}
+                    className="text-gray-500 hover:text-blue-500"
+                    title="Mark all as read"
+                    onClick={handleMarkAllAsReadClick}
+                  />
                 </div>
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<CheckCircleOutlined />}
-                  className="text-gray-500 hover:text-blue-500"
-                  title="Mark all as read"
-                  onClick={handleMarkAllAsReadClick}
+              </div>
+
+              <div className="px-4">
+                <Tabs
+                  activeKey={activeTab}
+                  onChange={setActiveTab}
+                  items={[
+                    {
+                      key: "direct",
+                      label: "Direct",
+                    },
+                    {
+                      key: "watching",
+                      label: "Watching",
+                    },
+                  ]}
+                  className="mb-0"
+                  tabBarStyle={{ marginBottom: 0 }}
                 />
               </div>
             </div>
 
-            <div className="px-4">
-              <Tabs
-                activeKey={activeTab}
-                onChange={setActiveTab}
-                items={[
-                  {
-                    key: "direct",
-                    label: "Direct",
-                  },
-                  {
-                    key: "watching",
-                    label: "Watching",
-                  },
-                ]}
-                className="mb-0"
-                tabBarStyle={{ marginBottom: 0 }}
-              />
+            <div className="flex-1 overflow-y-auto">
+              {activeTab === "direct" && (
+                <div>
+                  {loading && notifications.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Spin size="large" />
+                    </div>
+                  ) : notifications.length > 0 ? (
+                    <div>
+                      {Object.entries(notificationGroups).map(
+                        ([groupName, groupNotifications]) => (
+                          <div key={groupName}>
+                            <div className="px-4 py-2 bg-gray-50">
+                              <Text className="text-xs font-medium text-gray-600">
+                                {groupName}
+                              </Text>
+                            </div>
+                            {groupNotifications.map(renderNotificationItem)}
+                          </div>
+                        )
+                      )}
+
+                      {hasMore && (
+                        <div className="text-center py-4">
+                          <Button
+                            type="link"
+                            onClick={handleLoadMore}
+                            loading={loading}
+                          >
+                            Load more
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Text className="text-gray-500">
+                        {showOnlyUnread
+                          ? "No unread notifications"
+                          : "No notifications"}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "watching" && (
+                <div className="text-center py-8">
+                  <Text className="text-gray-500">
+                    No watching notifications
+                  </Text>
+                </div>
+              )}
             </div>
           </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {activeTab === "direct" && (
-              <div>
-                {loading && notifications.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Spin size="large" />
-                  </div>
-                ) : notifications.length > 0 ? (
-                  <div>
-                    {Object.entries(notificationGroups).map(
-                      ([groupName, groupNotifications]) => (
-                        <div key={groupName}>
-                          <div className="px-4 py-2 bg-gray-50">
-                            <Text className="text-xs font-medium text-gray-600">
-                              {groupName}
-                            </Text>
-                          </div>
-                          {groupNotifications.map(renderNotificationItem)}
-                        </div>
-                      )
-                    )}
-
-                    {hasMore && (
-                      <div className="text-center py-4">
-                        <Button
-                          type="link"
-                          onClick={() => fetchNotifications(page + 1, true)}
-                          loading={loading}
-                        >
-                          Load more
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Text className="text-gray-500">
-                      {showOnlyUnread
-                        ? "No unread notifications"
-                        : "No notifications"}
-                    </Text>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === "watching" && (
-              <div className="text-center py-8">
-                <Text className="text-gray-500">No watching notifications</Text>
-              </div>
-            )}
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  const unreadCount = stats?.unread || 0;
+        ),
+      },
+    ],
+    [
+      connected,
+      showOnlyUnread,
+      handleSwitchClick,
+      handleToggleUnread,
+      handleMarkAllAsReadClick,
+      activeTab,
+      loading,
+      notifications.length,
+      notificationGroups,
+      renderNotificationItem,
+      hasMore,
+      handleLoadMore,
+    ]
+  );
 
   return (
     <Dropdown
@@ -359,7 +434,7 @@ const NotificationPopup: React.FC = () => {
       overlayClassName="notification-dropdown"
       open={dropdownOpen}
       onOpenChange={setDropdownOpen}
-      destroyPopupOnHide={false}
+      destroyOnHidden={false}
       getPopupContainer={(triggerNode) =>
         triggerNode.parentElement || document.body
       }

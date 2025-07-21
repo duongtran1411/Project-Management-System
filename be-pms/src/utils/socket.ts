@@ -3,30 +3,74 @@ import { Server, Socket } from "socket.io";
 
 let io: Server | null = null;
 
+export interface SocketEvents {
+  "join-user": (userId: string) => void;
+  "leave-user": (userId: string) => void;
+  "join-project": (projectId: string) => void;
+  "leave-project": (projectId: string) => void;
+  "open-comment-task": (taskId: string) => void;
+  "leave-comment-task": (taskId: string) => void;
+  "send-comment": (data: {
+    taskId: string;
+    message: string;
+    user: any;
+  }) => void;
+  "new-comment": (data: {
+    comment: any;
+    taskId: string;
+    timestamp: Date;
+  }) => void;
+  "comment-updated": (data: {
+    comment: any;
+    taskId: string;
+    timestamp: Date;
+  }) => void;
+  "comment-deleted": (data: {
+    commentId: string;
+    taskId: string;
+    timestamp: Date;
+  }) => void;
+  "new-notification": (data: { notification: any; timestamp: Date }) => void;
+  "notification-read": (data: {
+    notificationId: string;
+    timestamp: Date;
+  }) => void;
+  "all-notifications-read": (data: { count: number; timestamp: Date }) => void;
+  "notification-stats-updated": (data: { stats: any; timestamp: Date }) => void;
+}
+
 const initSocket = (httpServer: ServerHttp) => {
   io = new Server(httpServer, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: process.env.FRONTEND_URL || "http://localhost:3000",
+      credentials: true,
     },
+    transports: ["websocket", "polling"],
   });
 
   io.on("connection", async (socket: Socket) => {
-    // Join project room for real-time updates
+    socket.on("join-user", (userId: string) => {
+      socket.join(`user-${userId}`);
+    });
+
+    socket.on("leave-user", (userId: string) => {
+      socket.leave(`user-${userId}`);
+    });
+
     socket.on("join-project", (projectId: string) => {
       socket.join(`project-${projectId}`);
-      console.log(`User joined project: ${projectId}`);
     });
 
-    // Leave project room
     socket.on("leave-project", (projectId: string) => {
       socket.leave(`project-${projectId}`);
-      console.log(`User left project: ${projectId}`);
     });
 
-    // Task comment functionality
     socket.on("open-comment-task", (taskId: string) => {
       socket.join(`task-${taskId}`);
-      console.log(`User opened comments for task: ${taskId}`);
+    });
+
+    socket.on("leave-comment-task", (taskId: string) => {
+      socket.leave(`task-${taskId}`);
     });
 
     socket.on(
@@ -40,16 +84,14 @@ const initSocket = (httpServer: ServerHttp) => {
       }
     );
 
-    // Disconnect handling
     socket.on("disconnect", () => {
-      console.log("User disconnected");
+      console.log(`User disconnected: ${socket.id}`);
     });
   });
 
   return io;
 };
 
-// Socket utility functions for emitting events
 export const emitTaskCreated = (task: any, projectId: string) => {
   if (io) {
     io.to(`project-${projectId}`).emit("new-task", {
@@ -58,7 +100,6 @@ export const emitTaskCreated = (task: any, projectId: string) => {
       type: "created",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-created for project: ${projectId}`);
   }
 };
 
@@ -71,7 +112,6 @@ export const emitTaskUpdated = (task: any, projectId: string, changes: any) => {
       type: "updated",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-updated for project: ${projectId}`);
   }
 };
 
@@ -90,7 +130,6 @@ export const emitTaskStatusChanged = (
       type: "status-changed",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-status-changed for project: ${projectId}`);
   }
 };
 
@@ -109,7 +148,6 @@ export const emitTaskAssigned = (
       type: "assigned",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-assigned for project: ${projectId}`);
   }
 };
 
@@ -121,8 +159,99 @@ export const emitTaskDeleted = (taskId: string, projectId: string) => {
       type: "deleted",
       timestamp: new Date(),
     });
-    console.log(`Emitted task-deleted for project: ${projectId}`);
   }
 };
+
+export const emitNewNotification = (notification: any, recipientId: string) => {
+  if (io) {
+    io.to(`user-${recipientId}`).emit("new-notification", {
+      notification,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitNotificationRead = (
+  notificationId: string,
+  recipientId: string
+) => {
+  if (io) {
+    io.to(`user-${recipientId}`).emit("notification-read", {
+      notificationId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitAllNotificationsRead = (
+  recipientId: string,
+  count: number
+) => {
+  if (io) {
+    io.to(`user-${recipientId}`).emit("all-notifications-read", {
+      count,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitNotificationStatsUpdate = (
+  recipientId: string,
+  stats: any
+) => {
+  if (io) {
+    io.to(`user-${recipientId}`).emit("notification-stats-updated", {
+      stats,
+      timestamp: new Date(),
+    });
+  }
+};
+
+// Comment realtime events
+export const emitNewComment = (comment: any, taskId: string) => {
+  if (io) {
+    io.to(`task-${taskId}`).emit("new-comment", {
+      comment,
+      taskId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitCommentUpdated = (comment: any, taskId: string) => {
+  if (io) {
+    io.to(`task-${taskId}`).emit("comment-updated", {
+      comment,
+      taskId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitCommentDeleted = (commentId: string, taskId: string) => {
+  if (io) {
+    io.to(`task-${taskId}`).emit("comment-deleted", {
+      commentId,
+      taskId,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const emitFileUpload = (data: {
+  taskId: string;
+  files: Array<{ filename: string; url: string }>;
+  uploadedBy: string;
+  timestamp: Date;
+}) => {
+  if (io) {
+    io.to(`task-${data.taskId}`).emit("file-uploaded", {
+      ...data,
+      timestamp: new Date(),
+    });
+  }
+};
+
+export const getSocketInstance = () => io;
 
 export default initSocket;

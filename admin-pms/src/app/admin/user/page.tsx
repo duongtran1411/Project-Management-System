@@ -3,25 +3,70 @@
 import { Endpoints } from "@/lib/endpoints";
 import { getAll, updateStatus } from "@/lib/services/user/user";
 import { User } from "@/models/user/User";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import useSWR from "swr";
-import { Spin } from "antd";
-import { showErrorToast, showSuccessToast } from "@/components/common/toast/toast";
-import { format } from "date-fns";
+import { Button, Input, Spin, Table, Tag, Tooltip } from "antd";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "@/components/common/toast/toast";
+import { format, parseISO } from "date-fns";
 import Swal from "sweetalert2";
 import Spinner from "@/components/common/spinner/spin";
+import { createStyles } from "@/components/common/antd/createStyle";
+import { ColumnsType, TablePaginationConfig } from "antd/es/table";
+import { Pagination as Paging } from "@/models/pagination/Pagination";
+import { Filter } from "@/models/filter/Filter";
+const useStyle = createStyles(({ css, token }) => {
+  const { antCls } = token;
+  return {
+    customTable: css({
+      [`${antCls}-table`]: {
+        [`${antCls}-table-container`]: {
+          [`${antCls}-table-body`]: {
+            scrollbarWidth: "thin",
+            scrollbarColor: "#eaeaea transparent",
+          },
+        },
+      },
+    }),
+  };
+});
+
 const UserAdmin = () => {
+  const { customTable } = useStyle;
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const [pagination, setPagination] = useState<Paging>({
+    limit: 10,
+    page: 1,
+    totalPages: 4,
+  });
+  const [filter, setFilter] = useState<Filter>();
   const [users, setUsers] = useState<User[]>([]);
   const getAllUser = async (url: string): Promise<User[]> => {
     const response = await getAll(url);
     return response.data;
   };
-  const { data, error, isLoading,mutate } = useSWR(
-    `${Endpoints.User.GET_ALL}`,
+
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams({
+      limit: pagination.limit.toString(),
+      page: pagination.page.toString(),
+    });
+    
+    return params.toString();
+  }, [pagination, filter]);
+
+  const filteredUsers = useMemo(() => {
+  if (!searchTerm) return users;
+  return users.filter((u) =>
+    u.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+}, [users, searchTerm]);
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `${Endpoints.User.GET_ALL}?${queryString}`,
     getAllUser
   );
 
@@ -35,32 +80,18 @@ const UserAdmin = () => {
     }
   }, [data]);
 
-  const filteredUsers = users
-    ? users.filter(
-        (user) =>
-          user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
-
-  // Calculate pagination
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-
-  const handlePageChange = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
-
-  const handleDelete = (id: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-    if (confirmed) {
-      setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
+  const handlePageSize = (pagination: TablePaginationConfig) => {
+    const newPage = pagination.current;
+    const newLimit = pagination.pageSize;
+    if (newPage && newLimit) {
+      setPagination((prev) => ({
+        ...prev,
+        page: newPage,
+        limit: newLimit,
+      }));
     }
   };
+
   const confirmModal = (id: string, status: string) => {
     const newStatus = status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     Swal.fire({
@@ -74,9 +105,9 @@ const UserAdmin = () => {
       if (result.isConfirmed) {
         try {
           const response = await updateStatus(id, newStatus);
-          if(response.success){
-            mutate()
-            showSuccessToast(response.message)
+          if (response.success) {
+            mutate();
+            showSuccessToast(response.message);
           }
         } catch (error: any) {
           const errorMessage =
@@ -91,158 +122,134 @@ const UserAdmin = () => {
     });
   };
 
+  const columns: ColumnsType<User> = [
+    {
+      title: "No.",
+      width: 50,
+      key: "index",
+      render: (_: any, __: any, index: number) => index + 1,
+      fixed: "left",
+    },
+    {
+      title: "Full Name",
+      dataIndex: "fullName",
+      key: "fullName",
+      width: 200,
+      fixed: "left",
+      render: (fullName: string) => fullName || "-",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      width: 250,
+      render: (email: string) => email || "-",
+    },
+    {
+      title: "Role",
+      key: "role",
+      dataIndex: "role",
+      width: 150,
+      align: "center",
+      render: (role: { name: string }) => {
+        const name = role?.name?.toUpperCase() || "UNKNOWN";
+        let color = "default";
+        if (name === "ADMIN") color = "purple";
+        else if (name === "USER") color = "green";
+        else if (name === "STAKEHOLDER") color = "orange";
+
+        return <Tag color={color}>{name}</Tag>;
+      },
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      align: "center",
+      render: (status: string,record:User) => {
+        const s = status?.toUpperCase() || "UNKNOWN";
+        const color =
+          s === "ACTIVE" ? "green" : s === "INACTIVE" ? "red" : "default";
+        return (
+          <Tag className="hover:cursor-pointer" color={color} onClick={() => confirmModal(record._id, s)}>
+            {s}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Last Login",
+      dataIndex: "lastLogin",
+      key: "lastLogin",
+      width: 180,
+      render: (date: string) =>
+        date ? format(parseISO(date), "dd/MM/yyyy HH:mm") : "-",
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      width: 180,
+      render: (date: string) =>
+        date ? format(parseISO(date), "dd/MM/yyyy HH:mm") : "-",
+    },
+    {
+      title: "Action",
+      key: "action",
+      fixed: "right",
+      width: 150,
+      render: (_, record) => (
+        <div className="flex gap-2">
+          <Button size="small" type="link">
+            Edit
+          </Button>
+          <Button size="small" danger type="link">
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   if (isLoading) {
     return <Spinner />;
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <div className="flex-1 p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">User Management</h1>
-          <p className="text-gray-600">Manage your system users</p>
-        </div>
-
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <div className="flex items-center justify-between mb-6">
-            <div className="relative">
-              <FiSearch
-                size={20}
-                className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2"
-              />
-              <input
-                type="text"
-                placeholder="Search users..."
-                className="py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    No.
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Failed Login
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                    Last Login
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users &&
-                  Array.isArray(users) &&
-                  users.map((user, index) => (
-                    <tr key={user._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {index + 1}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.fullName}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">
-                          {user.email}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
-                            user.role.name === "ADMIN"
-                              ? "bg-purple-100 text-purple-800"
-                              : "bg-green-100 text-green-800"
-                          }`}>
-                          {user.role.name}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-center">
-                        <div className="flex justify-start space-x-3 items-center">
-                          <p className="text-red-400">
-                            number of times: {user.failedLoginAttempts}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
-                            user.status === "ACTIVE"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                          onClick={() => confirmModal(user._id, user.status)}>
-                          {user.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                        <div className="flex space-x-3 items-center">
-                          {user.lastLogin
-                            ? format(new Date(user.lastLogin), "dd/MM/yyyy")
-                            : "Chưa đăng nhập"}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex items-center justify-between mt-4">
-            <div className="text-sm text-gray-700">
-              Showing{" "}
-              <span className="font-medium">{indexOfFirstUser + 1}</span> to{" "}
-              <span className="font-medium">
-                {Math.min(indexOfLastUser, filteredUsers.length)}
-              </span>{" "}
-              of <span className="font-medium">{filteredUsers.length}</span>{" "}
-              results
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 text-sm border border-gray-300 rounded-md ${
-                  currentPage === 1
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}>
-                Previous
-              </button>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 text-sm border border-gray-300 rounded-md ${
-                  currentPage === totalPages
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "hover:bg-gray-50"
-                }`}>
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="flex justify-center items-center w-50">
+      <div className="bg-zinc-50">
+        <h2 className="mb-2 text-center text-blue-500 font-bold text-xl">
+          USER
+        </h2>
+        <Input
+          placeholder="Search by action"
+          allowClear
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value)
+          }}
+          className="mt-2 w-[250px] mx-5"
+        />
+        <Table
+          size="small"
+          rowKey={(record) => record._id}
+          className={customTable}
+          pagination={{
+            showSizeChanger: true,
+            showQuickJumper: true,
+            current: pagination.page,
+            pageSize: pagination.limit,
+            total: pagination.total,
+            pageSizeOptions: ["10", "15", "20"],
+            defaultPageSize: pagination.limit,
+          }}
+          style={{ padding: 30 }}
+          columns={columns}
+          dataSource={filteredUsers}
+          scroll={{ x: "1500px" }}
+          onChange={handlePageSize}
+        />
       </div>
     </div>
   );

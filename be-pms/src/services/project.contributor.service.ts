@@ -3,9 +3,9 @@ import ProjectContributor, {
   ProjectInvitation,
   IProjectInvitation,
 } from "../models/project.contributor.model";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import Project from "../models/project.model";
-import ProjectRole from "../models/project.role.model";
+import ProjectRole, { IProjectRole } from "../models/project.role.model";
 import mongoose from "mongoose";
 import { sendProjectInvitationEmail } from "../utils/email.util";
 import crypto from "crypto";
@@ -137,7 +137,34 @@ export class ProjectContributorService {
       throw new Error("Người dùng không tồn tại.");
     }
 
-    // Tạo contributor
+    // Kiểm tra xem user đã là contributor của project này chưa
+    const existingContributor = await ProjectContributor.findOne({
+      userId: user._id,
+      projectId: invitation.projectId,
+    });
+
+    if (existingContributor) {
+      // Nếu đã tồn tại, chỉ cập nhật role nếu khác
+      if (
+        existingContributor.projectRoleId.toString() !==
+        invitation.projectRoleId.toString()
+      ) {
+        existingContributor.projectRoleId = invitation.projectRoleId;
+        await existingContributor.save();
+      }
+
+      // Cập nhật status invitation
+      await ProjectInvitation.findByIdAndUpdate(invitation._id, {
+        status: "accepted",
+      });
+
+      return existingContributor.populate([
+        { path: "userId", select: "fullName email avatar" },
+        { path: "projectRoleId", select: "name" },
+      ]);
+    }
+
+    // Tạo contributor mới nếu chưa tồn tại
     const contributor = await ProjectContributor.create({
       userId: user._id,
       projectId: invitation.projectId,
@@ -261,7 +288,7 @@ export class ProjectContributorService {
         select: "name icon projectType projectLead",
         populate: {
           path: "projectLead",
-          select: "fullName email",
+          select: "fullName email avatar",
         },
       })
       .select("projectId")
@@ -270,6 +297,18 @@ export class ProjectContributorService {
     return contributors
       .map((c) => c.projectId)
       .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
+  }
+
+  async getRoleContributorByProjectId(user: IUser, projectId: string): Promise<IProjectRole> {
+    const projectContributor = await ProjectContributor.find({ userId: user._id, projectId: projectId });
+
+    const projectRole = projectContributor.map((t) => t.projectRoleId);
+
+    const role = await ProjectRole.findById(projectRole).select('name');
+
+
+    if (!role) throw new Error('can not find role')
+    return role
   }
 }
 

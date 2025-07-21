@@ -9,6 +9,12 @@ import Notification, {
 import Project from "../models/project.model";
 import Task from "../models/task.model";
 import User from "../models/user.model";
+import {
+  emitNewNotification,
+  emitNotificationRead,
+  emitAllNotificationsRead,
+  emitNotificationStatsUpdate,
+} from "../utils/socket";
 
 class NotificationService {
   async createNotification(
@@ -18,7 +24,6 @@ class NotificationService {
       const { recipientId, senderId, type, entityType, entityId, metadata } =
         data;
 
-      // Generate title and message based on type
       const { title, message } = await this.generateNotificationContent(
         type,
         entityType,
@@ -38,9 +43,32 @@ class NotificationService {
         metadata,
       });
 
-      return await notification.save();
+      const savedNotification = await notification.save();
+
+      await this.emitNotificationEvent(savedNotification, recipientId);
+
+      return savedNotification;
     } catch (error: any) {
       throw new Error(`Failed to create notification: ${error.message}`);
+    }
+  }
+
+  private async emitNotificationEvent(
+    notification: INotification,
+    recipientId: string
+  ) {
+    try {
+      const populatedNotification = await this.getNotificationById(
+        (notification._id as any).toString()
+      );
+      if (populatedNotification) {
+        emitNewNotification(populatedNotification, recipientId);
+
+        const stats = await this.getNotificationStats(recipientId);
+        emitNotificationStatsUpdate(recipientId, stats);
+      }
+    } catch (error) {
+      console.error("Failed to emit notification event:", error);
     }
   }
 
@@ -207,6 +235,7 @@ class NotificationService {
       throw new Error(`Failed to get notifications: ${error.message}`);
     }
   }
+
   async getNotificationStats(recipientId: string): Promise<NotificationStats> {
     try {
       const [total, unread, archived] = await Promise.all([
@@ -230,6 +259,30 @@ class NotificationService {
     }
   }
 
+  async getNotificationById(
+    notificationId: string
+  ): Promise<INotification | null> {
+    try {
+      const notification = await Notification.findById(notificationId)
+        .populate("senderId", "fullname avatar email")
+        .populate("recipientId", "fullname avatar email")
+        .populate("metadata.mentionedUsers", "fullname avatar email")
+        .populate(
+          "metadata.assigneeUpdate.oldAssignee",
+          "fullname avatar email"
+        )
+        .populate(
+          "metadata.assigneeUpdate.newAssignee",
+          "fullname avatar email"
+        )
+        .lean();
+
+      return notification;
+    } catch (error: any) {
+      throw new Error(`Failed to get notification by ID: ${error.message}`);
+    }
+  }
+
   async markAsRead(
     notificationId: string,
     userId: string
@@ -248,6 +301,10 @@ class NotificationService {
         throw new Error("Notification not found or access denied");
       }
 
+      emitNotificationRead(notificationId, userId);
+      const stats = await this.getNotificationStats(userId);
+      emitNotificationStatsUpdate(userId, stats);
+
       return notification;
     } catch (error: any) {
       throw new Error(`Failed to mark notification as read: ${error.message}`);
@@ -263,6 +320,10 @@ class NotificationService {
         },
         { isRead: true }
       );
+
+      emitAllNotificationsRead(userId, result.modifiedCount);
+      const stats = await this.getNotificationStats(userId);
+      emitNotificationStatsUpdate(userId, stats);
 
       return { modifiedCount: result.modifiedCount };
     } catch (error: any) {
@@ -322,9 +383,9 @@ class NotificationService {
   ): Promise<INotification[]> {
     try {
       const comment = await Comment.findById(commentId).populate("task");
-      // comment.task is an ObjectId or a populated Task
       let task: any = null;
       let project: any = null;
+
       if (
         comment &&
         comment.task &&
@@ -342,6 +403,7 @@ class NotificationService {
           project = await Project.findById(task.projectId);
         }
       }
+
       const notifications = await Promise.all(
         mentionedUserIds.map(async (userId) => {
           const notificationData: CreateNotificationData = {
@@ -367,6 +429,7 @@ class NotificationService {
           return this.createNotification(notificationData);
         })
       );
+
       return notifications;
     } catch (error: any) {
       throw new Error(
@@ -386,15 +449,11 @@ class NotificationService {
       const task = await Task.findById(taskId).populate("projectId", "name");
       const project = task?.projectId;
 
-      // Get all users who should be notified (assignee, project members, etc.)
       const recipients = new Set<string>();
 
       if (task?.assignee) {
         recipients.add(task.assignee.toString());
       }
-
-      // Add project contributors if available
-      // This would need to be implemented based on your project contributor model
 
       const notifications = await Promise.all(
         Array.from(recipients).map(async (recipientId) => {

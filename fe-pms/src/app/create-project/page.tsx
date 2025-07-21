@@ -4,12 +4,13 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Input, Button, Typography, Form, message, Image } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useRouter } from "next/navigation";
-import { createProject } from "@/lib/services/project/project";
-import { Project } from "@/types/types";
+import { createProject } from "@/lib/services/project/project.service";
+
 import { useEffect, useState } from "react";
 import { Constants } from "@/lib/constants";
 import { jwtDecode } from "jwt-decode";
-import { TokenPayload } from "@/models/user/TokenPayload";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
+import { Project } from "@/models/project/project.model";
 
 const { Title, Text } = Typography;
 type FormType = {
@@ -40,6 +41,7 @@ export default function ProjectForm() {
         name: values.name,
         description: values.description,
         projectType: "SOFTWARE",
+        icon: "/project.png",
         projectLead: userId || "",
       };
 
@@ -128,6 +130,7 @@ export default function ProjectForm() {
                     width={60}
                     src="/scrum.png"
                     className=" object-cover"
+                    alt="Scrum"
                   ></Image>
                 </div>
                 <div className="py-[8px] px-[24px]">
@@ -152,6 +155,7 @@ export default function ProjectForm() {
                     width={60}
                     src="/networking.png"
                     className=" object-cover"
+                    alt="Team-managed"
                   ></Image>
                 </div>
 

@@ -277,6 +277,62 @@ export class AuthController {
       });
     }
   };
+
+  refreshToken = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { refresh_token } = req.body;
+
+      if (!refresh_token) {
+        res.status(400).json({
+          success: false,
+          message: "Refresh token is required",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const result = await authService.refreshToken(refresh_token);
+
+      res.json({
+        success: true,
+        message: "Token refreshed successfully",
+        data: result,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Refresh token error:", error);
+
+      res.status(401).json({
+        success: false,
+        message: error.message || "Invalid refresh token",
+        statusCode: 401,
+      });
+    }
+  };
+
+  logout = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token_id } = req.body;
+
+      if (token_id) {
+        await authService.revokeRefreshToken(token_id);
+      }
+
+      res.json({
+        success: true,
+        message: "Logged out successfully",
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Logout error:", error);
+
+      res.status(500).json({
+        success: false,
+        message: error.message || "Logout failed",
+        statusCode: 500,
+      });
+    }
+  };
 }
 
 export default new AuthController();

@@ -7,7 +7,6 @@ import {
   CheckCircleOutlined,
   FileSyncOutlined,
   SnippetsOutlined,
-  UserOutlined,
 } from "@ant-design/icons";
 
 import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTask";
@@ -15,69 +14,22 @@ import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumn
 import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
 import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
 import { useParams } from "next/navigation";
-import { TaskStatistic } from "@/types/types";
-import { getTaskStatistic } from "@/lib/services/statistics/statistics";
 
-// Sample data (from backlog)
-const tasks = [
-  {
-    key: "SCRUM-101",
-    name: "Implement login API",
-    epic: "Authentication",
-    status: "TO DO",
-    assignee: "Trần Đại Dương",
-  },
-  {
-    key: "SCRUM-102",
-    name: "Build user dashboard",
-    epic: "User Interface",
-    status: "IN PROGRESS",
-    assignee: "Hoàng Thị Hương Giang",
-  },
-  {
-    key: "SCRUM-103",
-    name: "Create project API",
-    epic: "Project Management",
-    status: "DONE",
-    assignee: "Nguyễn Thái Sơn",
-  },
-
-  {
-    key: "SCRUM-105",
-    name: "Optimize database queries",
-    epic: "Performance",
-    status: "IN PROGRESS",
-    assignee: "Lê Văn Việt",
-  },
-
-  {
-    key: "SCRUM-105",
-    name: "Create user profile page",
-    epic: "Performance",
-    status: "IN PROGRESS",
-    assignee: "UnAssigned",
-  },
-];
-
-// Assignee breakdown
-const assigneeMap: Record<string, number> = {};
-tasks.forEach((t) => {
-  assigneeMap[t.assignee] = (assigneeMap[t.assignee] || 0) + 1;
-});
-const assigneeData = Object.entries(assigneeMap).map(([name, count]) => ({
-  name,
-  count,
-}));
+import { getTaskStatistic } from "@/lib/services/statistics/statistics.service";
+import axiosService from "@/lib/services/axios.service";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
+import { TaskStatistic } from "@/models/statistic/statistic.model";
 
 const assigneeColumns = [
   {
     title: "Assignee",
-    dataIndex: "name",
-    key: "name",
-    render: (name: string) => (
+    dataIndex: "assignee",
+    key: "assignee",
+    render: (_: any, record: any) => (
       <span className="flex items-center gap-2">
-        <Avatar icon={<UserOutlined />} size="small" />
-        {name}
+        <Avatar src={record.avatar} />
+        <span>{record.fullName}</span>
       </span>
     ),
   },
@@ -89,6 +41,12 @@ const assigneeColumns = [
   },
 ];
 
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
+
 export default function SummaryPage() {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -98,6 +56,11 @@ export default function SummaryPage() {
   const [inProgressTasks, setInProgressTasks] = useState<number>();
   const [todoTasks, setTodoTasks] = useState<number>();
 
+  const { data: statisticsContributor } = useSWR(
+    `${Endpoints.Statistics.STATISTIC_CONTRIBUTOR(projectId)}`,
+    fetcher
+  );
+
   useEffect(() => {
     const fetch = async (projectId: string) => {
       try {
@@ -106,14 +69,15 @@ export default function SummaryPage() {
           // Statistics
           const total = response.totalTasks;
           const done =
-            response.taskStatusStats.find((t) => t.status === "DONE")?.count ||
-            0;
-          const inProgress =
-            response.taskStatusStats.find((t) => t.status === "IN_PROGRESS")
+            response.taskStatusStats.find((t: any) => t.status === "DONE")
               ?.count || 0;
+          const inProgress =
+            response.taskStatusStats.find(
+              (t: any) => t.status === "IN_PROGRESS"
+            )?.count || 0;
           const todo =
-            response.taskStatusStats.find((t) => t.status === "TO_DO")?.count ||
-            0;
+            response.taskStatusStats.find((t: any) => t.status === "TO_DO")
+              ?.count || 0;
           setTotalTasks(total);
           setDoneTasks(done);
           setInProgressTasks(inProgress);
@@ -191,7 +155,7 @@ export default function SummaryPage() {
       {/* Status Breakdown & Chart Placeholder */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
+          <Card className="!shadow !rounded-xl w-[567px] h-[320px]">
             <div className="mb-2 font-semibold">Status overview</div>
             <span className="mb-2 text-sm text-gray-500">
               Get a snapshot of the status of your work items.{" "}
@@ -210,7 +174,7 @@ export default function SummaryPage() {
       {/* Sprint/Report Section */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
+          <Card className="!shadow !rounded-xl w-[567px] h-[320px]">
             <div className="mb-2 font-semibold">Priority breakdown</div>
             <span className="mb-2 text-sm text-gray-500">
               Get a holistic view of how work is being prioritized.
@@ -220,24 +184,24 @@ export default function SummaryPage() {
           </Card>
         </Col>
         <Col xs={24} md={12}>
-          <Card className="!shadow !rounded-xl">
+          <Card className="!shadow !rounded-xl h-[320px]">
             <div className="mb-2 font-semibold">Team workload</div>
             <span className="mb-2 text-sm text-gray-500">
               Monitor the capacity of your team.
             </span>
             <Table
               columns={assigneeColumns}
-              dataSource={assigneeData}
+              dataSource={statisticsContributor?.contributorStats}
               pagination={false}
               size="small"
-              rowKey="name"
+              scroll={{ y: 180 }}
+              rowKey="_id"
             />
           </Card>
         </Col>
       </Row>
 
       {/* Epic Progress Bard */}
-      {/* Sprint/Report Section */}
       <Row gutter={16} className="mb-6">
         <Col xs={24} md={12}>
           <Card className="!shadow !rounded-xl w-[567px] height-[320px]">
@@ -245,6 +209,18 @@ export default function SummaryPage() {
             <span className="text-sm text-gray-500 mb-2">
               See how your epics are progressing at a glance.
             </span>
+            {/* Legend */}
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-green-600" /> Done
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-blue-500" /> In progress
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-gray-400" /> To do
+              </div>
+            </div>
 
             <ProgressChart />
           </Card>

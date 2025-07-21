@@ -1,5 +1,6 @@
 import Role from "../models/role.model";
 import User from "../models/user.model";
+import ProjectRole from "../models/project.role.model";
 
 export async function seedAdminRole() {
   const adminRole = await Role.findOne({ name: "ADMIN" });
@@ -24,6 +25,30 @@ export async function seedUserRole() {
     console.log("Seeded USER role");
   } else {
     console.log("USER role already exists");
+  }
+}
+
+export async function seedProjectAdminRole() {
+  const projectAdminRole = await ProjectRole.findOne({ name: "PROJECT_ADMIN" });
+  if (!projectAdminRole) {
+    await ProjectRole.create({
+      name: "PROJECT_ADMIN",
+    });
+    console.log("Seeded PROJECT_ADMIN project role");
+  } else {
+    console.log("PROJECT_ADMIN project role already exists");
+  }
+}
+
+export async function seedContributorRole() {
+  const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
+  if (!contributorRole) {
+    await ProjectRole.create({
+      name: "CONTRIBUTOR",
+    });
+    console.log("Seeded CONTRIBUTOR project role");
+  } else {
+    console.log("CONTRIBUTOR project role already exists");
   }
 }
 
@@ -58,4 +83,11 @@ export async function seedAdminUser() {
   } catch (error) {
     console.error("❌ Error creating admin user:", error);
   }
+}
+
+export async function seedAllRoles() {
+  await seedAdminRole();
+  await seedUserRole();
+  await seedProjectAdminRole();
+  await seedContributorRole();
 }

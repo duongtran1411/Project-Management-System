@@ -3,5 +3,5 @@ export interface Filter{
     endDate?: string
     status?: string
     action?:string
-
+    search?:string
 }
