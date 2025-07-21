@@ -229,17 +229,30 @@ export class ActivityLogService {
   }
 
   /**
-   * Xóa logs cũ (older than X days)
+   * Xóa logs cũ hơn số ngày chỉ định hoặc trước một ngày cụ thể
+   * @param options { olderThanDays?: number, beforeDate?: Date }
+   * - olderThanDays: Xóa các log cũ hơn X ngày tính từ hôm nay
+   * - beforeDate: Xóa các log trước ngày này (ưu tiên nếu truyền vào)
+   * @returns Số lượng log đã xóa và ngày cutoff
    */
-  async cleanOldLogs(daysOld: number = 90): Promise<number> {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+  async deleteLogsOlderThan(
+    options: { olderThanDays?: number; beforeDate?: Date } = {}
+  ): Promise<{ deletedCount: number; cutoffDate: Date }> {
+    let cutoffDate: Date;
+    if (options.beforeDate) {
+      cutoffDate = new Date(options.beforeDate);
+    } else {
+      const days = options.olderThanDays ?? 90;
+      cutoffDate = new Date();
+      cutoffDate.setHours(0, 0, 0, 0);
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+    }
 
     const result = await ActivityLog.deleteMany({
       createdAt: { $lt: cutoffDate },
     });
 
-    return result.deletedCount || 0;
+    return { deletedCount: result.deletedCount || 0, cutoffDate };
   }
 
   /**

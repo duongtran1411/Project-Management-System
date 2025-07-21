@@ -218,9 +218,12 @@ export class ActivityLogController {
     }
   };
 
-  cleanOldLogs = async (req: AuthRequest, res: Response): Promise<void> => {
+  deleteLogsOlderThan = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
     try {
-      const { daysOld } = req.body;
+      const { olderThanDays, beforeDate } = req.body;
       const user = req.user;
 
       if (!user) {
@@ -232,16 +235,21 @@ export class ActivityLogController {
         return;
       }
 
-      const deletedCount = await activityLogService.cleanOldLogs(daysOld || 90);
+      const result = await activityLogService.deleteLogsOlderThan({
+        olderThanDays,
+        beforeDate,
+      });
 
       res.status(200).json({
         success: true,
-        message: `Đã xóa ${deletedCount} logs cũ`,
-        data: { deletedCount },
+        message: `Đã xóa ${
+          result.deletedCount
+        } logs trước ngày ${result.cutoffDate.toISOString()}`,
+        data: result,
         statusCode: 200,
       });
     } catch (error: any) {
-      console.error("Clean old logs error:", error);
+      console.error("Delete old logs error:", error);
       res.status(400).json({
         success: false,
         message: error.message || "Xóa logs cũ thất bại",

@@ -22,9 +22,7 @@ export default function RootLayout({
             <div className={`w-max bg-gray-100 w-max`}>
               <MenuWorkSpace colapsed={colapsed} />
             </div>
-            <div className="flex-1 p-4 overflow-y-auto bg-white">
-              {children}
-            </div>
+            <div className="flex-1 p-4 bg-white">{children}</div>
           </div>
         </div>
       </div>
