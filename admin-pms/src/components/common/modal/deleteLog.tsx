@@ -1,21 +1,25 @@
-import { Button, InputNumber, Modal } from "antd";
+import { Button, DatePicker, InputNumber, Modal } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useState } from "react";
-
+import dayjs, { Dayjs } from "dayjs";
 interface RemoveLogButtonProps {
   open: boolean;
   onCancel: () => void;
-  onConfirm?: (days: number) => void;
+  onConfirm?: (days: number, beforeDay: Dayjs | null) => void;
 }
-const RemoveLogButton: React.FC<RemoveLogButtonProps> = ({ open, onCancel,onConfirm }) => {
+const RemoveLogButton: React.FC<RemoveLogButtonProps> = ({
+  open,
+  onCancel,
+  onConfirm,
+}) => {
   const [days, setDays] = useState(0);
-
-  const handleConfirm = () => {
-    if (onConfirm) onConfirm(days);
+  const [beforeDay, setBeforeDay] = useState<Dayjs | null>(dayjs());
+  const handleConfirm = async () => {
+    if (onConfirm) await onConfirm(days, beforeDay);
   };
 
   const handleCancel = () => {
-    setDays(0); 
+    setDays(0);
     onCancel();
   };
 
@@ -33,6 +37,12 @@ const RemoveLogButton: React.FC<RemoveLogButtonProps> = ({ open, onCancel,onConf
         value={days}
         onChange={(value) => setDays(value ?? 0)}
         style={{ width: "100%" }}
+      />
+      <DatePicker
+        value={beforeDay}
+        format="YYYY-MM-DD"
+        onChange={(value) => setBeforeDay(value)}
+        className="mt-2 w-full"
       />
     </Modal>
   );
