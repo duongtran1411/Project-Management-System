@@ -92,6 +92,7 @@ const BoardPage = () => {
   const [isOpenMileStoneModal, setIsOpenMileStoneModal] =
     useState<boolean>(false);
   const [showCreateInput, setShowCreateInput] = useState(false);
+  
   const {role} = useRole();
 
   const isReadOnly = role.name === "CONTRIBUTOR";

@@ -8,7 +8,7 @@ export const createComment = async (content: string,taskId:string) => {
             content:content,
             taskId:taskId
         })
-        return response.data.data
+        return response.data
     } catch (error: any) {
         if (error) {
             showErrorToast(error.response.data.message || "Fail to edit sprint!");
@@ -16,13 +16,13 @@ export const createComment = async (content: string,taskId:string) => {
     }
 }
 
-// export const getComment = async (taskId: string) => {
-//     try {
-//         const response = await axiosService.getAxiosInstance().post(`${Endpoints.Comment.GET_COMMENT_BY_TASK}`)
-//         return response.data
-//     } catch (error: any) {
-//         if (error) {
-//             showErrorToast(error.response.data.message || "Fail to edit sprint!");
-//         }
-//     }
-// }
+export const getComment = async (taskId: string) => {
+    try {
+        const response = await axiosService.getAxiosInstance().post(`${Endpoints.Comment.GET_COMMENT_BY_TASK}`)
+        return response.data
+    } catch (error: any) {
+        if (error) {
+            showErrorToast(error.response.data.message || "Fail to edit sprint!");
+        }
+    }
+}
