@@ -2,16 +2,14 @@
 
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { getPeopleYouWorkWith } from "@/lib/services/peopleYouWork/peopleYouWork.service";
+import { getContributorsByProjectId } from "@/lib/services/projectContributor/projectContributor.service";
 import {
     CalendarOutlined,
-    CommentOutlined,
     DownOutlined,
-    PlusOutlined,
     RightOutlined,
     UserOutlined
 } from "@ant-design/icons";
-import { Avatar, Button, Input, Select, Table, Tag } from "antd";
+import { Avatar, Input, Select, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -34,7 +32,13 @@ const EpicPage = () => {
     const [editingTaskSummaryText, setEditingTaskSummaryText] = useState<string>("");
     const [editingTaskPriorityId, setEditingTaskPriorityId] = useState<string | null>(null);
     const [editingTaskPriorityValue, setEditingTaskPriorityValue] = useState<string>("");
-    const [people, setPeople] = useState([])
+    const [people, setPeople] = useState<Array<{ userId: { _id: string; fullName: string; avatar?: string } }>>([]);
+    const [editingAssigneeTaskId, setEditingAssigneeTaskId] = useState<string | null>(null);
+    const [editingAssigneeValue, setEditingAssigneeValue] = useState<string>("");
+    const [editingReporterTaskId, setEditingReporterTaskId] = useState<string | null>(null);
+    const [editingReporterValue, setEditingReporterValue] = useState<string>("");
+    const [searchText, setSearchText] = useState("");
+
 
 
     const { data: epicData, mutate } = useSWR(
@@ -77,12 +81,28 @@ const EpicPage = () => {
     };
 
 
-    const handleUpdateTaskSummary = async (taskId: string) => {
+    const handleUpdateTaskSummary = async (taskId: string, newText: string) => {
         try {
             await axiosService.getAxiosInstance().patch(
                 `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_NAME(taskId)}`,
-                { name: editingTaskSummaryText }
+                { name: newText }
             );
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+
+            await mutate();
+
             await mutate();
         } catch (error) {
             console.error("Failed to update task summary:", error);
@@ -107,6 +127,7 @@ const EpicPage = () => {
             setEditingStatusValue("");
         }
     };
+
 
 
     const handleUpdateTaskStatus = async (taskId: string) => {
@@ -169,11 +190,43 @@ const EpicPage = () => {
         }
     };
 
+
     const handleUpdateTaskAssignee = async (taskId: string, userId: string) => {
         try {
             await axiosService.getAxiosInstance().patch(
                 `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_ASSIGNEE(taskId)}`,
-                { assigneeId: userId }
+                { assignee: userId || null } // Gán null nếu không có user
+            );
+
+            // Cập nhật lại dữ liệu
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+
+            await mutate();
+        } catch (err) {
+            console.error("Failed to update assignee:", err);
+        } finally {
+            setEditingAssigneeTaskId(null);
+            setEditingAssigneeValue("");
+        }
+    };
+
+    const handleUpdateTaskReporter = async (taskId: string, userId: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_REPORTER(taskId)}`,
+                { reporter: userId || null }
             );
 
             const epicId = Object.keys(taskMap).find((eid) =>
@@ -189,17 +242,22 @@ const EpicPage = () => {
                     [epicId]: taskRes.data,
                 }));
             }
+
             await mutate();
-        } catch (error) {
-            console.error("Failed to update task assignee:", error);
+        } catch (err) {
+            console.error("Failed to update reporter:", err);
+        } finally {
+            setEditingReporterTaskId(null);
+            setEditingReporterValue("");
         }
     };
 
 
 
 
-
-    const epicRows = (epicData?.data || []).map((epic: any) => ({
+    const epicRows = (epicData?.data || []).filter((epic: any) =>
+        epic.name.toLowerCase().includes(searchText.toLowerCase())
+    ).map((epic: any) => ({
         key: epic._id,
         summary: epic.name,
         status: epic.status,
@@ -214,19 +272,23 @@ const EpicPage = () => {
     const dataSource = epicRows.flatMap((epic) => {
         const rows = [epic];
         if (expandedKeys.includes(epic.key) && taskMap[epic.key]) {
-            const tasks = taskMap[epic.key].map((task) => ({
-                ...task,
-                key: task._id,
-                summary: task.name,
-                status: task.status,
-                assignee: task.assignee || "Unassigned",
-                dueDate: new Date(task.createdAt).toLocaleDateString(),
-                priority: task.priority || "None",
-                created: new Date(task.createdAt).toLocaleDateString(),
-                updated: new Date(task.updatedAt).toLocaleDateString(),
-                reporter: task.reporter || "N/A",
-                isEpic: false,
-            }));
+            const tasks = taskMap[epic.key]
+                .filter((task) =>
+                    task.name.toLowerCase().includes(searchText.toLowerCase())
+                )
+                .map((task) => ({
+                    ...task,
+                    key: task._id,
+                    summary: task.name,
+                    status: task.status,
+                    assignee: task.assignee || "Unassigned",
+                    dueDate: task.dueDate || "",
+                    priority: task.priority || "None",
+                    created: new Date(task.createdAt).toLocaleDateString(),
+                    updated: new Date(task.updatedAt).toLocaleDateString(),
+                    reporter: task.reporter || "N/A",
+                    isEpic: false,
+                }));
             rows.push(...tasks);
         }
         return rows;
@@ -289,14 +351,14 @@ const EpicPage = () => {
                 if (editingTaskSummaryId === record.key) {
                     return (
                         <Input
-                            value={editingTaskSummaryText}
-                            onChange={(e) => setEditingTaskSummaryText(e.target.value)}
-                            onPressEnter={() => handleUpdateTaskSummary(record.key)}
-                            onBlur={() => handleUpdateTaskSummary(record.key)}
+                            defaultValue={text}
+                            onPressEnter={(e) => handleUpdateTaskSummary(record.key, e.currentTarget.value)}
+                            onBlur={(e) => handleUpdateTaskSummary(record.key, e.currentTarget.value)}
                             autoFocus
                             size="small"
                             style={{ width: "100%" }}
                         />
+
                     );
                 }
                 return (
@@ -381,66 +443,96 @@ const EpicPage = () => {
             width: 120,
         },
 
-        {
-            title: "Comments",
-            key: "comments",
-            render: () => (
-                <span className="flex items-center gap-1 text-gray-500">
-                    <CommentOutlined /> Add comment
-                </span>
-            ),
-            width: 150,
-        },
+        // {
+        //     title: "Comments",
+        //     key: "comments",
+        //     render: () => (
+        //         <span className="flex items-center gap-1 text-gray-500">
+        //             <CommentOutlined /> Add comment
+        //         </span>
+        //     ),
+        //     width: 150,
+        // },
+
+
         {
             title: "Assignee",
             dataIndex: "assignee",
             key: "assignee",
             width: 280,
-            render: (assignee: any, record: any) => {
-                if (record.isEpic) return null;
+            render: (_: any, record: any) => {
+                if (record.isEpic) return "";
 
-                // Tìm người dùng trong danh sách hiện tại
-                const currentUser = people.find((p) => p._id === assignee?._id);
+                const assigneeId = typeof record.assignee === "object"
+                    ? record.assignee?._id
+                    : record.assignee;
+
+                const assignee = people.find(p => p.userId._id === assigneeId);
+
+                const name = assignee?.userId.fullName || "Unassigned";
+                const avatar = assignee?.userId.avatar;
+
+                if (editingAssigneeTaskId === record.key) {
+                    return (
+                        <Select
+                            style={{ width: 250 }}
+                            value={editingAssigneeValue}
+                            onChange={(value) => {
+                                setEditingAssigneeValue(value);
+                                handleUpdateTaskAssignee(record.key, value);
+                            }}
+                            options={[
+                                {
+                                    label: (
+                                        <div className="flex items-center gap-2">
+                                            <Avatar size="small">
+                                                <UserOutlined />
+                                            </Avatar>
+                                            <span>Unassigned</span>
+                                        </div>
+                                    ),
+                                    value: "", // Giá trị rỗng thể hiện unassigned
+                                },
+                                ...people.map((p) => ({
+                                    label: (
+                                        <div className="flex items-center gap-2">
+                                            <Avatar size="small" src={p.userId.avatar} />
+                                            <span>{p.userId.fullName}</span>
+                                        </div>
+                                    ),
+                                    value: p.userId._id,
+                                })),
+                            ]}
+                            autoFocus
+                            size="small"
+                            optionLabelProp="label"
+                        />
+
+                    );
+                }
+
 
                 return (
-                    <Select
-                        showSearch
-                        placeholder="Assign to..."
-                        value={assignee?._id || "unassigned"}
-                        onChange={(value) =>
-                            handleUpdateTaskAssignee(record.key, value === "unassigned" ? null : value)
-                        }
-                        optionFilterProp="label"
-                        size="small"
-                        style={{ width: 220 }}
-                        dropdownStyle={{ maxHeight: 300 }}
-                        options={[
-                            {
-                                value: "unassigned",
-                                label: (
-                                    <span className="flex items-center gap-2">
-                                        <Avatar icon={<UserOutlined />} size="small" />
-                                        <span>Unassigned</span>
-                                    </span>
-                                ),
-                            },
-                            ...people.map((user: any) => ({
-                                value: user._id,
-                                label: (
-                                    <span className="flex items-center gap-2">
-                                        <Avatar size="small" src={user.avatar} icon={<UserOutlined />} />
-                                        <span>{user.fullName}</span>
-                                    </span>
-                                ),
-                            })),
-                        ]}
-                        // Hiển thị hiện tại
-                        dropdownRender={(menu) => <>{menu}</>}
-                        optionLabelProp="label"
-                    />
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => {
+                            setEditingAssigneeTaskId(record.key);
+                            setEditingAssigneeValue(assigneeId || "");
+                        }}
+                    >
+                        <Avatar size="small" src={avatar}>
+                            {!avatar ? (name === "Unassigned" ? <UserOutlined /> : name.charAt(0)) : null}
+                        </Avatar>
+
+                        <span>{name}</span>
+                    </div>
                 );
-            },
+
+            }
+
+
         },
+
 
         {
             title: "Due date",
@@ -450,7 +542,8 @@ const EpicPage = () => {
             render: (date: string) => (
                 <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                     <CalendarOutlined />
-                    <span>{dayjs(date).format("MMM D, YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+
                 </div>
             ),
         },
@@ -500,7 +593,8 @@ const EpicPage = () => {
             render: (date: string) => (
                 <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                     <CalendarOutlined />
-                    <span>{dayjs(date).format("MMM D, YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+
                 </div>
             ),
         },
@@ -512,7 +606,8 @@ const EpicPage = () => {
             render: (date: string) => (
                 <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                     <CalendarOutlined />
-                    <span>{dayjs(date).format("MMM D, YYYY")}</span>
+                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+
                 </div>
             ),
         },
@@ -521,40 +616,86 @@ const EpicPage = () => {
             dataIndex: "reporter",
             key: "reporter",
             width: 280,
-            render: (reporter: any, record: any) => {
-                if (record.isEpic) return null;
-                if (!reporter || !reporter.fullName) {
+            render: (_: any, record: any) => {
+                if (record.isEpic) return "";
+
+                const reporterId = typeof record.reporter === "object"
+                    ? record.reporter?._id
+                    : record.reporter;
+
+                const reporter = people.find(p => p.userId._id === reporterId);
+
+                const name = reporter?.userId.fullName || "Unassigned";
+                const avatar = reporter?.userId.avatar;
+
+                if (editingReporterTaskId === record.key) {
                     return (
-                        <span className="flex items-center gap-2 text-gray-500">
-                            <Avatar icon={<UserOutlined />} style={{ backgroundColor: "#e0e0e0" }} />
-                            <span>Unassigned</span>
-                        </span>
+                        <Select
+                            style={{ width: 250 }}
+                            value={editingReporterValue}
+                            onChange={(value) => {
+                                setEditingReporterValue(value);
+                                handleUpdateTaskReporter(record.key, value);
+                            }}
+                            options={people.map((p) => ({
+                                label: (
+                                    <div className="flex items-center gap-2">
+                                        <Avatar size="small" src={p.userId.avatar} />
+                                        <span>{p.userId.fullName}</span>
+                                    </div>
+                                ),
+                                value: p.userId._id,
+                            }))}
+                            autoFocus
+                            size="small"
+                            optionLabelProp="label"
+                        />
                     );
                 }
 
                 return (
-                    <span className="flex items-center gap-2">
-                        <Avatar src={reporter.avatar} size={24} />
-                        <span>{reporter.fullName}</span>
-                    </span>
+                    <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => {
+                            const validId = reporterId && people.some(p => p.userId._id === reporterId)
+                                ? reporterId
+                                : (people[0]?.userId._id || "");
+                            setEditingReporterTaskId(record.key);
+                            setEditingReporterValue(validId);
+                        }}
+                    >
+                        <Avatar size="small" src={avatar}>
+                            {!avatar ? (name === "Unassigned" ? <UserOutlined /> : name.charAt(0)) : null}
+                        </Avatar>
+                        <span>{name}</span>
+                    </div>
                 );
-            },
+            }
         },
+
     ];
 
     useEffect(() => {
         const fetchPeople = async () => {
             if (!projectId) return;
-            const res = await getPeopleYouWorkWith(projectId);
-            if (res) setPeople(res);
+            const res = await getContributorsByProjectId(projectId);
+            if (res?.length) {
+                setPeople(res);
+            }
         };
         fetchPeople();
     }, [projectId]);
 
+
     return (
         <div className="p-6 bg-white rounded-lg shadow">
             <div className="flex items-center justify-between mb-7">
-                <Input.Search placeholder="Search epic..." className="w-64" />
+                <Input.Search
+                    placeholder="Search epic..."
+                    className="w-64"
+                    value={searchText}
+                    onChange={e => setSearchText(e.target.value)}
+                />
             </div>
 
             <Table
@@ -566,11 +707,11 @@ const EpicPage = () => {
                 rowKey="key"
             />
 
-            <div className="flex items-center mt-2">
+            {/* <div className="flex items-center mt-2">
                 <Button type="dashed" icon={<PlusOutlined />} className="flex items-center justify-center w-full">
                     Create
                 </Button>
-            </div>
+            </div> */}
         </div>
     );
 };

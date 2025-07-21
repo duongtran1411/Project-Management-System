@@ -154,7 +154,10 @@ const ProjectTable = () => {
       width: 50,
       render: (_: any, record: DataType) =>
         record.projectLead && record.projectLead._id === userId ? (
-          <span onClick={(e) => e.stopPropagation()}>
+          <span
+            onClick={(e) => e.stopPropagation()}
+            className="w-[60px] h-[60px] rounded-full hover:bg-gray-200 cursor-pointer p-3"
+          >
             <Dropdown
               overlay={getMenu(record, router)}
               trigger={["click"]}

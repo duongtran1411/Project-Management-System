@@ -69,7 +69,7 @@ const ChangeReporter: React.FC<Props> = ({
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
     >
-      <div className="flex items-center gap-2 rounded-full mx-3 cursor-pointer">
+      <div className="flex items-center gap-2 rounded-full cursor-pointer">
         {reporter?.avatar ? (
           <>
             <Avatar src={reporter?.avatar} />

@@ -13,4 +13,5 @@ export interface CreateMilestone {
   endDate?: string;
   goal?: string;
   projectId: string;
+  status: "NOT_START" | "ACTIVE" | "COMPLETED";
 }

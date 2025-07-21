@@ -5,6 +5,7 @@ import {
   showErrorToast,
   showSuccessToast,
 } from "@/components/common/toast/toast";
+import { WorklogComponent } from "@/components/workspace/worklog/Worklog";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { createComment } from "@/lib/services/comment/comment.service";
@@ -13,17 +14,21 @@ import {
   updateDescriptionTask,
   updateEpicTask,
   updatePriorityTask,
+  updateReporterForTask,
   updateTaskDate,
   updateTaskName,
+  updateTaskStatus,
 } from "@/lib/services/task/task.service";
 import { Assignee } from "@/models/assignee/assignee.model";
 import { Comment } from "@/models/comment/comment";
 import { Epic } from "@/models/epic/epic.model";
 import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
+import { Reporter } from "@/models/reporter/reporter.model";
 import { Task } from "@/models/task/task.model";
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
+  DownOutlined,
   FlagOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -32,7 +37,9 @@ import {
   Button,
   DatePicker,
   Dropdown,
+  Image,
   Input,
+  MenuProps,
   Modal,
   Select,
   Space,
@@ -45,12 +52,26 @@ import useSWR from "swr";
 import dayjs from "dayjs";
 import { useSocket } from "@/hooks/useSocket";
 import { useSocketEvent } from "@/hooks/useSocketEvent";
-
+import History from "../../../../../../components/workspace/history/History";
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
   task: Task;
 }
+
+type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
+
+const statusColors: Record<Status, string> = {
+  TO_DO: "default",
+  IN_PROGRESS: "blue",
+  DONE: "green",
+};
+
+const statusOptions: Record<Status, Status[]> = {
+  TO_DO: ["IN_PROGRESS", "DONE"],
+  IN_PROGRESS: ["DONE", "TO_DO"],
+  DONE: ["TO_DO", "IN_PROGRESS"],
+};
 
 const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   open,
@@ -67,7 +88,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [assignee, setAssignee] = useState<Assignee>();
   const [epics, setEpics] = useState<Epic[]>([]);
   const [epic, setEpic] = useState<Epic>();
-  // const [currentTask, setCurrentTask] = useState<Task | null>(task);
+  const [currentTask, setCurrentTask] = useState<Task | null>(task);
   const [startDate, setStartDate] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
@@ -95,6 +116,16 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     },
     [task?._id]
   );
+  const [status, setStatus] = useState(task.status || "TO_DO");
+  const [reporter, setReporter] = useState<Reporter>();
+  const [activeTab, setActiveTab] = useState<
+    "all" | "comments" | "history" | "worklog"
+  >("comments");
+
+  useEffect(() => {
+    setCurrentTask(task);
+    console.log("cur", currentTask);
+  }, [task]);
   const getMemberProject = async (
     url: string
   ): Promise<ProjectContributorTag[]> => {
@@ -179,18 +210,16 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       setStartDate(task.startDate ?? "");
       setDueDate(task.dueDate ?? "");
       setName(task.name ?? "");
+      setStatus(task.status ?? "");
+      setReporter(task.reporter);
     }
   }, [task]);
 
   if (!task) return null;
-
   const handleSaveDescription = async () => {
     setIsEditingDescription(false);
     if (task._id) {
-      const response = await updateDescriptionTask(task._id, description);
-      if (response.success) {
-        showSuccessToast(response.message);
-      }
+      await updateDescriptionTask(task._id, description);
     }
   };
 
@@ -202,10 +231,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const handleSaveName = async () => {
     setIsEditingName(false);
     if (task._id) {
-      const response = await updateTaskName(task._id, name);
-      if (response.success) {
-        showSuccessToast(response.message);
-      }
+      await updateTaskName(task._id, name);
     }
   };
 
@@ -253,7 +279,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     try {
       const response = await updateAssigneeTask(taskId, assignee);
       if (response.success) {
-        showSuccessToast(response.messsage);
         setAssignee(response.data.assignee);
       }
     } catch (error: any) {
@@ -268,7 +293,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     try {
       const response = await updateEpicTask(task._id ? task._id : "", epicId);
       if (response.success) {
-        showSuccessToast(response.message);
         setEpic(response.data.epic);
       }
     } catch (error: any) {
@@ -308,13 +332,50 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   };
 
   const updatePriority = async (value: string) => {
-    debugger;
     try {
       const response = await updatePriorityTask(
         task._id ? task._id : "",
         value
       );
       setDueDate(response.priority);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const handleMenuClick: MenuProps["onClick"] = async ({ key }) => {
+    const nextStatus = key as Status;
+    try {
+      const response = await updateTaskStatus(
+        task._id ? task._id : "",
+        nextStatus
+      );
+      setStatus(response.status);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || "Không thể lấy gán task đã giao!";
+      showErrorToast(message);
+      return null;
+    }
+  };
+
+  const items = statusOptions[status as Status].map((item) => ({
+    key: item,
+    label: <Tag color={statusColors[item]}>{item.replaceAll("_", " ")}</Tag>,
+  }));
+
+  const updateReporter = async (taskId: string, reporter: string) => {
+    try {
+      debugger;
+      const response = await updateReporterForTask(taskId, reporter);
+      console.log(response);
+      if (response.success) {
+        showSuccessToast(response.message);
+        setReporter(response.data.reporter);
+      }
     } catch (error: any) {
       const message =
         error?.response?.data?.message || "Không thể lấy gán task đã giao!";
@@ -439,95 +500,149 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
 
             {/* Tabs */}
             <div className="flex mb-2 space-x-2">
-              <Button size="small">All</Button>
-              <Button size="small" type="primary">
+              <Button
+                size="small"
+                type={activeTab === "all" ? "primary" : "default"}
+                onClick={() => setActiveTab("all")}
+              >
+                All
+              </Button>
+              <Button
+                size="small"
+                type={activeTab === "comments" ? "primary" : "default"}
+                onClick={() => setActiveTab("comments")}
+              >
                 Comments
               </Button>
-              <Button size="small">History</Button>
-              <Button size="small">Work log</Button>
+              <Button
+                size="small"
+                type={activeTab === "history" ? "primary" : "default"}
+                onClick={() => setActiveTab("history")}
+              >
+                History
+              </Button>
+              <Button
+                size="small"
+                type={activeTab === "worklog" ? "primary" : "default"}
+                onClick={() => setActiveTab("worklog")}
+              >
+                Work log
+              </Button>
             </div>
 
-            {/* Comment Input */}
-            <div className="mt-4">
-              {/* Add mentions quick select */}
-              {Array.isArray(contributor) && contributor.length > 0 && (
-                <div className="mb-2 flex flex-wrap items-center">
-                  <span className="mr-2">Add mentions:</span>
-                  {contributor.map((e) => (
-                    <Button
-                      key={e._id}
-                      size="small"
-                      className="mr-2 mb-2 flex items-center"
-                      icon={
-                        <Avatar src={e.userId.avatar} size="small">
-                          {e.userId.fullName[0]}
-                        </Avatar>
-                      }
-                      onClick={() => {
-                        const mention = `@${e.userId.fullName} `;
-                        setNewComment((prev) => prev + mention);
-                      }}
-                    >
-                      {e.userId.fullName}
-                    </Button>
-                  ))}
-                </div>
-              )}
-
-              <Input.TextArea
-                placeholder="Add comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                autoSize={{ minRows: 2, maxRows: 5 }}
-              />
-
-              <div className="flex mt-2 space-x-2">
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={handleComment}
-                  disabled={!newComment.trim()}
-                >
-                  Save
-                </Button>
-                <Button size="small" onClick={() => setNewComment("")}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-
-            {/* Render Comments */}
-            <div className="mt-4 space-y-3">
-              {Array.isArray(comments) &&
-                comments.map((c, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <img
-                      src={c.author.avatar}
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <div>
-                      <p className="font-semibold">{c.author.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {c.attachments?.filename}
-                      </p>
-                      <div
-                        className="mt-1"
-                        dangerouslySetInnerHTML={{ __html: c.content }}
-                      />
+            {/* Comments */}
+            {activeTab === "comments" && (
+              <>
+                {/* Comment Input */}
+                <div className="mt-4">
+                  {/* Add mentions quick select */}
+                  {Array.isArray(contributor) && contributor.length > 0 && (
+                    <div className="mb-2 flex flex-wrap items-center">
+                      <span className="mr-2">Add mentions:</span>
+                      {contributor.map((e) => (
+                        <Button
+                          key={e._id}
+                          size="small"
+                          className="mr-2 mb-2 flex items-center"
+                          icon={
+                            <Avatar src={e.userId.avatar} size="small">
+                              {e.userId.fullName[0]}
+                            </Avatar>
+                          }
+                          onClick={() => {
+                            const mention = `@${e.userId.fullName} `;
+                            setNewComment((prev) => prev + mention);
+                          }}
+                        >
+                          {e.userId.fullName}
+                        </Button>
+                      ))}
                     </div>
+                  )}
+
+                  <Input.TextArea
+                    placeholder="Add comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    autoSize={{ minRows: 2, maxRows: 5 }}
+                  />
+
+                  <div className="flex mt-2 space-x-2">
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={handleComment}
+                      disabled={!newComment.trim()}
+                    >
+                      Save
+                    </Button>
+                    <Button size="small" onClick={() => setNewComment("")}>
+                      Cancel
+                    </Button>
                   </div>
-                ))}
-            </div>
+                </div>
+
+                {/* Render Comments */}
+                <div className="mt-4 space-y-3">
+                  {Array.isArray(comments) &&
+                    comments.map((c, idx) => (
+                      <div key={idx} className="flex gap-3">
+                        <Image
+                          src={c.author.avatar}
+                          className="rounded-full"
+                          alt="avatar"
+                          width={10}
+                          height={10}
+                        />
+                        <div>
+                          <p className="font-semibold">{c.author.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {c.attachments?.filename}
+                          </p>
+                          <div
+                            className="mt-1"
+                            dangerouslySetInnerHTML={{ __html: c.content }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </>
+            )}
+
+            {/* History */}
+            {activeTab === "history" && task._id && (
+              <History taskId={task._id} />
+            )}
+
+            {/* Worklog */}
+            {activeTab === "worklog" && <WorklogComponent task={task} />}
           </div>
         </div>
 
         {/* Right section */}
 
         <div className="w-3/5 p-6">
-          <div>
-            <Tag color="purple" className="mb-2">
-              {task.status || "None"}
-            </Tag>
+          <div className="mb-2">
+            <Dropdown
+              menu={{
+                items,
+                onClick: handleMenuClick,
+              }}
+              trigger={["click"]}
+              className=""
+            >
+              <Tag
+                color={statusColors[status as Status]}
+                style={{
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  padding: "6px 12px",
+                }}
+              >
+                {status.replaceAll("_", " ")} <DownOutlined />
+              </Tag>
+            </Dropdown>
           </div>
           <div className="px-5 space-y-5 text-sm border border-gray-200 rounded-md py-7">
             <h3 className="mb-2 text-lg font-semibold">Details</h3>
@@ -689,10 +804,79 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 {task.milestones?.name || "None"}
               </span>
               <span className="font-semibold text-gray-600">Reporter:</span>
-              <div className="flex items-center space-x-1">
-                <Avatar src={task.createdBy?.avatar} className="mx-1" />{" "}
-                <p>{task.createdBy?.fullName}</p>
-              </div>
+              <Dropdown
+                menu={{
+                  items: [
+                    ...(task.reporter?._id
+                      ? [
+                          {
+                            key: task.reporter._id,
+                            label: (
+                              <div className="flex items-center gap-2 bg-gray-100">
+                                <Avatar
+                                  src={task.reporter.avatar}
+                                  size="small"
+                                />
+                                <div>
+                                  <p className="font-medium">
+                                    {task.reporter.fullName}
+                                  </p>
+                                  <p className="text-xs text-gray-400">
+                                    {task.reporter.email}
+                                  </p>
+                                </div>
+                              </div>
+                            ),
+                          },
+                        ]
+                      : []),
+                    ...contributor
+                      .filter((t) => {
+                        return t.userId._id !== task.reporter?._id;
+                      })
+                      .map((e) => ({
+                        key: e.userId._id,
+                        label: (
+                          <div className="flex items-center gap-2">
+                            <Avatar src={e.userId.avatar} size="small">
+                              {e.userId.fullName[0]}
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{e.userId.fullName}</p>
+                              <p className="text-xs text-gray-400">
+                                {e.userId.email}
+                              </p>
+                            </div>
+                          </div>
+                        ),
+                      })),
+                  ],
+                  onClick: ({ key, domEvent }) => {
+                    domEvent.stopPropagation();
+                    if (task._id && key) {
+                      updateReporter(task._id, key);
+                    }
+                  },
+                }}
+                trigger={["click"]}
+              >
+                <Tooltip
+                  title={`Reporter: ${reporter?.fullName || "Unassigned"}`}
+                  className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+                >
+                  <Avatar
+                    className={`cursor-pointer text-white`}
+                    size="default"
+                    src={reporter?.avatar}
+                    onClick={(e) => e?.stopPropagation()}
+                  >
+                    {reporter?.fullName?.[0] || <UserOutlined />}
+                  </Avatar>
+                  <p>
+                    {reporter?.fullName ? reporter?.fullName : "Unassigned"}
+                  </p>
+                </Tooltip>
+              </Dropdown>
             </div>
           </div>
         </div>
