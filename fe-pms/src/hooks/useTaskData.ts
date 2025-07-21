@@ -23,18 +23,22 @@ import {
 
 type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
 
-export const useTaskData = (task: Task) => {
+export const useTaskData = (task: Task | undefined) => {
   const { projectId } = useParams<{ projectId: string }>();
 
   // States
   const [status, setStatus] = useState<Status>(
-    (task.status as Status) || "TO_DO"
+    (task?.status as Status) || "TO_DO"
   );
-  const [assignee, setAssignee] = useState<Assignee | undefined>(task.assignee);
-  const [reporter, setReporter] = useState<Reporter | undefined>(task.reporter);
-  const [epic, setEpic] = useState<Epic | undefined>(task.epic);
-  const [startDate, setStartDate] = useState<string>(task.startDate ?? "");
-  const [dueDate, setDueDate] = useState<string>(task.dueDate ?? "");
+  const [assignee, setAssignee] = useState<Assignee | undefined>(
+    task?.assignee
+  );
+  const [reporter, setReporter] = useState<Reporter | undefined>(
+    task?.reporter
+  );
+  const [epic, setEpic] = useState<Epic | undefined>(task?.epic);
+  const [startDate, setStartDate] = useState<string>(task?.startDate ?? "");
+  const [dueDate, setDueDate] = useState<string>(task?.dueDate ?? "");
 
   // API functions
   const getMemberProject = async (
@@ -92,8 +96,13 @@ export const useTaskData = (task: Task) => {
     error: commentsError,
     isLoading: commentsLoading,
   } = useSWR(
-    task._id ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(task._id)}` : "",
-    getCommentTask
+    task?._id ? `${Endpoints.Comment.GET_COMMENT_BY_TASK(task._id)}` : "",
+    getCommentTask,
+    {
+      refreshInterval: 5000, // Poll every 5 seconds as fallback
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
   );
 
   const {
@@ -108,7 +117,7 @@ export const useTaskData = (task: Task) => {
   // Update functions
   const onStatusChange = async (newStatus: Status) => {
     try {
-      const response = await updateTaskStatus(task._id || "", newStatus);
+      const response = await updateTaskStatus(task?._id || "", newStatus);
       setStatus(response.status as Status);
     } catch (error: any) {
       const message =
@@ -119,7 +128,7 @@ export const useTaskData = (task: Task) => {
 
   const onAssigneeChange = async (assigneeId: string) => {
     try {
-      const response = await updateAssigneeTask(task._id || "", assigneeId);
+      const response = await updateAssigneeTask(task?._id || "", assigneeId);
       if (response.success) {
         setAssignee(response.data.assignee);
       }
@@ -132,7 +141,7 @@ export const useTaskData = (task: Task) => {
 
   const onReporterChange = async (reporterId: string) => {
     try {
-      const response = await updateReporterForTask(task._id || "", reporterId);
+      const response = await updateReporterForTask(task?._id || "", reporterId);
       if (response.success) {
         showSuccessToast(response.message);
         setReporter(response.data.reporter);
@@ -146,7 +155,7 @@ export const useTaskData = (task: Task) => {
 
   const onEpicChange = async (epicId: string) => {
     try {
-      const response = await updateEpicTask(task._id || "", epicId);
+      const response = await updateEpicTask(task?._id || "", epicId);
       if (response.success) {
         setEpic(response.data.epic);
       }
@@ -159,7 +168,7 @@ export const useTaskData = (task: Task) => {
 
   const onStartDateChange = async (date: string) => {
     try {
-      const response = await updateTaskDate(task._id || "", {
+      const response = await updateTaskDate(task?._id || "", {
         startDate: date,
       });
       setStartDate(response.startDate);
@@ -172,7 +181,7 @@ export const useTaskData = (task: Task) => {
 
   const onDueDateChange = async (date: string) => {
     try {
-      const response = await updateTaskDate(task._id || "", { dueDate: date });
+      const response = await updateTaskDate(task?._id || "", { dueDate: date });
       setDueDate(response.dueDate);
     } catch (error: any) {
       const message =

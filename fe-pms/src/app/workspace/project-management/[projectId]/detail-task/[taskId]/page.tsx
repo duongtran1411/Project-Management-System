@@ -25,7 +25,9 @@ const TaskDetail = () => {
   const { mutate } = useSWRConfig();
   const params = useParams();
   const taskId = params.taskId;
+  const projectId = params.projectId;
 
+  // Fetch task data
   const {
     data: taskData,
     error: taskError,
@@ -58,9 +60,13 @@ const TaskDetail = () => {
   } = useTaskData(taskData);
 
   useEffect(() => {
+    console.log("Socket connected:", connected);
+    console.log("Task data:", taskData?._id);
     if (!taskData?._id || !connected) return;
+    console.log("Joining comment room:", taskData._id);
     emit("open-comment-task", taskData._id);
     return () => {
+      console.log("Leaving comment room:", taskData._id);
       emit("leave-comment-task", taskData._id);
     };
   }, [taskData?._id, emit, connected]);
@@ -68,12 +74,45 @@ const TaskDetail = () => {
   useSocketEvent(
     "new-comment",
     (data: any) => {
+      console.log("Received new-comment event:", data);
       if (data?.taskId === taskData?._id && taskData?._id) {
-        mutate(`${Endpoints.Comment.GET_COMMENT_BY_TASK(taskData._id)}`);
-        onCommentAdded();
+        console.log("Mutating comments for task:", taskData._id);
+
+        // Force revalidate với delay nhỏ để đảm bảo backend đã xử lý xong
+        setTimeout(() => {
+          // Mutate với force revalidate
+          mutate(
+            `${Endpoints.Comment.GET_COMMENT_BY_TASK(taskData._id)}`,
+            undefined,
+            {
+              revalidate: true,
+              rollbackOnError: false,
+            }
+          );
+
+          // Mutate contributor nếu cần
+          if (projectId && typeof projectId === "string") {
+            mutate(
+              `${Endpoints.ProjectContributor.GET_USER_BY_PROJECT(projectId)}`,
+              undefined,
+              {
+                revalidate: true,
+                rollbackOnError: false,
+              }
+            );
+          }
+
+          // Trigger callback
+          onCommentAdded();
+
+          // Force re-render bằng cách trigger một state change
+          setTimeout(() => {
+            mutate(`${Endpoints.Comment.GET_COMMENT_BY_TASK(taskData._id)}`);
+          }, 200);
+        }, 100);
       }
     },
-    [taskData?._id]
+    [taskData?._id, projectId]
   );
 
   if (taskIsLoading || isLoading) return <Spinner />;
@@ -81,10 +120,10 @@ const TaskDetail = () => {
   if (!taskData) return <div>Task not found</div>;
 
   return (
-    <div className="bg-zinc-50">
-      <div className="flex">
+    <div className="bg-zinc-50 h-full overflow-y-auto">
+      <div className="flex h-full">
         {/* Left section */}
-        <div className="w-4/5 p-6 overflow-y-auto max-h-[500px]">
+        <div className="flex-1 p-6">
           <TaskHeader task={taskData} />
           <CommentSection
             taskId={taskData._id || ""}
@@ -95,7 +134,7 @@ const TaskDetail = () => {
         </div>
 
         {/* Right section */}
-        <div className="w-3/5 p-6">
+        <div className="w-96 p-6 border-l border-gray-200 bg-white">
           <TaskDetails
             task={taskData}
             status={status}
