@@ -46,12 +46,13 @@ import {
   Tag,
   Tooltip,
 } from "antd";
-import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import dayjs from "dayjs";
+import { useSocket } from "@/hooks/useSocket";
+import { useSocketEvent } from "@/hooks/useSocketEvent";
 import History from "../../../../../../components/workspace/history/History";
-
 interface DetailTaskModalProps {
   open: boolean;
   onClose: () => void;
@@ -81,7 +82,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>();
+  const [comments, setComments] = useState<Comment[]>([]);
   const [contributor, setContributors] = useState<ProjectContributorTag[]>([]);
   const { projectId } = useParams<{ projectId: string }>();
   const [assignee, setAssignee] = useState<Assignee>();
@@ -92,6 +93,29 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   const [dueDate, setDueDate] = useState<string>("");
   const [isEditingName, setIsEditingName] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
+  const { emit } = useSocket();
+  useEffect(() => {
+    if (!open || !task?._id) return;
+    emit("open-comment-task", task._id);
+    return () => {
+      emit("leave-comment-task", task._id);
+    };
+  }, [open, task?._id, emit]);
+
+  useSocketEvent(
+    "new-comment",
+    (data: any) => {
+      if (data?.taskId === task._id) {
+        setComments((prev) => {
+          if (!prev.some((c) => c._id === data.comment._id)) {
+            return [...prev, data.comment];
+          }
+          return prev;
+        });
+      }
+    },
+    [task?._id]
+  );
   const [status, setStatus] = useState(task.status || "TO_DO");
   const [reporter, setReporter] = useState<Reporter>();
   const [activeTab, setActiveTab] = useState<
@@ -725,9 +749,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
                 value={epic?._id || null}
                 onChange={(value) => {
                   const selectedEpic = epics.find((e) => e._id === value);
-                  setCurrentTask((prev) =>
-                    prev ? { ...prev, epic: selectedEpic } : null
-                  );
                   if (selectedEpic) {
                     updateEpic(selectedEpic._id);
                   }

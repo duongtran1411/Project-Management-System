@@ -245,7 +245,10 @@ export class WorklogController {
   getTopContributors = async (req: Request, res: Response): Promise<void> => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
-      const topContributors = await worklogService.getTopContributors(limit);
+      const topContributors = await worklogService.getTopContributorsByProject(
+        req.params.projectId,
+        limit
+      );
 
       res.status(200).json({
         success: true,
