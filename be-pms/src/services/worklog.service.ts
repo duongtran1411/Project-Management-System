@@ -68,7 +68,7 @@ export class WorklogService {
     // Then get all worklogs for these tasks
     const worklogs = await Worklog.find({ taskId: { $in: taskIds } }).populate([
       { path: "contributor", select: "fullName email avatar" },
-      { path: "taskId", select: "title" },
+      { path: "taskId", select: "title name" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);

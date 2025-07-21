@@ -163,13 +163,19 @@ router.get(
 
 /**
  * @openapi
- * /worklog/top-contributors:
+ * /worklog/top-contributors/{projectId}:
  *   get:
- *     summary: Lấy top 6 contributors theo thời gian sử dụng
+ *     summary: Lấy top 6 contributors theo thời gian sử dụng cho một project
  *     tags: [Worklog]
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
  *       - in: query
  *         name: limit
  *         schema:
@@ -216,7 +222,10 @@ router.get(
  *       400:
  *         description: Lỗi không lấy được top contributors
  */
-router.get("/top-contributors", worklogController.getTopContributors);
+router.get(
+  "/top-contributors/:projectId",
+  worklogController.getTopContributors
+);
 
 /**
  * @openapi
