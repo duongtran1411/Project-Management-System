@@ -38,7 +38,8 @@ const EpicPage = () => {
     const [editingReporterTaskId, setEditingReporterTaskId] = useState<string | null>(null);
     const [editingReporterValue, setEditingReporterValue] = useState<string>("");
     const [searchText, setSearchText] = useState("");
-
+    const [editingDueDateTaskId, setEditingDueDateTaskId] = useState<string | null>(null);
+    const [editingDueDateValue, setEditingDueDateValue] = useState<string>("");
 
 
     const { data: epicData, mutate } = useSWR(
@@ -252,7 +253,35 @@ const EpicPage = () => {
         }
     };
 
+    const handleUpdateTaskDueDate = async (taskId: string, newDueDate: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_DATE(taskId)}`,
+                { dueDate: newDueDate }
+            );
 
+            const epicId = Object.keys(taskMap).find((eid) =>
+                taskMap[eid]?.some((task) => task._id === taskId)
+            );
+
+            if (epicId) {
+                const taskRes = await fetcher(
+                    `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_EPIC(epicId)}`
+                );
+                setTaskMap((prev) => ({
+                    ...prev,
+                    [epicId]: taskRes.data,
+                }));
+            }
+
+            await mutate();
+        } catch (error) {
+            console.error("Failed to update task due date:", error);
+        } finally {
+            setEditingDueDateTaskId(null);
+            setEditingDueDateValue("");
+        }
+    };
 
 
     const epicRows = (epicData?.data || []).filter((epic: any) =>
@@ -262,6 +291,7 @@ const EpicPage = () => {
         summary: epic.name,
         status: epic.status,
         assignee: "Unassigned",
+        dueDate: epic.dueDate || "",
         priority: epic.priority,
         created: new Date(epic.createdAt).toLocaleDateString(),
         updated: new Date(epic.updatedAt).toLocaleDateString(),
@@ -539,13 +569,45 @@ const EpicPage = () => {
             dataIndex: "dueDate",
             key: "dueDate",
             width: 150,
-            render: (date: string) => (
-                <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
-                    <CalendarOutlined />
-                    <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+            render: (date: string, record: any) => {
+                if (record.isEpic) {
+                    if (!date) return ""; // hoặc return null;
+                    return (
+                        <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
+                            <CalendarOutlined />
+                            <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+                        </div>
+                    );
+                }
 
-                </div>
-            ),
+                if (editingDueDateTaskId === record.key) {
+                    return (
+                        <Input
+                            type="date"
+                            value={editingDueDateValue}
+                            onChange={e => setEditingDueDateValue(e.target.value)}
+                            onBlur={() => handleUpdateTaskDueDate(record.key, editingDueDateValue)}
+                            onPressEnter={e => handleUpdateTaskDueDate(record.key, (e.target as HTMLInputElement).value)}
+                            autoFocus
+                            size="small"
+                            style={{ width: 140 }}
+                        />
+                    );
+                }
+
+                return (
+                    <div
+                        className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded cursor-pointer"
+                        onClick={() => {
+                            setEditingDueDateTaskId(record.key);
+                            setEditingDueDateValue(date ? dayjs(date).format("YYYY-MM-DD") : "");
+                        }}
+                    >
+                        <CalendarOutlined />
+                        <span>{dayjs(date).format("DD/MM/YYYY")}</span>
+                    </div>
+                );
+            }
         },
         {
             title: "Priority",
