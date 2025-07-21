@@ -89,7 +89,7 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .patch(Endpoints.Task.UPDATE_TASK(taskId), { status });
+      .patch(Endpoints.Task.UPDATE_STATUS(taskId), { status });
     if (response.data?.success) {
       showSuccessToast("Cập nhật trạng thái nhiệm vụ thành công!");
       return response?.data.data;
