@@ -69,8 +69,8 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
   }));
 
   return (
-    <div className="w-full">
-      <div className="mb-2">
+    <div className="h-full p-4 overflow-y-auto">
+      <div className="mb-4">
         <Dropdown
           menu={{
             items,
@@ -91,8 +91,8 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
         </Dropdown>
       </div>
 
-      <div className="px-3 space-y-4 text-sm border border-gray-200 rounded-md py-5">
-        <h3 className="mb-2 text-lg font-semibold">Details</h3>
+      <div className="space-y-4 text-sm">
+        <h3 className="text-lg font-semibold text-gray-800">Details</h3>
 
         <div className="space-y-4">
           {/* Assignee */}

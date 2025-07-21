@@ -27,6 +27,7 @@ export interface INotification {
   metadata: {
     taskName?: string;
     taskId?: string;
+    projectId?: string;
     taskStatus?: string;
     projectName?: string;
     epicName?: string;
@@ -69,6 +70,7 @@ export interface CreateNotificationData {
   metadata?: {
     taskName?: string;
     taskId?: string;
+    projectId?: string;
     taskStatus?: string;
     projectName?: string;
     epicName?: string;

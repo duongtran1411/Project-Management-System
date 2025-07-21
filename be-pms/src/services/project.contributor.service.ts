@@ -299,16 +299,79 @@ export class ProjectContributorService {
       .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
   }
 
-  async getRoleContributorByProjectId(user: IUser, projectId: string): Promise<IProjectRole> {
-    const projectContributor = await ProjectContributor.find({ userId: user._id, projectId: projectId });
+  async getRoleContributorByProjectId(
+    user: IUser,
+    projectId: string
+  ): Promise<IProjectRole> {
+    const projectContributor = await ProjectContributor.find({
+      userId: user._id,
+      projectId: projectId,
+    });
 
     const projectRole = projectContributor.map((t) => t.projectRoleId);
 
-    const role = await ProjectRole.findById(projectRole).select('name');
+    const role = await ProjectRole.findById(projectRole).select("name");
 
+    if (!role) throw new Error("can not find role");
+    return role;
+  }
 
-    if (!role) throw new Error('can not find role')
-    return role
+  // Lấy thống kê tổng quan về project
+  async getProjectStatistics(projectId: string): Promise<any> {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      throw new Error("ProjectId không hợp lệ");
+    }
+
+    // Kiểm tra project có tồn tại không
+    const project = await Project.findById(projectId);
+    if (!project) {
+      throw new Error("Dự án không tồn tại");
+    }
+
+    // Tìm role PROJECT_ADMIN
+    const adminRole = await ProjectRole.findOne({ name: "PROJECT_ADMIN" });
+    if (!adminRole) {
+      throw new Error("Không tìm thấy role PROJECT_ADMIN");
+    }
+
+    // Lấy tất cả contributors trong project
+    const allContributors = await ProjectContributor.find({ projectId })
+      .populate({
+        path: "userId",
+        select: "status lastLogin",
+      })
+      .lean();
+
+    // Tính toán thống kê
+    const totalUsers = allContributors.length;
+
+    // Số quản trị viên
+    const adminCount = allContributors.filter(
+      (contributor) =>
+        contributor.projectRoleId.toString() ===
+        (adminRole._id as mongoose.Types.ObjectId).toString()
+    ).length;
+
+    // Số người dùng đang hoạt động (có lastLogin trong 30 ngày gần đây)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const activeUsers = allContributors.filter((contributor) => {
+      const user = contributor.userId as any;
+      return (
+        user &&
+        user.status === "ACTIVE" &&
+        user.lastLogin &&
+        new Date(user.lastLogin) > thirtyDaysAgo
+      );
+    }).length;
+
+    return {
+      totalUsers,
+      adminCount,
+      activeUsers,
+      projectName: project.name,
+    };
   }
 }
 

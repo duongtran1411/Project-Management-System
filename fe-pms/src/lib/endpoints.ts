@@ -83,7 +83,8 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
-    GET_ROLE_PROJECT_ID: (projectId: string) => `project-contributor/project/role/${projectId}`
+    GET_ROLE_PROJECT_ID: (projectId: string) =>
+      `project-contributor/project/role/${projectId}`,
   };
 
   static readonly ProjectRole = {
@@ -106,6 +107,8 @@ export class Endpoints {
   static readonly Comment = {
     GET_COMMENT_BY_TASK: (taskId: string) => `comment/${taskId}`,
     CREATE_COMMENT: "comment",
+    UPDATE_COMMENT: (commentId: string) => `comment/${commentId}`,
+    DELETE_COMMENT: (commentId: string) => `comment/${commentId}`,
   };
 
   static readonly Notification = {

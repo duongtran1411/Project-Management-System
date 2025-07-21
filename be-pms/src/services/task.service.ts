@@ -111,6 +111,8 @@ export class TaskService {
           entityId: (task._id as any).toString(),
           metadata: {
             taskName: taskData.name,
+            taskId: (task._id as any).toString(),
+            projectId: (taskData.projectId as any).toString(),
             projectName:
               typeof populatedTask.projectId === "object" &&
               populatedTask.projectId !== null &&
@@ -157,6 +159,8 @@ export class TaskService {
           entityId: (task._id as any).toString(),
           metadata: {
             taskName: taskData.name,
+            taskId: (task._id as any).toString(),
+            projectId: (taskData.projectId as any).toString(),
             projectName:
               typeof populatedTask.projectId === "object" &&
               populatedTask.projectId !== null &&
@@ -303,6 +307,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
@@ -351,6 +357,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
@@ -401,6 +409,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
@@ -449,6 +459,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
@@ -473,6 +485,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
@@ -880,6 +894,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
@@ -928,6 +944,8 @@ export class TaskService {
             entityId: (task._id as any).toString(),
             metadata: {
               taskName: task.name,
+              taskId: (task._id as any).toString(),
+              projectId: (task.projectId as any).toString(),
               projectName:
                 typeof task.projectId === "object" &&
                 task.projectId !== null &&
