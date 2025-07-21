@@ -9,8 +9,9 @@ import {
   Select,
   message,
   Tag,
+  Spin,
 } from "antd";
-const { Option } = Select;
+
 import { useParams, useRouter } from "next/navigation";
 import type { NotificationArgsProps } from "antd";
 import React, { useEffect, useMemo, useState } from "react";
@@ -43,6 +44,7 @@ export default function InvitePage() {
   const params = useParams();
   const projectId = params.projectId as string;
   const [projectRoleId, setProjectRoleId] = useState<string>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { data: projectRoleData, error: projectRoleError } = useSWR(
     `${Endpoints.ProjectRole.GET_ALL}`,
@@ -113,6 +115,7 @@ export default function InvitePage() {
         messageApi.error("Missing project ID or role ID");
         return;
       }
+      setLoading(true);
       const data: InviteMultiple = {
         emails: invites,
         projectId,
@@ -142,12 +145,14 @@ export default function InvitePage() {
       console.log(e);
       messageApi.error("Failed to invite members");
     }
+    setLoading(false);
   };
 
   return (
     <Context.Provider value={contextValue}>
       {notificationHolder}
       {messageHoler}
+      {loading && <Spin size="large" tip="Loading..." fullscreen />}
       <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6 mx-auto mt-[-120px]">
         <div className="w-[50%]">
           <Title level={2}>Bring the team with you</Title>
@@ -168,7 +173,6 @@ export default function InvitePage() {
               Member
             </Text> */}
             <div className="mt-4 flex items-center space-x-2"></div>
-            name
             <Button
               className="mt-4 font-semibold bg-gray-100 text-gray-600"
               type="default"
@@ -208,7 +212,7 @@ export default function InvitePage() {
                 </div>
 
                 {/* Select role  */}
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Role
                   </label>
@@ -228,7 +232,7 @@ export default function InvitePage() {
                         </Option>
                       ))}
                   </Select>
-                </div>
+                </div> */}
               </div>
             )}
           </Card>

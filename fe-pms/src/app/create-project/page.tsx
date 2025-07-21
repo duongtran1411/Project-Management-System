@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Input, Button, Typography, Form, message, Image } from "antd";
+import { Input, Button, Typography, Form, message, Image, Spin } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useRouter } from "next/navigation";
 import { createProject } from "@/lib/services/project/project.service";
@@ -23,6 +23,7 @@ export default function ProjectForm() {
   const [form] = Form.useForm();
   const [userId, setUserId] = useState<string | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -36,6 +37,7 @@ export default function ProjectForm() {
 
   const handleNext = async () => {
     try {
+      setLoading(true);
       const values = await form.validateFields();
       const projectData: Project = {
         name: values.name,
@@ -62,6 +64,7 @@ export default function ProjectForm() {
       message.error("Please fill in required fields!");
       console.log(error);
     }
+    setLoading(false);
   };
 
   const onFinishFailed = () => {
@@ -75,6 +78,14 @@ export default function ProjectForm() {
   return (
     <>
       {contextHolder}
+      {loading && (
+        <Spin
+          size="large"
+          tip="Loading..."
+          style={{ color: "#667eea" }}
+          fullscreen
+        />
+      )}
       <div
         className=" flex items-center gap-2 m-7 hover:cursor-pointer hover:bg-gray-200 p-2 rounded-md transition-all w-max"
         onClick={() => router.push("/workspace/viewall")}
