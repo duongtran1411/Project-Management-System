@@ -260,4 +260,27 @@ router.get(
   projectContributorController.getProjectsByUser
 );
 
+/**
+ * @openapi
+ * /project-contributor/project/role/{projectId}:
+ *   get:
+ *     summary: Lấy role project theo projectId
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: role project của user
+ *       400:
+ *         description: Lỗi không lấy được role project
+ */
+router.get('/project/role/:projectId',authenticate,projectContributorController.getRoleByProjectId)
+
 export default router;

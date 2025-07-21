@@ -1,7 +1,7 @@
 "use client";
 
 import { logout } from "@/lib/utils";
-import { ClusterOutlined, MailOutlined } from "@ant-design/icons";
+import { ClusterOutlined, LogoutOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, MenuProps, Space } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { FaRegListAlt, FaUserAlt } from "react-icons/fa";
@@ -49,6 +49,7 @@ export default function AdminLayout({
     {
       label: "Profile",
       key: "profile",
+      icon: <UserOutlined />,
     },
     {
       type: "divider",
@@ -56,6 +57,8 @@ export default function AdminLayout({
     {
       label: "Logout",
       key: "logout",
+      icon: <LogoutOutlined />,
+      danger: true,
     },
   ];
 

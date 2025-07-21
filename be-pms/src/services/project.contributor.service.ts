@@ -3,9 +3,9 @@ import ProjectContributor, {
   ProjectInvitation,
   IProjectInvitation,
 } from "../models/project.contributor.model";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import Project from "../models/project.model";
-import ProjectRole from "../models/project.role.model";
+import ProjectRole, { IProjectRole } from "../models/project.role.model";
 import mongoose from "mongoose";
 import { sendProjectInvitationEmail } from "../utils/email.util";
 import crypto from "crypto";
@@ -297,6 +297,18 @@ export class ProjectContributorService {
     return contributors
       .map((c) => c.projectId)
       .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
+  }
+
+  async getRoleContributorByProjectId(user: IUser, projectId: string): Promise<IProjectRole> {
+    const projectContributor = await ProjectContributor.find({ userId: user._id, projectId: projectId });
+
+    const projectRole = projectContributor.map((t) => t.projectRoleId);
+
+    const role = await ProjectRole.findById(projectRole).select('name');
+
+
+    if (!role) throw new Error('can not find role')
+    return role
   }
 }
 
