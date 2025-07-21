@@ -68,9 +68,9 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-8 max-w-[400px] mx-auto">
+    <div className="flex flex-col items-center justify-center py-8 max-w-[400px] ">
       {!worklogData?.data || worklogData?.data?.length === 0 ? (
-        <>
+        <div className="mx-auto">
           <Image
             src="/clock-5.png"
             alt="Work log"
@@ -92,7 +92,7 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
               Log time
             </span>
           </Button>
-        </>
+        </div>
       ) : (
         <div className="w-full">
           {worklogData &&
