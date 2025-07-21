@@ -113,6 +113,113 @@ router.get("/project/:projectId", worklogController.getWorklogsByProjectId);
 
 /**
  * @openapi
+ * /worklog/statistics/project/{projectId}:
+ *   get:
+ *     summary: Lấy thống kê worklog theo projectId
+ *     tags: [Worklog]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Thống kê worklog theo project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalSpentTime:
+ *                       type: number
+ *                       description: Tổng thời gian đã sử dụng
+ *                     totalRemainTime:
+ *                       type: number
+ *                       description: Tổng thời gian còn lại
+ *                     totalTask:
+ *                       type: number
+ *                       description: Tổng số task
+ *                     totalContributor:
+ *                       type: number
+ *                       description: Tổng số contributor
+ *       400:
+ *         description: Lỗi không lấy được thống kê worklog
+ */
+router.get(
+  "/statistics/project/:projectId",
+  worklogController.getWorklogStatisticsByProjectId
+);
+
+/**
+ * @openapi
+ * /worklog/top-contributors:
+ *   get:
+ *     summary: Lấy top 6 contributors theo thời gian sử dụng
+ *     tags: [Worklog]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 6
+ *         description: Số lượng contributors muốn lấy (mặc định là 6)
+ *     responses:
+ *       200:
+ *         description: Danh sách top contributors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       contributor:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           fullName:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           avatar:
+ *                             type: string
+ *                       totalSpentTime:
+ *                         type: number
+ *                         description: Tổng thời gian đã sử dụng
+ *                       totalRemainTime:
+ *                         type: number
+ *                         description: Tổng thời gian còn lại
+ *                       totalTask:
+ *                         type: number
+ *                         description: Tổng số task
+ *       400:
+ *         description: Lỗi không lấy được top contributors
+ */
+router.get("/top-contributors", worklogController.getTopContributors);
+
+/**
+ * @openapi
  * /worklog/contributor/{contributorId}:
  *   get:
  *     summary: Lấy danh sách worklog theo contributorId

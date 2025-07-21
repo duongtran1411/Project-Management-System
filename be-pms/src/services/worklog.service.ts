@@ -86,6 +86,99 @@ export class WorklogService {
     ]);
     return worklogs;
   }
+
+  async getWorklogStatisticsByProjectId(projectId: string): Promise<any> {
+    const tasks = await Task.find({ projectId }).select("_id");
+    const taskIds = tasks.map((task) => task._id);
+
+    const statistics = await Worklog.aggregate([
+      {
+        $match: {
+          taskId: { $in: taskIds },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalSpentTime: { $sum: "$timeSpent" },
+          totalRemainTime: { $sum: "$timeRemain" },
+          totalTask: { $addToSet: "$taskId" },
+          totalContributor: { $addToSet: "$contributor" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalSpentTime: 1,
+          totalRemainTime: 1,
+          totalTask: { $size: "$totalTask" },
+          totalContributor: { $size: "$totalContributor" },
+        },
+      },
+    ]);
+
+    return (
+      statistics[0] || {
+        totalSpentTime: 0,
+        totalRemainTime: 0,
+        totalTask: 0,
+        totalContributor: 0,
+      }
+    );
+  }
+
+  async getTopContributors(limit: number = 6): Promise<any[]> {
+    const topContributors = await Worklog.aggregate([
+      {
+        $group: {
+          _id: "$contributor",
+          totalSpentTime: { $sum: "$timeSpent" },
+          totalRemainTime: { $sum: "$timeRemain" },
+          totalTask: { $addToSet: "$taskId" },
+        },
+      },
+      {
+        $project: {
+          contributor: "$_id",
+          totalSpentTime: 1,
+          totalRemainTime: 1,
+          totalTask: { $size: "$totalTask" },
+        },
+      },
+      {
+        $sort: { totalSpentTime: -1 },
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "contributor",
+          foreignField: "_id",
+          as: "contributorInfo",
+        },
+      },
+      {
+        $unwind: "$contributorInfo",
+      },
+      {
+        $project: {
+          contributor: {
+            _id: "$contributorInfo._id",
+            fullName: "$contributorInfo.fullName",
+            email: "$contributorInfo.email",
+            avatar: "$contributorInfo.avatar",
+          },
+          totalSpentTime: 1,
+          totalRemainTime: 1,
+          totalTask: 1,
+        },
+      },
+    ]);
+
+    return topContributors;
+  }
 }
 
 export default new WorklogService();

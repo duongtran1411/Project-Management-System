@@ -17,6 +17,7 @@ import {
   sendTaskUpdateEmail,
   sendTaskUnassignedEmail,
   sendTaskCreatedEmail,
+  sendEmailAsync,
 } from "../utils/email.util";
 import User from "../models/user.model";
 export class TaskService {
@@ -88,7 +89,7 @@ export class TaskService {
           "fullName email"
         );
         if (assigneeUser && assigneeUser.email) {
-          try {
+          sendEmailAsync(async () => {
             await sendTaskAssignmentEmail(
               assigneeUser.email,
               assigneeUser.fullName || "User",
@@ -99,9 +100,7 @@ export class TaskService {
                 "Unknown User",
               this.getTaskUrl(taskData.projectId, task._id)
             );
-          } catch (emailError) {
-            console.error("Failed to send assignment email:", emailError);
-          }
+          }, 1000);
         }
 
         const notification = await NotificationService.createNotification({
@@ -136,7 +135,7 @@ export class TaskService {
           "fullName email"
         );
         if (reporterUser && reporterUser.email) {
-          try {
+          sendEmailAsync(async () => {
             await sendTaskCreatedEmail(
               reporterUser.email,
               reporterUser.fullName || "User",
@@ -147,9 +146,7 @@ export class TaskService {
                 "Unknown User",
               this.getTaskUrl(taskData.projectId, task._id)
             );
-          } catch (emailError) {
-            console.error("Failed to send task created email:", emailError);
-          }
+          }, 1000);
         }
 
         const notification = await NotificationService.createNotification({
@@ -282,22 +279,20 @@ export class TaskService {
             "fullName email"
           );
           if (assigneeUser && assigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskStatusChangeEmail(
                 assigneeUser.email,
                 assigneeUser.fullName || "User",
                 task.name,
                 projectName,
                 oldTask.status,
-                updateData.status,
+                updateData.status || "",
                 (user.fullName as string) ||
                   (user.email as string) ||
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send status change email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
@@ -334,7 +329,7 @@ export class TaskService {
             updateData.assignee
           ).select("fullName email");
           if (newAssigneeUser && newAssigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskAssignmentEmail(
                 newAssigneeUser.email,
                 newAssigneeUser.fullName || "User",
@@ -345,9 +340,7 @@ export class TaskService {
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send assignment email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
@@ -386,7 +379,7 @@ export class TaskService {
             "fullName email"
           );
           if (oldAssigneeUser && oldAssigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskUnassignedEmail(
                 oldAssigneeUser.email,
                 oldAssigneeUser.fullName || "User",
@@ -397,9 +390,7 @@ export class TaskService {
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send unassignment email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
@@ -436,7 +427,7 @@ export class TaskService {
             "fullName email"
           );
           if (oldAssigneeUser && oldAssigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskUnassignedEmail(
                 oldAssigneeUser.email,
                 oldAssigneeUser.fullName || "User",
@@ -447,9 +438,7 @@ export class TaskService {
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send reassignment email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
@@ -661,7 +650,7 @@ export class TaskService {
         "fullName email"
       );
       if (assigneeUser && assigneeUser.email) {
-        try {
+        sendEmailAsync(async () => {
           await sendTaskStatusChangeEmail(
             assigneeUser.email,
             assigneeUser.fullName || "User",
@@ -674,9 +663,7 @@ export class TaskService {
               "Unknown User",
             this.getTaskUrl(task.projectId, task._id)
           );
-        } catch (emailError) {
-          console.error("Failed to send status change email:", emailError);
-        }
+        }, 1000);
       }
     }
 
@@ -827,7 +814,7 @@ export class TaskService {
             "fullName email"
           );
           if (newAssigneeUser && newAssigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskAssignmentEmail(
                 newAssigneeUser.email,
                 newAssigneeUser.fullName || "User",
@@ -838,9 +825,7 @@ export class TaskService {
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send assignment email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
@@ -873,7 +858,7 @@ export class TaskService {
             "fullName email"
           );
           if (oldAssigneeUser && oldAssigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskUnassignedEmail(
                 oldAssigneeUser.email,
                 oldAssigneeUser.fullName || "User",
@@ -884,9 +869,7 @@ export class TaskService {
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send unassignment email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
@@ -923,7 +906,7 @@ export class TaskService {
             "fullName email"
           );
           if (oldAssigneeUser && oldAssigneeUser.email) {
-            try {
+            sendEmailAsync(async () => {
               await sendTaskUnassignedEmail(
                 oldAssigneeUser.email,
                 oldAssigneeUser.fullName || "User",
@@ -934,9 +917,7 @@ export class TaskService {
                   "Unknown User",
                 this.getTaskUrl(task.projectId, task._id)
               );
-            } catch (emailError) {
-              console.error("Failed to send reassignment email:", emailError);
-            }
+            }, 1000);
           }
 
           const notification = await NotificationService.createNotification({
