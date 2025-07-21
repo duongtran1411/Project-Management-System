@@ -215,6 +215,53 @@ export class WorklogController {
       });
     }
   };
+
+  getWorklogStatisticsByProjectId = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const statistics = await worklogService.getWorklogStatisticsByProjectId(
+        projectId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Lấy thống kê worklog theo project thành công",
+        data: statistics,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get worklog statistics by project error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi lấy thống kê worklog theo project",
+        statusCode: 400,
+      });
+    }
+  };
+
+  getTopContributors = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
+      const topContributors = await worklogService.getTopContributors(limit);
+
+      res.status(200).json({
+        success: true,
+        message: "Lấy top contributors thành công",
+        data: topContributors,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get top contributors error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi lấy top contributors",
+        statusCode: 400,
+      });
+    }
+  };
 }
 
 export default new WorklogController();
