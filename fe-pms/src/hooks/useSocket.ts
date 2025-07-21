@@ -18,28 +18,31 @@ export const useSocket = (): UseSocketReturn => {
   const connectedRef = useRef(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
-  const maxReconnectAttempts = 5;
-  const baseReconnectDelay = 1000;
 
   const connect = useCallback(() => {
     if (socketRef.current?.connected) return;
 
     const userId = getCurrentUserId();
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
 
-    const socketUrl =
-      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
+    const socketUrl = "http://localhost:5000";
 
     socketRef.current = io(socketUrl, {
       transports: ["websocket", "polling"],
       auth: {
         userId,
       },
-      reconnection: false,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket connected");
+      console.log("Socket connected successfully");
       connectedRef.current = true;
       reconnectAttemptsRef.current = 0;
 
@@ -52,19 +55,21 @@ export const useSocket = (): UseSocketReturn => {
 
       if (reason === "io server disconnect") {
         socketRef.current?.connect();
-      } else if (reconnectAttemptsRef.current < maxReconnectAttempts) {
-        const delay =
-          baseReconnectDelay * Math.pow(2, reconnectAttemptsRef.current);
-        reconnectTimeoutRef.current = setTimeout(() => {
-          reconnectAttemptsRef.current++;
-          connect();
-        }, delay);
       }
     });
 
     socketRef.current.on("connect_error", (error) => {
       console.error("Socket connection error:", error);
       connectedRef.current = false;
+    });
+
+    socketRef.current.on("reconnect", () => {
+      connectedRef.current = true;
+      reconnectAttemptsRef.current = 0;
+    });
+
+    socketRef.current.on("reconnect_error", (error) => {
+      console.error("Socket reconnection error:", error);
     });
   }, []);
 

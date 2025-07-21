@@ -63,12 +63,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     if (lastAtSymbol !== -1) {
       const beforeAt = newComment.substring(0, lastAtSymbol);
       const afterCursor = newComment.substring(cursorPosition);
-      const newText = beforeAt + `@${user.userId.fullName} ` + afterCursor;
+      const newText =
+        beforeAt + `@${user.userId?.fullName || "Unknown User"} ` + afterCursor;
       setNewComment(newText);
 
       // Thêm vào selected mentions
       setSelectedMentions((prev) =>
-        prev.includes(user.userId._id) ? prev : [...prev, user.userId._id]
+        prev.includes(user.userId?._id) ? prev : [...prev, user.userId?._id]
       );
     }
     setShowMentionDropdown(false);
@@ -77,12 +78,40 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   // Filter users based on search text
   const filteredUsers = contributor.filter((user) =>
-    user.userId.fullName.toLowerCase().includes(mentionSearchText.toLowerCase())
+    user.userId?.fullName
+      ?.toLowerCase()
+      .includes(mentionSearchText.toLowerCase())
   );
 
   const handleComment = async () => {
     try {
       setIsCreatingComment(true);
+
+      // Optimistic update - thêm comment ngay lập tức
+      const optimisticComment = {
+        _id: `temp-${Date.now()}`,
+        content: newComment,
+        task: taskId,
+        author: {
+          name: "You",
+          avatar: "",
+        },
+        mentions: selectedMentions,
+        attachments: attachments.map((file) => ({
+          filename: file.name,
+          url: URL.createObjectURL(file),
+        })),
+      };
+
+      // Mutate với optimistic data
+      mutate(
+        `${Endpoints.Comment.GET_COMMENT_BY_TASK(taskId)}`,
+        (currentComments: Comment[] = []) => [
+          optimisticComment,
+          ...currentComments,
+        ],
+        false // Không revalidate ngay
+      );
 
       const response = await createComment(
         taskId,
@@ -90,16 +119,23 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         selectedMentions,
         attachments
       );
+
       if (response?.success) {
         setNewComment("");
         setSelectedMentions([]);
         setAttachments([]);
 
-        // Gọi mutate để reload lại comment từ server
+        // Revalidate để lấy data thật từ server
         mutate(`${Endpoints.Comment.GET_COMMENT_BY_TASK(taskId)}`);
         onCommentAdded();
+      } else {
+        // Nếu fail thì rollback optimistic update
+        mutate(`${Endpoints.Comment.GET_COMMENT_BY_TASK(taskId)}`);
       }
     } catch (error: any) {
+      // Rollback optimistic update nếu có lỗi
+      mutate(`${Endpoints.Comment.GET_COMMENT_BY_TASK(taskId)}`);
+
       const errorMessage =
         error?.response?.data?.message || error?.message || "Đã xảy ra lỗi";
       if (errorMessage) {
@@ -167,29 +203,37 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
               {/* Add mentions quick select */}
               {Array.isArray(contributor) && contributor.length > 0 && (
-                <div className="mb-2 flex flex-wrap items-center">
-                  <span className="mr-2">Add mentions:</span>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-gray-600">Add mentions:</span>
                   {contributor.map((e) => (
                     <Button
                       key={e._id}
                       size="small"
-                      className="mr-2 mb-2 flex items-center"
+                      className="flex items-center max-w-32"
                       icon={
-                        <Avatar src={e.userId.avatar} size="small">
-                          {e.userId.fullName[0]}
+                        <Avatar
+                          src={e.userId?.avatar}
+                          size="small"
+                          className="flex-shrink-0"
+                        >
+                          {e.userId?.fullName?.[0] || "?"}
                         </Avatar>
                       }
                       onClick={() => {
                         setSelectedMentions((prev) =>
-                          prev.includes(e.userId._id)
+                          prev.includes(e.userId?._id)
                             ? prev
-                            : [...prev, e.userId._id]
+                            : [...prev, e.userId?._id]
                         );
-                        const mention = `@${e.userId.fullName} `;
+                        const mention = `@${
+                          e.userId?.fullName || "Unknown User"
+                        } `;
                         setNewComment((prev) => prev + mention);
                       }}
                     >
-                      {e.userId.fullName}
+                      <span className="truncate">
+                        {e.userId?.fullName || "Unknown User"}
+                      </span>
                     </Button>
                   ))}
                 </div>
@@ -241,10 +285,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                     {attachments.map((file, index) => (
                       <div
                         key={index}
-                        className="flex items-center bg-gray-50 rounded-lg px-3 py-2"
+                        className="flex items-center bg-gray-50 rounded-lg px-3 py-2 max-w-full"
                       >
                         <svg
-                          className="w-4 h-4 text-gray-500 mr-2"
+                          className="w-4 h-4 text-gray-500 mr-2 flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -256,7 +300,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                           />
                         </svg>
-                        <span className="text-sm text-gray-700 truncate max-w-32">
+                        <span className="text-sm text-gray-700 truncate max-w-48">
                           {file.name}
                         </span>
                         <button
@@ -265,7 +309,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                               attachments.filter((_, i) => i !== index)
                             )
                           }
-                          className="ml-2 text-red-500 hover:text-red-700"
+                          className="ml-2 text-red-500 hover:text-red-700 flex-shrink-0"
                         >
                           <svg
                             className="w-4 h-4"
@@ -289,10 +333,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
               <div className="relative">
                 <Input.TextArea
-                  placeholder="Add comment..."
                   value={newComment}
                   onChange={handleCommentInputChange}
-                  autoSize={{ minRows: 2, maxRows: 5 }}
+                  placeholder="Add comment..."
+                  autoSize={{ minRows: 3, maxRows: 8 }}
+                  className="resize-none"
+                  disabled={isCreatingComment}
                 />
 
                 {showMentionDropdown && (
@@ -300,12 +346,18 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((user) => (
                         <div
-                          key={user.userId._id}
+                          key={user.userId?._id || "unknown"}
                           className="p-2 cursor-pointer hover:bg-gray-100 flex items-center"
                           onClick={() => selectMentionUser(user)}
                         >
-                          <Avatar src={user.userId.avatar} size="small" />
-                          <span className="ml-2">{user.userId.fullName}</span>
+                          <Avatar
+                            src={user.userId?.avatar}
+                            size="small"
+                            className="flex-shrink-0"
+                          />
+                          <span className="ml-2 truncate">
+                            {user.userId?.fullName || "Unknown User"}
+                          </span>
                         </div>
                       ))
                     ) : (
@@ -349,18 +401,20 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                   >
                     <Avatar
                       src={c.author.avatar}
-                      className="rounded-full"
+                      className="rounded-full flex-shrink-0"
                       alt="avatar"
                       size="small"
                     />
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{c.author.name}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm mb-1">
+                        {c.author.name}
+                      </p>
 
                       {/* Hiển thị attachment nếu có */}
                       {c.attachments &&
                         Array.isArray(c.attachments) &&
                         c.attachments.length > 0 && (
-                          <div className="mt-2">
+                          <div className="mt-2 mb-2">
                             {c.attachments.map((attachment, attIdx) => (
                               <div key={attIdx} className="mb-2">
                                 {/* Kiểm tra nếu là ảnh */}
@@ -421,7 +475,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                           </div>
                         )}
 
-                      <div className="mt-2 text-sm">{c.content}</div>
+                      {/* Comment content với word-wrap */}
+                      <div className="text-sm text-gray-700 break-words whitespace-pre-wrap">
+                        {c.content}
+                      </div>
                     </div>
                   </div>
                 ))}
