@@ -77,6 +77,11 @@ export class AuthController {
       if (error.suggestForgotPassword) {
         response.suggestForgotPassword = true;
       }
+
+      if (error.requireEmailVerification) {
+        response.requireEmailVerification = true;
+      }
+
       res.status(401).json(response);
     }
   };
@@ -330,6 +335,262 @@ export class AuthController {
         success: false,
         message: error.message || "Logout failed",
         statusCode: 500,
+      });
+    }
+  };
+
+  register = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        res.status(400).json({
+          success: false,
+          message: "Email là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const result = await authService.register(email);
+
+      // Log successful registration request
+      await activityLogService.createLog(
+        req,
+        "REGISTER",
+        "User",
+        undefined,
+        undefined,
+        { email },
+        "SUCCESS"
+      );
+
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        data: { email: email },
+        statusCode: 201,
+      });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+
+      // Log failed registration
+      await activityLogService.createLog(
+        req,
+        "REGISTER_FAILED",
+        "User",
+        undefined,
+        undefined,
+        { email: req.body.email, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
+      res.status(400).json({
+        success: false,
+        message: error.message || "Đăng ký thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  setupAccount = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token, fullName, password } = req.body;
+
+      if (!token || !fullName || !password) {
+        res.status(400).json({
+          success: false,
+          message: "Token, họ tên và mật khẩu là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const result = await authService.setupAccount(token, fullName, password);
+
+      // Log successful account setup
+      await activityLogService.createLog(
+        req,
+        "ACCOUNT_SETUP",
+        "User",
+        result.userId,
+        result.userId,
+        { fullName },
+        "SUCCESS"
+      );
+
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        data: { userId: result.userId },
+        statusCode: 201,
+      });
+    } catch (error: any) {
+      console.error("Account setup error:", error);
+
+      // Log failed account setup
+      await activityLogService.createLog(
+        req,
+        "ACCOUNT_SETUP_FAILED",
+        "User",
+        undefined,
+        undefined,
+        { token: req.body.token, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
+      res.status(400).json({
+        success: false,
+        message: error.message || "Thiết lập tài khoản thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  verifyRegistrationOTP = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        res.status(400).json({
+          success: false,
+          message: "Email và mã xác thực là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const result = await authService.verifyRegistrationOTP(email, otp);
+
+      // Log successful OTP verification
+      await activityLogService.createLog(
+        req,
+        "REGISTRATION_OTP_VERIFIED",
+        "User",
+        undefined,
+        undefined,
+        { email },
+        "SUCCESS"
+      );
+
+      res.json({
+        success: true,
+        message: result.message,
+        data: { token: result.token },
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Registration OTP verification error:", error);
+
+      // Log failed OTP verification
+      await activityLogService.createLog(
+        req,
+        "REGISTRATION_OTP_FAILED",
+        "User",
+        undefined,
+        undefined,
+        { email: req.body.email, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
+      res.status(400).json({
+        success: false,
+        message: error.message || "Xác thực mã thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  verifyEmail = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token } = req.body;
+
+      if (!token) {
+        res.status(400).json({
+          success: false,
+          message: "Token xác thực là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      await authService.verifyEmail(token);
+
+      // Log successful email verification
+      await activityLogService.createLog(
+        req,
+        "EMAIL_VERIFICATION",
+        "User",
+        undefined,
+        undefined,
+        { token },
+        "SUCCESS"
+      );
+
+      res.json({
+        success: true,
+        message: "Xác thực email thành công",
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Email verification error:", error);
+
+      // Log failed email verification
+      await activityLogService.createLog(
+        req,
+        "EMAIL_VERIFICATION",
+        "User",
+        undefined,
+        undefined,
+        { token: req.body.token, reason: error.message },
+        "FAILED",
+        error.message
+      );
+
+      res.status(400).json({
+        success: false,
+        message: error.message || "Xác thực email thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  resendVerificationEmail = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        res.status(400).json({
+          success: false,
+          message: "Email là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      await authService.resendVerificationEmail(email);
+
+      res.json({
+        success: true,
+        message: "Email xác thực đã được gửi lại",
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Resend verification email error:", error);
+
+      res.status(400).json({
+        success: false,
+        message: error.message || "Gửi lại email xác thực thất bại",
+        statusCode: 400,
       });
     }
   };

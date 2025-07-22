@@ -144,20 +144,19 @@ class WorkspaceService {
   }
 
   async getWorkspaceByUser(user: IUser): Promise<IWorkspace> {
-    const id = user._id
+    const id = user._id;
     if (!id) {
       console.error("Không tìm thấy ID của user");
       throw new Error("Invalid user ID");
     }
+    const userId = id.toString();
 
-    console.log("ID:", id);
-    console.log('id', id);
-    const workspace = await Workspace.findOne({ ownerId: id })
+    const workspace = await Workspace.findOne({ ownerId: userId });
 
     if (!workspace) {
-      throw new Error(`Can not find workspace of user id : ${user._id}`)
+      throw new Error(`Can not find workspace of user id : ${userId}`);
     }
-    return workspace
+    return workspace;
   }
 }
 

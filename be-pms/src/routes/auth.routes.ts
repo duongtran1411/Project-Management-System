@@ -258,4 +258,197 @@ router.post("/logout", authController.logout);
  */
 router.post("/change-password", authController.changePassword);
 
+/**
+ * @openapi
+ * /auth/register:
+ *   post:
+ *     summary: Đăng ký tài khoản mới (chỉ cần email)
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *     responses:
+ *       201:
+ *         description: Mã xác thực đã được gửi đến email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     email:
+ *                       type: string
+ *       400:
+ *         description: Email không hợp lệ hoặc đã tồn tại
+ */
+router.post("/register", authController.register);
+
+/**
+ * @openapi
+ * /auth/verify-registration-otp:
+ *   post:
+ *     summary: Xác thực mã OTP đăng ký
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Xác thực OTP thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *       400:
+ *         description: OTP không đúng hoặc đã hết hạn
+ */
+router.post("/verify-registration-otp", authController.verifyRegistrationOTP);
+
+/**
+ * @openapi
+ * /auth/setup-account:
+ *   post:
+ *     summary: Thiết lập tài khoản sau khi xác thực email
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - fullName
+ *               - password
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: "verification_token_from_email"
+ *               fullName:
+ *                 type: string
+ *                 example: "Nguyễn Văn A"
+ *               password:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: "Password123"
+ *     responses:
+ *       201:
+ *         description: Tài khoản đã được tạo thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId:
+ *                       type: string
+ *       400:
+ *         description: Token không hợp lệ hoặc thông tin không đúng
+ */
+router.post("/setup-account", authController.setupAccount);
+
+/**
+ * @openapi
+ * /auth/verify-email:
+ *   post:
+ *     summary: Xác thực email
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: "verification_token_from_email"
+ *     responses:
+ *       200:
+ *         description: Xác thực email thành công
+ *       400:
+ *         description: Token không hợp lệ hoặc đã hết hạn
+ */
+router.post("/verify-email", authController.verifyEmail);
+
+/**
+ * @openapi
+ * /auth/resend-registration-otp:
+ *   post:
+ *     summary: Gửi lại mã OTP đăng ký
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *     responses:
+ *       200:
+ *         description: Mã OTP đã được gửi lại
+ *       400:
+ *         description: Email không tồn tại hoặc không có yêu cầu xác thực đang chờ
+ */
+router.post("/resend-registration-otp", authController.resendVerificationEmail);
+
 export default router;
