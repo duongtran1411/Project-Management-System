@@ -347,6 +347,11 @@ a {
   font-size: 16px !important;
 }
 
+.ant-modal .ant-modal-close {
+  top: 12px;
+  right: 12px;
+  z-index: 100;
+}
 /* Fix Ant Design input alignment */
 /* .ant-input-affix-wrapper {
   height: 50px !important;

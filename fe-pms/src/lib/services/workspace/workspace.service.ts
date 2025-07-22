@@ -19,3 +19,18 @@ export const initWorkspace = async (name: string, description: string | null) =>
         }
     }
 }
+
+export const getWorkspaceByUser = async () => {
+    try {
+        const response = await axiosService
+            .getAxiosInstance()
+            .get(`${Endpoints.Workspace.GET_BY_USER}`);
+        return response.data
+    } catch (error: any) {
+        if (error) {
+            showErrorToast(
+                error.response.data.message || "Fail to create new worklog!"
+            );
+        }
+    }
+}

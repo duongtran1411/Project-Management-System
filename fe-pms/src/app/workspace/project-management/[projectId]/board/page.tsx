@@ -7,6 +7,7 @@ import Spinner from "@/components/common/spinner/spin";
 import {
   showErrorToast,
   showSuccessToast,
+  showWarningToast,
 } from "@/components/common/toast/toast";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
@@ -212,8 +213,7 @@ const BoardPage = () => {
       {epicOptions.map((epic) => (
         <div
           key={epic.id}
-          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50"
-        >
+          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
           <Checkbox
             checked={selectedEpics.includes(epic.id)}
             onChange={() =>
@@ -222,8 +222,7 @@ const BoardPage = () => {
                   ? prev.filter((e) => e !== epic.id)
                   : [...prev, epic.value]
               )
-            }
-          >
+            }>
             <span className="font-medium">{epic.label}</span>
           </Checkbox>
         </div>
@@ -338,8 +337,7 @@ const BoardPage = () => {
       <Checkbox.Group
         value={selectedAssignees}
         onChange={setSelectedAssignees}
-        className="flex flex-col  gap-2"
-      >
+        className="flex flex-col  gap-2">
         <Checkbox key="unassigned" value="unassigned">
           <Avatar
             src={<UserOutlined />}
@@ -353,8 +351,7 @@ const BoardPage = () => {
             <Checkbox
               key={contributor.userId?._id}
               value={contributor?.userId?._id}
-              className="flex flex-row items-center"
-            >
+              className="flex flex-row items-center">
               <Avatar
                 src={contributor?.userId?.avatar}
                 size="small"
@@ -372,8 +369,7 @@ const BoardPage = () => {
       {mileStoneOptions.map((ms) => (
         <div
           key={ms.id}
-          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50"
-        >
+          className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-50">
           <Checkbox
             checked={selectedMilestones.includes(ms.id)}
             onChange={() =>
@@ -382,8 +378,7 @@ const BoardPage = () => {
                   ? prev.filter((e) => e !== ms.id)
                   : [...prev, ms.value]
               )
-            }
-          >
+            }>
             <span className="font-medium">{ms.label}</span>
           </Checkbox>
         </div>
@@ -450,8 +445,7 @@ const BoardPage = () => {
                       backgroundColor: "#f0f1f3",
                       color: "black",
                       fontSize: "12px",
-                    }}
-                  >
+                    }}>
                     +{contributors.length}
                   </Avatar>
                 )}
@@ -464,24 +458,24 @@ const BoardPage = () => {
               trigger={["click"]}
               open={milestonesOpen}
               onOpenChange={setMilestonesOpen}
-              className="board-epic-dropdown"
-            >
+              className="board-epic-dropdown">
               <Button className="flex items-center font-semibold text-gray-700">
                 Milestone <DownOutlined className="ml-1" />
               </Button>
             </Dropdown>
           )}
-          <Dropdown
-            open={epicOpen}
-            onOpenChange={setEpicOpen}
-            popupRender={() => epicDropdown}
-            trigger={["click"]}
-            className="board-epic-dropdown"
-          >
-            <Button className="flex items-center font-semibold text-gray-700">
-              Epic <DownOutlined className="ml-1" />
-            </Button>
-          </Dropdown>
+          {epics.length > 1 && (
+            <Dropdown
+              open={epicOpen}
+              onOpenChange={setEpicOpen}
+              popupRender={() => epicDropdown}
+              trigger={["click"]}
+              className="board-epic-dropdown">
+              <Button className="flex items-center font-semibold text-gray-700">
+                Epic <DownOutlined className="ml-1" />
+              </Button>
+            </Dropdown>
+          )}
           <Button
             type="text"
             onClick={() => {
@@ -490,8 +484,7 @@ const BoardPage = () => {
               setSelectedAssignees([]);
               setSelectedMilestones([]);
             }}
-            className="font-semibold text-gray-600"
-          >
+            className="font-semibold text-gray-600">
             Clear Filters
           </Button>
         </div>
@@ -501,8 +494,7 @@ const BoardPage = () => {
             className="bg-blue-500 text-zinc-200"
             onClick={() => {
               setIsOpenMileStoneModal(true);
-            }}
-          >
+            }}>
             Complete MileStone
           </Button>
         </div>
@@ -518,16 +510,14 @@ const BoardPage = () => {
                 key={col.status}
                 isDropDisabled={false}
                 isCombineEnabled={false}
-                ignoreContainerClipping={false}
-              >
+                ignoreContainerClipping={false}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`flex-1 min-w-[300px] bg-[#ECECEC] border border-gray-200 rounded-lg shadow-sm px-3 py-4 ${
                       snapshot.isDraggingOver ? "bg-blue-50" : ""
-                    }`}
-                  >
+                    }`}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <h2 className="font-semibold text-gray-700">
@@ -541,8 +531,7 @@ const BoardPage = () => {
                         <Draggable
                           draggableId={task._id ?? `${idx}`}
                           index={idx}
-                          key={task._id}
-                        >
+                          key={task._id}>
                           {(provided, snapshot) => (
                             <Card
                               ref={provided.innerRef}
@@ -558,12 +547,10 @@ const BoardPage = () => {
                               onClick={() => {
                                 setSelectedTask(task);
                                 setIsModalOpen(true);
-                              }}
-                            >
+                              }}>
                               <div
                                 className="absolute top-2 right-2 hidden group-hover:flex"
-                                key={task._id}
-                              >
+                                key={task._id}>
                                 <Dropdown
                                   trigger={["click"]}
                                   menu={{
@@ -650,8 +637,7 @@ const BoardPage = () => {
                                         );
                                       }
                                     },
-                                  }}
-                                >
+                                  }}>
                                   <Button
                                     type="text"
                                     icon={
@@ -667,8 +653,7 @@ const BoardPage = () => {
                                 <p
                                   className={`text-gray-700 font-medium ${
                                     col.status === "DONE" ? "line-through" : ""
-                                  }`}
-                                >
+                                  }`}>
                                   {task.name}
                                   <EditOutlined className="mx-1 hover:bg-gray-300" />
                                 </p>
@@ -678,8 +663,7 @@ const BoardPage = () => {
                                       task.epic?.name
                                         ? "px-2 py-0.5 rounded text-xs font-medium bg-purple-100"
                                         : ""
-                                    }
-                                  >
+                                    }>
                                     {task.epic?.name}
                                   </span>
                                 </div>
@@ -745,8 +729,7 @@ const BoardPage = () => {
                                               <Avatar
                                                 src={<UserOutlined />}
                                                 size="small"
-                                                className="bg-gray-400"
-                                              ></Avatar>
+                                                className="bg-gray-400"></Avatar>
                                               <div>
                                                 <p className="font-medium">
                                                   Unassigned
@@ -768,8 +751,7 @@ const BoardPage = () => {
                                               <div className="flex items-center gap-2">
                                                 <Avatar
                                                   src={e.userId?.avatar}
-                                                  size="small"
-                                                >
+                                                  size="small">
                                                   {e.userId?.fullName[0]}
                                                 </Avatar>
                                                 <div>
@@ -793,13 +775,11 @@ const BoardPage = () => {
                                       },
                                     }}
                                     trigger={["click"]}
-                                    className="board-assignee-dropdown"
-                                  >
+                                    className="board-assignee-dropdown">
                                     <Tooltip
                                       title={`Assignee: ${
                                         task.assignee?.fullName || "Unassigned"
-                                      }`}
-                                    >
+                                      }`}>
                                       <Avatar
                                         className={`cursor-pointer text-white ${
                                           task.assignee?.fullName ===
@@ -809,8 +789,7 @@ const BoardPage = () => {
                                         }`}
                                         size="default"
                                         src={task.assignee?.avatar}
-                                        onClick={(e) => e?.stopPropagation()}
-                                      >
+                                        onClick={(e) => e?.stopPropagation()}>
                                         {task.assignee?.fullName?.[0] || (
                                           <UserOutlined />
                                         )}
@@ -831,22 +810,33 @@ const BoardPage = () => {
                           type="text"
                           icon={<PlusOutlined />}
                           className="!flex items-center"
-                          onClick={() => setShowCreateInput(!showCreateInput)}
-                        >
-                          {showCreateInput ? "Close" : "Create"}
+                          onClick={() => {
+                            if (
+                              !Array.isArray(milestones) ||
+                              milestones.length === 0
+                            ) {
+                              showWarningToast(
+                                "Bạn cần tạo Milestones ở backlog trước!"
+                              );
+                              return;
+                            }
+                            setShowCreateInput(!showCreateInput);
+                          }}>
+                          {showCreateInput && milestones.length > 0
+                            ? "Close"
+                            : "Create"}
                         </Button>
                         {showCreateInput && (
                           <div className="mt-3">
                             <CreateTaskInput
                               onCreate={async (name, milestones) => {
-                                console.log("Task created:", name);
                                 setShowCreateInput(false);
                                 await createTaskBoard(
                                   name,
                                   milestones,
                                   projectId
                                 );
-                                taskMutate(); // refresh board
+                                taskMutate();
                               }}
                             />
                           </div>
