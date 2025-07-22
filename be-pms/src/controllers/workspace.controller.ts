@@ -122,24 +122,25 @@ export class WorkspaceController {
       });
     }
   };
-  
+
   getByUserId = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const user = req.user
+      const user = req.user;
       if (!user) {
         res.status(404).json({
           success: false,
           message: "user not found",
           statusCode: 404,
         });
+        return;
       }
-      const success = await workspaceService.getWorkspaceByUser(user)
+      const success = await workspaceService.getWorkspaceByUser(user);
 
       res.status(200).json({
         success: true,
         message: "Get workspace successfully",
         statusCode: 200,
-        data: success
+        data: success,
       });
     } catch (error: any) {
       res.status(400).json({

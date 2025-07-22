@@ -27,7 +27,6 @@ export class RefreshTokenService {
       }
 
       await this.redis.ping();
-      console.log("Redis connection test successful");
     } catch (error) {
       console.error("Redis connection failed:", (error as Error).message);
       console.log("Redis not available, using in-memory storage");
