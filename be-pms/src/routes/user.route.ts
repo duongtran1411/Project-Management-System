@@ -189,18 +189,11 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
 
 /**
  * @openapi
- * /user/{id}/updateProfile:
- *   patch:
+ * /user/updateProfile:
+ *   put:
  *     summary: Cập nhật thông tin profile của người dùng
  *     security: [bearerAuth: []]
  *     tags: [User]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID của người dùng cần cập nhật profile
  *     requestBody:
  *       required: true
  *       content:
@@ -222,12 +215,12 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
  *       200:
  *         description: Cập nhật profile thành công
  *       400:
- *         description: Dữ liệu không hợp lệ hoặc ID không hợp lệ
+ *         description: Dữ liệu không hợp lệ
  *       404:
  *         description: Không tìm thấy người dùng
  */
-router.patch(
-  "/:id/updateProfile",
+router.put(
+  "/updateProfile",
   authenticate,
   uploadSingleFile,
   userController.updateProfile
