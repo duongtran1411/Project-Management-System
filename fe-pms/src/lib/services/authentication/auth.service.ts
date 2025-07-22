@@ -100,16 +100,19 @@ export const changePassword = async (data: any) => {
   }
 };
 
-export const verifyOTP = async (otp: string, token: string, newPassword: string) => {
+export const verifyOTP = async (
+  otp: string,
+  token: string,
+  newPassword: string
+) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
       .post(Endpoints.Auth.VERIFY_FORGOT_PASSWORD, {
         token: token,
         otp: otp,
-        newPassword: newPassword
+        newPassword: newPassword,
       });
-
 
     return response.data;
   } catch (error: any) {
@@ -119,4 +122,127 @@ export const verifyOTP = async (otp: string, token: string, newPassword: string)
       showErrorToast(errorMessage);
     }
   }
-}
+};
+
+export const register = async (email: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Auth.REGISTER}`, {
+        email,
+      });
+
+    if (response.status === 201) {
+      return response.data;
+    }
+  } catch (error: any) {
+    if (error?.response?.status === 400 || error?.code === "ERR_BAD_REQUEST") {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Đăng ký thất bại",
+      };
+    }
+
+    return {
+      success: false,
+      message: error?.message || "Đã xảy ra lỗi không xác định",
+    };
+  }
+};
+
+export const verifyRegistrationOTP = async (email: string, otp: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Auth.VERIFY_REGISTRATION_OTP}`, {
+        email,
+        otp,
+      });
+
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error: any) {
+    if (error?.response?.status === 400 || error?.code === "ERR_BAD_REQUEST") {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Xác thực mã thất bại",
+      };
+    }
+
+    return {
+      success: false,
+      message: error?.message || "Đã xảy ra lỗi không xác định",
+    };
+  }
+};
+
+export const resendVerificationEmail = async (email: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Auth.RESEND_REGISTRATION_OTP}`, {
+        email,
+      });
+
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error: any) {
+    if (error?.response?.status === 400 || error?.code === "ERR_BAD_REQUEST") {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Gửi lại mã thất bại",
+      };
+    }
+
+    return {
+      success: false,
+      message: error?.message || "Đã xảy ra lỗi không xác định",
+    };
+  }
+};
+
+export const setupAccount = async (
+  token: string,
+  fullName: string,
+  password: string
+) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Auth.SETUP_ACCOUNT}`, {
+        token,
+        fullName,
+        password,
+      });
+
+    if (response.status === 201) {
+      return response.data;
+    }
+  } catch (error: any) {
+    if (error?.response?.status === 400 || error?.code === "ERR_BAD_REQUEST") {
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Thiết lập tài khoản thất bại",
+      };
+    }
+
+    return {
+      success: false,
+      message: error?.message || "Đã xảy ra lỗi không xác định",
+    };
+  }
+};

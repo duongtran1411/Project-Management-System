@@ -6,6 +6,12 @@ export class Endpoints {
     FORGOT_PASSWORD: "auth/forgot-password",
     CHANGE_PASSWORD: "auth/change-password",
     VERIFY_FORGOT_PASSWORD: "auth/verify-otp-reset-password",
+
+    REGISTER: "auth/register",
+    VERIFY_REGISTRATION_OTP: "auth/verify-registration-otp",
+    RESEND_REGISTRATION_OTP: "auth/resend-registration-otp",
+    SETUP_ACCOUNT: "auth/setup-account",
+
   };
 
   static readonly User = {
@@ -63,6 +69,7 @@ export class Endpoints {
 
   static readonly Workspace = {
     GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
+    CREATE: 'workspace'
   };
 
   static readonly Project = {

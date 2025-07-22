@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import ProjectContributor from "../models/project.contributor.model";
 import ProjectRole from "../models/project.role.model";
 import Task from "../models/task.model";
