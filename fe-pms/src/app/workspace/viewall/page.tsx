@@ -243,7 +243,7 @@ const ProjectTable = () => {
   };
 
   const paginatedProjects = filteredProjects
-    .filter((project) => !project.deletedAt)
+    .filter((project) => project?.deletedAt == null)
     .slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (

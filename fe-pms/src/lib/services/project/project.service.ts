@@ -70,13 +70,13 @@ export const restoreProject = async (projectId: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .post(`${Endpoints.Project.RESTORE_PROJECT(projectId)}`);
+      .patch(`${Endpoints.Project.RESTORE_PROJECT(projectId)}`);
 
     if (response.status === 200) {
       showSuccessToast(
         response.data.message || "Restore project successfully!"
       );
-      return response.data?.data;
+      return response;
     }
   } catch (error: any) {
     if (error) {

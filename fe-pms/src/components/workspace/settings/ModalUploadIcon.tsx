@@ -1,7 +1,6 @@
 "use client";
 
-import { UploadOutlined } from "@ant-design/icons";
-import { Avatar, Button, FormInstance, Modal, Upload } from "antd";
+import { Avatar, FormInstance, Modal } from "antd";
 import { useState } from "react";
 
 const presetIcons = [
@@ -42,28 +41,28 @@ export const ModalUploadIcon: React.FC<Props> = ({
     setIsIconModalOpen(false);
   };
 
-  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  const cloudURL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
+  // const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  // const cloudURL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
 
-  if (!preset || !cloudURL) {
-    throw new Error(
-      "Missing CLOUDINARY_UPLOAD_PRESET or CLOUDINARY_UPLOAD_URL"
-    );
-  }
+  // if (!preset || !cloudURL) {
+  //   throw new Error(
+  //     "Missing CLOUDINARY_UPLOAD_PRESET or CLOUDINARY_UPLOAD_URL"
+  //   );
+  // }
 
-  const handleAvatarUpload = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", preset);
+  // const handleAvatarUpload = async (file: File) => {
+  //   const formData = new FormData();
+  //   formData.append("file", file);
+  //   formData.append("upload_preset", preset);
 
-    const res = await fetch(cloudURL, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
+  //   const res = await fetch(cloudURL, {
+  //     method: "POST",
+  //     body: formData,
+  //   });
+  //   const data = await res.json();
 
-    return data.secure_url;
-  };
+  //   return data.secure_url;
+  // };
 
   const handleModalCancel = () => {
     setCurrentIcon(projectData?.data?.icon || "/project.png");
@@ -79,7 +78,7 @@ export const ModalUploadIcon: React.FC<Props> = ({
       onOk={handleIconModalOk}
       okText="Select"
     >
-      <div style={{ textAlign: "center", marginBottom: 16 }}>
+      {/* <div style={{ textAlign: "center", marginBottom: 16 }}>
         <Upload
           accept="image/*"
           showUploadList={false}
@@ -107,7 +106,7 @@ export const ModalUploadIcon: React.FC<Props> = ({
             <Avatar src={uploadedIcon} size={64} />
           </div>
         )}
-      </div>
+      </div> */}
       <div
         style={{
           display: "flex",
