@@ -6,24 +6,7 @@ import fs from "fs";
 export class ProjectController {
   createProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      let iconUrl = req.body.icon;
-      // Nếu có file icon upload, upload lên Cloudinary
-      if (req.file) {
-        try {
-          const result = await cloudinary.uploadImage(req.file.path, {
-            public_id: `project-icons/${Date.now()}_${req.file.originalname}`,
-          });
-          iconUrl = result.url;
-        } finally {
-          if (fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-          }
-        }
-      }
-      const project = await projectService.createProject(
-        { ...req.body, icon: iconUrl },
-        req.user
-      );
+      const project = await projectService.createProject(req.body, req.user);
       res.status(201).json({
         success: true,
         message: "Tạo project thành công",

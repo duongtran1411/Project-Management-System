@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import ProjectContributor from "../models/project.contributor.model";
 import Project, { IProject } from "../models/project.model";
 import ProjectRole from "../models/project.role.model";
-import Workspace from "../models/workspace.model";
 import WorkspaceService from "./workspace.service";
 import Task from "../models/task.model";
 import Milestone from "../models/milestone.model";
@@ -11,24 +10,23 @@ import Worklog from "../models/worklog.model";
 import Epic from "../models/epic.model";
 
 export class ProjectService {
-  async createProject(data: Partial<IProject>, user: any): Promise<any> {
-    if (data.workspaceId) {
-      const workspaceExists = await Workspace.exists({ _id: data.workspaceId });
-      if (!workspaceExists) {
-        throw new Error("Workspace not found");
-      }
-    }
-
-    const nameQuery: any = { name: data.name };
-    if (data.workspaceId) nameQuery.workspaceId = data.workspaceId;
-
-    const duplicate = await Project.exists(nameQuery);
+  async createProject(
+    data: { name: string; description?: string },
+    user: any
+  ): Promise<any> {
+    // Kiểm tra tên project đã tồn tại chưa
+    const duplicate = await Project.exists({
+      name: data.name,
+      deletedAt: null,
+    });
     if (duplicate) {
-      throw new Error("Một project với tên này đã tồn tại trong workspace này");
+      throw new Error("Một project với tên này đã tồn tại");
     }
 
     const project = await Project.create({
-      ...data,
+      name: data.name,
+      description: data.description || "",
+      projectType: "SOFTWARE",
       projectLead: user._id,
       defaultAssign: user._id,
       createdBy: user._id,
@@ -38,23 +36,23 @@ export class ProjectService {
     const populatedProject = await project.populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
-      { path: "workspaceId", select: "name" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
 
-    // Tự động thêm project vào workspace nếu có workspaceId
-    if (data.workspaceId) {
-      try {
+    // Tự động thêm project vào workspace của người dùng
+    try {
+      const userWorkspace = await WorkspaceService.getWorkspaceByUser(user);
+      if (userWorkspace) {
         await WorkspaceService.addProjectToWorkspace(
-          data.workspaceId.toString(),
-          (project._id as any).toString(),
+          (userWorkspace._id as mongoose.Types.ObjectId).toString(),
+          (project._id as mongoose.Types.ObjectId).toString(),
           user
         );
-      } catch (error) {
-        console.error("Failed to add project to workspace:", error);
-        // Không throw error vì project đã được tạo thành công
       }
+    } catch (error) {
+      console.error("Failed to add project to user workspace:", error);
+      // Không throw error vì project đã được tạo thành công
     }
 
     const projectAdminRole = await ProjectRole.findOne({
@@ -81,7 +79,6 @@ export class ProjectService {
       .populate([
         { path: "projectLead", select: "fullName email" },
         { path: "defaultAssign", select: "fullName email" },
-        { path: "workspaceId", select: "name" },
         { path: "createdBy", select: "fullName email" },
         { path: "updatedBy", select: "fullName email" },
       ])
@@ -100,7 +97,6 @@ export class ProjectService {
     }).populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
-      { path: "workspaceId", select: "name" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
@@ -122,7 +118,6 @@ export class ProjectService {
     ).populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
-      { path: "workspaceId", select: "name" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
@@ -197,7 +192,6 @@ export class ProjectService {
     ).populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
-      { path: "workspaceId", select: "name" },
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
@@ -210,7 +204,6 @@ export class ProjectService {
       .populate([
         { path: "projectLead", select: "fullName email" },
         { path: "defaultAssign", select: "fullName email" },
-        { path: "workspaceId", select: "name" },
         { path: "createdBy", select: "fullName email" },
         { path: "updatedBy", select: "fullName email" },
       ])
