@@ -53,6 +53,19 @@ router.get("/", authenticate, projectController.getAllProjects);
 
 /**
  * @openapi
+ * /project/deleted:
+ *   get:
+ *     summary: Lấy danh sách project đã bị xoá mềm
+ *     tags: [Project]
+ *     security: [bearerAuth: []]
+ *     responses:
+ *       200: { description: Lấy danh sách project đã xoá thành công }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get("/deleted", authenticate, projectController.getDeletedProjects);
+
+/**
+ * @openapi
  * /project/{id}:
  *   get:
  *     summary: Lấy project theo ID
@@ -130,19 +143,6 @@ router.put(
  *       401: { description: Không có quyền truy cập }
  */
 router.delete("/:id", authenticate, projectController.deleteProject);
-
-/**
- * @openapi
- * /project/deleted:
- *   get:
- *     summary: Lấy danh sách project đã bị xoá mềm
- *     tags: [Project]
- *     security: [bearerAuth: []]
- *     responses:
- *       200: { description: Lấy danh sách project đã xoá thành công }
- *       401: { description: Không có quyền truy cập }
- */
-router.get("/deleted", authenticate, projectController.getDeletedProjects);
 
 /**
  * @openapi

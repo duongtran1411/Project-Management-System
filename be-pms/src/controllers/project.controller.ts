@@ -70,6 +70,7 @@ export class ProjectController {
           message: "Project không tồn tại",
           statusCode: 404,
         });
+        return;
       }
 
       res.status(200).json({
@@ -147,6 +148,7 @@ export class ProjectController {
           message: "Project không tồn tại",
           statusCode: 404,
         });
+        return;
       }
 
       res.status(200).json({
