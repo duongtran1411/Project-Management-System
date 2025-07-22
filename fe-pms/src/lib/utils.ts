@@ -39,3 +39,10 @@ export const formatDateTime = (date: string) => {
 
 export const isValidEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+export const comletePercentage = (
+  totalTimeSpent: number,
+  totalRemainTime: number
+) => {
+  return (totalTimeSpent / (totalTimeSpent + totalRemainTime)) * 100;
+};

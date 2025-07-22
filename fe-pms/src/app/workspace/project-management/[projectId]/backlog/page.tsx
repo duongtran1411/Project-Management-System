@@ -25,10 +25,14 @@ import useSWR from "swr";
 import { Task } from "@/models/task/task.model";
 import { CreateMilestone, Milestone } from "@/models/milestone/milestone.model";
 import { Contributor } from "@/models/contributor/contributor.model";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 export default function Backlog() {
   const params = useParams();
   const projectId = params.projectId as string;
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
 
   // Search states
   const [searchText, setSearchText] = useState<string>("");
@@ -178,7 +182,7 @@ export default function Backlog() {
           Unassigned
         </Checkbox>
         {contributorData?.data?.map((contributor: Contributor) => (
-          <Checkbox key={contributor._id} value={contributor.userId._id}>
+          <Checkbox key={contributor._id} value={contributor?.userId?._id}>
             {contributor?.userId?.fullName}
           </Checkbox>
         ))}
@@ -193,7 +197,7 @@ export default function Backlog() {
         <Input
           placeholder="Search tasks..."
           prefix={<SearchOutlined className="text-gray-400" />}
-          className="w-[450px] h-[10px] board-search-input"
+          className="w-[450px] h-[30px] board-search-input"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
@@ -287,6 +291,7 @@ export default function Backlog() {
                   type="default"
                   className="font-semibold text-gray-600"
                   onClick={() => setOpenCreateModal(true)}
+                  disabled={isReadOnlyContributor || isReadOnlyStakeholder}
                 >
                   Create sprint
                 </Button>
@@ -322,7 +327,6 @@ export default function Backlog() {
           projectId={projectId}
           isModalOpen={isModalOpen}
           setIsModalOpen={setIsModalOpen}
-          //setSelectedMilestone={setSelectedMilestone}
           selectedMilestone={selectedMilestone}
           mutateTask={mutateTask}
         />
@@ -334,8 +338,6 @@ export default function Backlog() {
         onCreate={handleCreateSprint}
         projectId={projectId}
       />
-
-      
     </div>
   );
 }

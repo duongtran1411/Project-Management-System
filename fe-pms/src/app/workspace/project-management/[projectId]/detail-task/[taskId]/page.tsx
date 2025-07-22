@@ -126,6 +126,7 @@ const TaskDetail = () => {
         <div className="flex-1 p-6">
           <TaskHeader task={taskData} />
           <CommentSection
+            task={taskData}
             taskId={taskData._id || ""}
             comments={comments}
             contributor={contributor}

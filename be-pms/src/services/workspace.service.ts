@@ -1,3 +1,4 @@
+import { IUser } from "../models";
 import Workspace, { IWorkspace } from "../models/workspace.model";
 import mongoose from "mongoose";
 
@@ -140,6 +141,22 @@ class WorkspaceService {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
     const deleted = await Workspace.findByIdAndDelete(id);
     return !!deleted;
+  }
+
+  async getWorkspaceByUser(user: IUser): Promise<IWorkspace> {
+    const id = user._id;
+    if (!id) {
+      console.error("Không tìm thấy ID của user");
+      throw new Error("Invalid user ID");
+    }
+    const userId = id.toString();
+
+    const workspace = await Workspace.findOne({ ownerId: userId });
+
+    if (!workspace) {
+      throw new Error(`Can not find workspace of user id : ${userId}`);
+    }
+    return workspace;
   }
 }
 

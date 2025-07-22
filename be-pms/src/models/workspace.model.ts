@@ -18,9 +18,7 @@ const workspaceSchema = new Schema<IWorkspace>(
       required: [true, "name is required"],
     },
     description: {
-      type: String,
-      required: false,
-      default: null,
+      type: String
     },
     projectIds: [
       {

@@ -1,13 +1,13 @@
 "use client";
 import {
+  HomeOutlined,
+  LogoutOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SearchOutlined,
   SettingOutlined,
   UserOutlined,
-  LogoutOutlined,
-  HomeOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -21,20 +21,47 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { useAuth } from "@/lib/auth/auth-context";
+import { Constants } from "@/lib/constants";
 import { logout } from "@/lib/utils";
+import { TokenPayload } from "@/models/user/TokenPayload.model";
+import { jwtDecode } from "jwt-decode";
+import { useEffect, useState } from "react";
 import NotificationPopup from "./NotificationPopup";
+import axiosService from "@/lib/services/axios.service";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
+
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
-  const { userInfo } = useAuth();
+  const [userId, setUserId] = useState<string | null>(null);
+  const { data: user } = useSWR(
+    userId ? `${Endpoints.User.GET_BY_ID(userId)}` : null,
+    fetcher
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
+    if (token) {
+      const decoded = jwtDecode<TokenPayload>(token);
+      if (decoded) {
+        setUserId(decoded.userId);
+      }
+    }
+  }, []);
+
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
     switch (key) {
       case "home":
         router.push("/");
         break;
       case "profile":
-        router.push("/workspace/profile");
+        router.push(`/workspace/profile`);
         break;
       case "logout":
         logout();
@@ -112,19 +139,19 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {userInfo ? (
+          {userId ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
               className="header-workspace-dropdown"
             >
               <Space className="cursor-pointer">
-                {userInfo?.avatar ? (
-                  <Avatar src={userInfo?.avatar} />
+                {user?.data?.avatar ? (
+                  <Avatar src={user?.data?.avatar} />
                 ) : (
                   <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
                 )}
-                <span className="text-gray-700">{userInfo?.fullname}</span>
+                <span className="text-gray-700">{user?.data?.fullName}</span>
               </Space>
             </Dropdown>
           ) : (

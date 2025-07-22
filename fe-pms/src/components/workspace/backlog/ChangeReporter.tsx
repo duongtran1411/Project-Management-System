@@ -1,3 +1,4 @@
+import { useRole } from "@/lib/auth/auth-project-context";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { updateTaskReporter } from "@/lib/services/task/task.service";
@@ -24,6 +25,9 @@ const ChangeReporter: React.FC<Props> = ({
   mutateTask,
   setReporter,
 }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const params = useParams();
   const projectId = params.projectId as string;
   const { data: contributorData } = useSWR(
@@ -42,11 +46,11 @@ const ChangeReporter: React.FC<Props> = ({
       ),
     },
     ...(contributorData?.data.map((option: any) => ({
-      key: option.userId._id,
+      key: option?.userId?._id,
       label: (
         <div className="flex items-center gap-3 p-2">
-          <Avatar src={option.userId.avatar} />
-          <p>{option.userId.fullName}</p>
+          <Avatar src={option?.userId?.avatar} />
+          <p>{option?.userId?.fullName}</p>
         </div>
       ),
     })) || []),
@@ -68,6 +72,7 @@ const ChangeReporter: React.FC<Props> = ({
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
     >
       <div className="flex items-center gap-2 rounded-full cursor-pointer">
         {reporter?.avatar ? (

@@ -8,6 +8,7 @@ export interface Worklog {
   };
   taskId: {
     _id: string;
+    name: string;
   };
   description?: string;
   timeSpent: number; // required
