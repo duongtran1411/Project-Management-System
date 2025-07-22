@@ -130,10 +130,32 @@ export class ProjectService {
     return updated?.toObject() || null;
   }
 
-  async deleteProject(projectId: string): Promise<boolean> {
+  async deleteProject(projectId: string, user: any): Promise<boolean> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return false;
+
     const project = await Project.findById(projectId);
     if (!project) return false;
+
+    const isProjectLead =
+      project.projectLead?.toString() === user._id.toString();
+
+    if (!isProjectLead) {
+      // Kiểm tra xem user có role PROJECT_ADMIN không
+      const contributor = await ProjectContributor.findOne({
+        userId: user._id,
+        projectId: projectId,
+      }).populate("projectRoleId");
+
+      if (
+        !contributor ||
+        (contributor.projectRoleId as any).name !== "PROJECT_ADMIN"
+      ) {
+        throw new Error(
+          "Bạn không có quyền xóa project này. Chỉ project admin mới có quyền xóa."
+        );
+      }
+    }
+
     await Project.findByIdAndUpdate(projectId, { deletedAt: new Date() });
     return true;
   }

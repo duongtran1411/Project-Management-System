@@ -70,6 +70,7 @@ export class ProjectController {
           message: "Project không tồn tại",
           statusCode: 404,
         });
+        return;
       }
 
       res.status(200).json({
@@ -136,10 +137,10 @@ export class ProjectController {
     }
   };
 
-  deleteProject = async (req: Request, res: Response): Promise<void> => {
+  deleteProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-      const deleted = await projectService.deleteProject(id);
+      const deleted = await projectService.deleteProject(id, req.user);
 
       if (!deleted) {
         res.status(404).json({
@@ -147,6 +148,7 @@ export class ProjectController {
           message: "Project không tồn tại",
           statusCode: 404,
         });
+        return;
       }
 
       res.status(200).json({
@@ -156,10 +158,10 @@ export class ProjectController {
       });
     } catch (error: any) {
       console.error("Delete project error:", error);
-      res.status(400).json({
+      res.status(403).json({
         success: false,
         message: error.message || "Failed to delete project",
-        statusCode: 400,
+        statusCode: 403,
       });
     }
   };
