@@ -11,6 +11,7 @@ import {
   CalendarOutlined,
   BarsOutlined,
   UserOutlined,
+  SnippetsOutlined,
 } from "@ant-design/icons";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
@@ -35,6 +36,7 @@ const HeaderProjectManagement = () => {
   const { role } = useRole();
   const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const [token, setToken] = useState("");
+  const isStakeholder = role.name === "STAKEHOLDER"
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
@@ -109,6 +111,12 @@ const HeaderProjectManagement = () => {
       icon: <UserOutlined />,
       url: `/workspace/project-management/${projectId}/user-management`,
     },
+    {
+      key: "Feedback",
+      label: "Feedback",
+      icon: <SnippetsOutlined />,
+      url: `/workspace/project-management/${projectId}/feedback`,
+    }
   ];
 
   return (
@@ -172,6 +180,8 @@ const HeaderProjectManagement = () => {
             ) {
               return false;
             }
+
+            if((item.key === "Feedback") && (isProjectAdmin || isStakeholder)) return false;
             return true;
           })
           .map((item) => ({

@@ -67,7 +67,7 @@ class AxiosService {
           } catch (refreshError) {
             localStorage.removeItem(Constants.API_TOKEN_KEY);
             localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
-            window.location.href = "/login";
+            window.location.href = "/authentication/login";
             return Promise.reject(refreshError);
           }
         }
