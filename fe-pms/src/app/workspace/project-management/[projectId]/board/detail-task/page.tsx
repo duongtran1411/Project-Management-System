@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Modal } from "antd";
+import { Button, Modal } from "antd";
 import { Task } from "@/models/task/task.model";
 import { CommentSection } from "@/components/workspace/detail-task/CommentSection";
 import { TaskDetails } from "@/components/workspace/detail-task/TaskDetails";
@@ -11,6 +11,7 @@ import { useSocketEvent } from "@/hooks/useSocketEvent";
 import { useTaskData } from "@/hooks/useTaskData";
 import { Endpoints } from "@/lib/endpoints";
 import { useSWRConfig } from "swr";
+import { CloseOutlined } from "@ant-design/icons";
 
 interface DetailTaskModalProps {
   open: boolean;
@@ -74,13 +75,13 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
       open={open}
       onCancel={onClose}
       footer={null}
-      width="95vw"
+      width="80vw"
+      closable
       styles={{
         body: { padding: 0 },
-        content: { maxHeight: "90vh" },
-      }}
-    >
-      <div className="flex flex-col lg:flex-row h-[80vh] min-h-[600px]">
+        content: { maxHeight: "80vh" },
+      }}>
+      <div className="flex flex-col lg:flex-row h-[75vh] min-h-[300px]">
         {/* Left section - Comments */}
         <div className="flex-1 p-4 lg:p-6 overflow-y-auto border-b lg:border-b-0 lg:border-r border-gray-200">
           <TaskHeader task={task} />

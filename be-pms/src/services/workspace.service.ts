@@ -149,12 +149,11 @@ class WorkspaceService {
       console.error("Không tìm thấy ID của user");
       throw new Error("Invalid user ID");
     }
-    const userId = id.toString();
 
-    const workspace = await Workspace.findOne({ ownerId: userId });
+    const workspace = await Workspace.findOne({ ownerId: id });
 
     if (!workspace) {
-      throw new Error(`Can not find workspace of user id : ${userId}`);
+      throw new Error(`Bạn chưa tạo workspace`);
     }
     return workspace;
   }
