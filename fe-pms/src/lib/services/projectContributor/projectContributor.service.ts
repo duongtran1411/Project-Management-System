@@ -58,7 +58,9 @@ export const confirmInvite = async (token: string) => {
       .post(Endpoints.ProjectContributor.CONFIRM_INVITE(token));
 
     if (response.status === 200) {
-      showSuccessToast("Confirm invitation members successfully!");
+      showSuccessToast(
+        response?.data?.message || "Confirm invitation members successfully!"
+      );
       return response.data?.data;
     }
   } catch (error: any) {

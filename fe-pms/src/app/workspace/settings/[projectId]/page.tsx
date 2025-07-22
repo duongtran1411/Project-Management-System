@@ -99,8 +99,6 @@ const ProjectSettingPage = () => {
         icon: values.icon || currentIcon,
       };
 
-      console.log("updateData", updateData);
-
       await updateProject(projectId, updateData);
       setCurrentIcon(values.icon || currentIcon);
       mutate();
