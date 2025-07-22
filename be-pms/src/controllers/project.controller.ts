@@ -1,11 +1,29 @@
 import { Request, Response } from "express";
 import projectService from "../services/project.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import cloudinary from "../utils/cloudinary";
+import fs from "fs";
 export class ProjectController {
   createProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const project = await projectService.createProject(req.body, req.user);
-
+      let iconUrl = req.body.icon;
+      // Nếu có file icon upload, upload lên Cloudinary
+      if (req.file) {
+        try {
+          const result = await cloudinary.uploadImage(req.file.path, {
+            public_id: `project-icons/${Date.now()}_${req.file.originalname}`,
+          });
+          iconUrl = result.url;
+        } finally {
+          if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+        }
+      }
+      const project = await projectService.createProject(
+        { ...req.body, icon: iconUrl },
+        req.user
+      );
       res.status(201).json({
         success: true,
         message: "Tạo project thành công",
@@ -73,21 +91,35 @@ export class ProjectController {
   updateProject = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
-
+      let iconUrl = req.body.icon;
+      // Nếu có file icon upload, upload lên Cloudinary
+      if (req.file) {
+        try {
+          const result = await cloudinary.uploadImage(req.file.path, {
+            public_id: `project-icons/${id}_${Date.now()}_${
+              req.file.originalname
+            }`,
+          });
+          iconUrl = result.url;
+        } finally {
+          if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+        }
+      }
       const project = await projectService.updateProject(
         id,
-        req.body,
+        { ...req.body, icon: iconUrl },
         req.user
       );
-
       if (!project) {
         res.status(404).json({
           success: false,
           message: "Project không tồn tại",
           statusCode: 404,
         });
+        return;
       }
-
       res.status(200).json({
         success: true,
         message: "Cập nhật project thành công",
@@ -127,6 +159,55 @@ export class ProjectController {
       res.status(400).json({
         success: false,
         message: error.message || "Failed to delete project",
+        statusCode: 400,
+      });
+    }
+  };
+
+  restoreProject = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const project = await projectService.restoreProject(id);
+
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: "Project không tồn tại",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Khôi phục project thành công",
+        data: project,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Restore project error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Khôi phục project thất bại",
+        statusCode: 400,
+      });
+    }
+  };
+
+  getDeletedProjects = async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const projects = await projectService.getDeletedProjects();
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách project đã xoá thành công",
+        data: projects,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get deleted projects error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lấy danh sách project đã xoá thất bại",
         statusCode: 400,
       });
     }

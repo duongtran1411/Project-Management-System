@@ -4,6 +4,11 @@ import Project, { IProject } from "../models/project.model";
 import ProjectRole from "../models/project.role.model";
 import Workspace from "../models/workspace.model";
 import WorkspaceService from "./workspace.service";
+import Task from "../models/task.model";
+import Milestone from "../models/milestone.model";
+import Comment from "../models/comment.model";
+import Worklog from "../models/worklog.model";
+import Epic from "../models/epic.model";
 
 export class ProjectService {
   async createProject(data: Partial<IProject>, user: any): Promise<any> {
@@ -72,7 +77,7 @@ export class ProjectService {
   }
 
   async getAllProjects(): Promise<any[]> {
-    const projects = await Project.find()
+    const projects = await Project.find({ deletedAt: null })
       .populate([
         { path: "projectLead", select: "fullName email" },
         { path: "defaultAssign", select: "fullName email" },
@@ -89,7 +94,10 @@ export class ProjectService {
   async getProjectById(projectId: string): Promise<any> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return null;
 
-    const project = await Project.findById(projectId).populate([
+    const project = await Project.findOne({
+      _id: projectId,
+      deletedAt: null,
+    }).populate([
       { path: "projectLead", select: "fullName email" },
       { path: "defaultAssign", select: "fullName email" },
       { path: "workspaceId", select: "name" },
@@ -124,29 +132,70 @@ export class ProjectService {
 
   async deleteProject(projectId: string): Promise<boolean> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return false;
-
     const project = await Project.findById(projectId);
     if (!project) return false;
+    await Project.findByIdAndUpdate(projectId, { deletedAt: new Date() });
+    return true;
+  }
 
-    const deleted = await Project.findByIdAndDelete(projectId);
-    if (!deleted) return false;
+  async cleanupDeletedProjects(): Promise<void> {
+    const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const projectsToDelete = await Project.find({
+      deletedAt: { $ne: null, $lte: new Date(now.getTime() - THIRTY_DAYS) },
+    });
+    for (const project of projectsToDelete) {
+      const projectId = project._id;
+      await ProjectContributor.deleteMany({ projectId });
+      await Task.deleteMany({ projectId });
+      await Milestone.deleteMany({ projectId });
+      await Comment.deleteMany({ projectId });
+      await Worklog.deleteMany({ projectId });
+      await Epic.deleteMany({ projectId });
+      await Project.findByIdAndDelete(projectId);
+    }
+  }
 
-    // Xóa project khỏi workspace nếu có
-    if (project.workspaceId) {
-      try {
-        await WorkspaceService.removeProjectFromWorkspace(
-          project.workspaceId.toString(),
-          projectId,
-          { _id: project.updatedBy } // Sử dụng updatedBy của project
-        );
-      } catch (error) {
-        console.error("Failed to remove project from workspace:", error);
-      }
+  async restoreProject(projectId: string): Promise<any> {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) return null;
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      throw new Error("Project không tồn tại");
     }
 
-    await ProjectContributor.deleteMany({ projectId });
+    if (!project.deletedAt) {
+      throw new Error("Project chưa bị xoá mềm");
+    }
 
-    return true;
+    const restored = await Project.findByIdAndUpdate(
+      projectId,
+      { deletedAt: null },
+      { new: true, runValidators: true }
+    ).populate([
+      { path: "projectLead", select: "fullName email" },
+      { path: "defaultAssign", select: "fullName email" },
+      { path: "workspaceId", select: "name" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+    ]);
+
+    return restored?.toObject() || null;
+  }
+
+  async getDeletedProjects(): Promise<any[]> {
+    const projects = await Project.find({ deletedAt: { $ne: null } })
+      .populate([
+        { path: "projectLead", select: "fullName email" },
+        { path: "defaultAssign", select: "fullName email" },
+        { path: "workspaceId", select: "name" },
+        { path: "createdBy", select: "fullName email" },
+        { path: "updatedBy", select: "fullName email" },
+      ])
+      .sort({ deletedAt: -1 })
+      .lean();
+
+    return projects;
   }
 }
 

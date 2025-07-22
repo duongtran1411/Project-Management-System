@@ -1,7 +1,7 @@
-
-import { Router } from 'express'
-import projectController from '../controllers/project.controller';
+import { Router } from "express";
+import projectController from "../controllers/project.controller";
 import { authenticate } from "../middlewares/auth.middleware";
+import { uploadProjectIcon } from "../middlewares/upload.middleware";
 const router = Router();
 
 /**
@@ -14,14 +14,14 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [name, description]
+ *             required: [name]
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               icon: { type: string }
+ *               icon: { type: string, format: binary, description: "Icon file (image)" }
  *               projectType: { type: string, enum: [SOFTWARE, MARKETING, SALES] }
  *               defaultAssign: { type: string }
  *               workspaceId: { type: string }
@@ -31,7 +31,12 @@ const router = Router();
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.post("/", authenticate, projectController.createProject);
+router.post(
+  "/",
+  authenticate,
+  uploadProjectIcon,
+  projectController.createProject
+);
 
 /**
  * @openapi
@@ -82,13 +87,13 @@ router.get("/:id", authenticate, projectController.getProjectById);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               icon: { type: string }
+ *               icon: { type: string, format: binary, description: "Icon file (image)" }
  *               projectType: { type: string, enum: [SOFTWARE, MARKETING, SALES] }
  *               defaultAssign: { type: string }
  *               workspaceId: { type: string }
@@ -99,7 +104,12 @@ router.get("/:id", authenticate, projectController.getProjectById);
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.put("/:id", authenticate, projectController.updateProject);
+router.put(
+  "/:id",
+  authenticate,
+  uploadProjectIcon,
+  projectController.updateProject
+);
 
 /**
  * @openapi
@@ -120,5 +130,39 @@ router.put("/:id", authenticate, projectController.updateProject);
  *       401: { description: Không có quyền truy cập }
  */
 router.delete("/:id", authenticate, projectController.deleteProject);
+
+/**
+ * @openapi
+ * /project/deleted:
+ *   get:
+ *     summary: Lấy danh sách project đã bị xoá mềm
+ *     tags: [Project]
+ *     security: [bearerAuth: []]
+ *     responses:
+ *       200: { description: Lấy danh sách project đã xoá thành công }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get("/deleted", authenticate, projectController.getDeletedProjects);
+
+/**
+ * @openapi
+ * /project/{id}/restore:
+ *   patch:
+ *     summary: Khôi phục project đã bị xoá mềm
+ *     tags: [Project]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của project cần khôi phục
+ *     responses:
+ *       200: { description: Khôi phục project thành công }
+ *       404: { description: Không tìm thấy project }
+ *       400: { description: Project chưa bị xoá mềm }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.patch("/:id/restore", authenticate, projectController.restoreProject);
 
 export default router;
