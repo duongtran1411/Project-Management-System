@@ -5,6 +5,7 @@ import { Role } from "../models";
 import cloudinary from "../utils/cloudinary";
 import fs from "fs";
 import path from "path";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 class UserController {
   create = async (req: Request, res: Response): Promise<void> => {

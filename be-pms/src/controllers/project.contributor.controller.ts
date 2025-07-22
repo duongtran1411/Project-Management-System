@@ -314,6 +314,38 @@ export class ProjectContributorController {
     }
   };
 
+  updateProjectLead = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const { currentLeadId, newLeadId } = req.body;
+      if (!projectId || !currentLeadId || !newLeadId) {
+        res.status(400).json({
+          success: false,
+          message: "projectId, currentLeadId, newLeadId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+      const result = await projectContributorService.updateProjectLead(
+        projectId,
+        currentLeadId,
+        newLeadId
+      );
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật project lead thành công",
+        data: result,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi cập nhật project lead",
+        statusCode: 400,
+      });
+    }
+  };
+
   // Lấy thống kê tổng quan về project
   getProjectStatistics = async (req: Request, res: Response): Promise<void> => {
     try {

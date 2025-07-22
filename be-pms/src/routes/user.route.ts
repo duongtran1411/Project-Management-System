@@ -190,7 +190,7 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
 /**
  * @openapi
  * /user/{id}/updateProfile:
- *   patch:
+ *   put:
  *     summary: Cập nhật thông tin profile của người dùng
  *     security: [bearerAuth: []]
  *     tags: [User]
@@ -226,7 +226,7 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
  *       404:
  *         description: Không tìm thấy người dùng
  */
-router.patch(
+router.put(
   "/:id/updateProfile",
   authenticate,
   uploadSingleFile,

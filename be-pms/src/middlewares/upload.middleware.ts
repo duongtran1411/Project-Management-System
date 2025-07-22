@@ -68,4 +68,7 @@ export const uploadFiles = [upload.array("files", 5), processArrayFields]; // T�
 // Middleware để upload 1 file
 export const uploadSingleFile = upload.single("file");
 
+// Middleware để upload icon cho project
+export const uploadProjectIcon = upload.single("icon");
+
 export default upload;
