@@ -2,11 +2,9 @@
 
 import { Constants } from "@/lib/constants";
 import { verifyOTP } from "@/lib/services/authentication/auth.service";
-import { Button, Form, Input, message } from "antd";
-import { useRef, useState } from "react";
-import { Typography } from "antd";
-import Link from "next/link";
+import { Button, Form, Input, message, Typography } from "antd";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 export default function Page() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -65,7 +63,8 @@ export default function Page() {
                     { required: true, message: "" },
                     { pattern: /^[0-9]$/, message: "" },
                   ]}
-                  normalize={(value) => value?.slice(-1)}>
+                  normalize={(value) => value?.slice(-1)}
+                >
                   <Input
                     ref={(el) => (inputsRef.current[idx] = el?.input || null)}
                     maxLength={1}
@@ -104,7 +103,8 @@ export default function Page() {
                 message:
                   "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
               },
-            ]}>
+            ]}
+          >
             <Input.Password placeholder="Nhập mật khẩu mới" />
           </Form.Item>
 
@@ -121,14 +121,15 @@ export default function Page() {
                   return Promise.reject(new Error("Mật khẩu không khớp!"));
                 },
               }),
-            ]}>
+            ]}
+          >
             <Input.Password placeholder="Xác nhận mật khẩu mới" />
           </Form.Item>
 
           {isSuccess && messageSuccess && (
             <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-4 text-center">
               <Typography.Text className="text-green-800">
-                {messageSuccess} 
+                {messageSuccess}
               </Typography.Text>
             </div>
           )}
@@ -142,7 +143,8 @@ export default function Page() {
             <Button
               type="primary"
               onClick={() => router.push("/authentication/login")}
-              className="w-full">
+              className="w-full"
+            >
               Quay lại trang login
             </Button>
           )}
