@@ -317,6 +317,7 @@ export class ProjectContributorService {
   async getProjectsByUserId(userId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(userId)) return [];
 
+    // Lấy projects mà user là contributor
     const contributors = await ProjectContributor.find({ userId })
       .populate({
         path: "projectId",
@@ -329,9 +330,47 @@ export class ProjectContributorService {
       .select("projectId")
       .lean();
 
-    return contributors
-      .map((c) => c.projectId)
-      .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
+    // Lấy projects mà user là project lead
+    const projectLeadProjects = await Project.find({
+      projectLead: userId,
+      deletedAt: null,
+    })
+      .select("name icon projectType projectLead")
+      .populate({
+        path: "projectLead",
+        select: "fullName email avatar",
+      })
+      .lean();
+
+    // Lấy projects mà user là creator
+    const createdProjects = await Project.find({
+      createdBy: userId,
+      deletedAt: null,
+    })
+      .select("name icon projectType projectLead")
+      .populate({
+        path: "projectLead",
+        select: "fullName email avatar",
+      })
+      .lean();
+
+    // Kết hợp tất cả projects và loại bỏ duplicates
+    const allProjects = [
+      ...contributors
+        .map((c) => c.projectId)
+        .filter((project) => project != null),
+      ...projectLeadProjects,
+      ...createdProjects,
+    ];
+
+    // Loại bỏ duplicates dựa trên _id
+    const uniqueProjects = allProjects.filter(
+      (project, index, self) =>
+        index ===
+        self.findIndex((p) => p._id.toString() === project._id.toString())
+    );
+
+    return uniqueProjects;
   }
 
   // async getRoleContributorByProjectId(
