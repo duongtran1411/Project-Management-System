@@ -1194,6 +1194,52 @@ export class TaskService {
 
     return task;
   }
+
+  async getAllTasksForUser(userId: string, filters?: any): Promise<ITask[]> {
+    const query: any = {};
+
+    // Lấy tất cả task mà user là assignee hoặc reporter
+    query.$or = [
+      { assignee: userId },
+      { reporter: userId },
+      { createdBy: userId },
+    ];
+
+    // Áp dụng các filter nếu có
+    if (filters?.status) {
+      query.status = filters.status;
+    }
+
+    if (filters?.priority) {
+      query.priority = filters.priority;
+    }
+
+    if (filters?.projectId) {
+      query.projectId = filters.projectId;
+    }
+
+    if (filters?.epic) {
+      query.epic = filters.epic;
+    }
+
+    if (filters?.milestones) {
+      query.milestones = filters.milestones;
+    }
+
+    const tasks = await Task.find(query)
+      .populate([
+        { path: "assignee", select: "fullName email avatar" },
+        { path: "reporter", select: "fullName email avatar" },
+        { path: "createdBy", select: "fullName email avatar" },
+        { path: "updatedBy", select: "fullName email avatar" },
+        { path: "projectId", select: "name description" },
+        { path: "epic", select: "name description" },
+        { path: "milestones", select: "name description" },
+      ])
+      .sort({ createdAt: -1 });
+
+    return tasks;
+  }
 }
 
 export default new TaskService();
