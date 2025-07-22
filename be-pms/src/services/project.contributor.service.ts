@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { sendProjectInvitationEmail } from "../utils/email.util";
 import crypto from "crypto";
 import NotificationService from "./notification.service";
+import workspaceService from "./workspace.service";
 
 export class ProjectContributorService {
   private generateInvitationToken(): string {
@@ -173,10 +174,42 @@ export class ProjectContributorService {
       projectRoleId: invitation.projectRoleId,
     });
 
-    // Cập nhật status invitation
     await ProjectInvitation.findByIdAndUpdate(invitation._id, {
       status: "accepted",
     });
+
+    try {
+      let workspace;
+      try {
+        workspace = await workspaceService.getWorkspaceByUser(user);
+      } catch (err) {
+        // Nếu chưa có workspace thì tạo mới
+        workspace = await workspaceService.createWorkspace(
+          {
+            name: `${user.fullName || user.email}-workspace`,
+            ownerId: user._id as any,
+            projectIds: [invitation.projectId],
+          },
+          user
+        );
+      }
+      // Nếu đã có workspace, kiểm tra và thêm project nếu chưa có
+      if (
+        workspace &&
+        workspace.projectIds &&
+        !workspace.projectIds
+          .map((id: any) => id.toString())
+          .includes(invitation.projectId.toString())
+      ) {
+        await workspaceService.addProjectToWorkspace(
+          workspace._id.toString(),
+          invitation.projectId.toString(),
+          user
+        );
+      }
+    } catch (err) {
+      console.error("Failed to add project to user's workspace:", err);
+    }
 
     return contributor.populate([
       { path: "userId", select: "fullName email avatar" },
@@ -383,6 +416,55 @@ export class ProjectContributorService {
       activeUsers,
       projectName: project.name,
     };
+  }
+
+  async updateProjectLead(
+    projectId: string,
+    currentLeadId: string,
+    newLeadId: string
+  ): Promise<any> {
+    if (
+      !mongoose.Types.ObjectId.isValid(projectId) ||
+      !mongoose.Types.ObjectId.isValid(currentLeadId) ||
+      !mongoose.Types.ObjectId.isValid(newLeadId)
+    ) {
+      throw new Error("Invalid IDs provided");
+    }
+
+    const adminRole = await ProjectRole.findOne({ name: "PROJECT_ADMIN" });
+    const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
+    if (!adminRole || !contributorRole) {
+      throw new Error("Roles not found");
+    }
+
+    const currentLead = await ProjectContributor.findOne({
+      userId: currentLeadId,
+      projectId,
+    });
+    if (
+      !currentLead ||
+      currentLead.projectRoleId.toString() !== adminRole?._id?.toString()
+    ) {
+      throw new Error("Current lead is not PROJECT_ADMIN");
+    }
+
+    const newLead = await ProjectContributor.findOne({
+      userId: newLeadId,
+      projectId,
+    });
+    if (!newLead) {
+      throw new Error("New lead is not a contributor of this project");
+    }
+
+    currentLead.projectRoleId = contributorRole._id as any;
+    await currentLead.save();
+
+    newLead.projectRoleId = adminRole._id as any;
+    await newLead.save();
+
+    await Project.findByIdAndUpdate(projectId, { projectLead: newLeadId });
+
+    return { message: "Project lead updated successfully" };
   }
 }
 

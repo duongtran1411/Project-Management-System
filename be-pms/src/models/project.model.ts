@@ -13,6 +13,7 @@ export interface IProject extends Document {
   updatedAt: Date;
   description: string;
   status: "TODO" | "INPROGRESS" | "COMPLETE";
+  deletedAt?: Date;
 }
 
 const projectSchema = new Schema<IProject>(
@@ -23,7 +24,6 @@ const projectSchema = new Schema<IProject>(
     },
     icon: {
       type: String,
-      default: "sonditrongmua",
     },
     projectType: {
       type: String,
@@ -57,6 +57,10 @@ const projectSchema = new Schema<IProject>(
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

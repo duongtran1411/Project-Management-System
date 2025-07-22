@@ -337,4 +337,44 @@ router.get(
   projectContributorController.getProjectStatistics
 );
 
+/**
+ * @openapi
+ * /project-contributor/project/{projectId}/update-lead:
+ *   put:
+ *     summary: Chuyển quyền PROJECT_ADMIN cho contributor khác
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentLeadId, newLeadId]
+ *             properties:
+ *               currentLeadId:
+ *                 type: string
+ *                 description: ID của user hiện tại là PROJECT_ADMIN
+ *               newLeadId:
+ *                 type: string
+ *                 description: ID của user sẽ được chuyển thành PROJECT_ADMIN
+ *     responses:
+ *       200:
+ *         description: Cập nhật project lead thành công
+ *       400:
+ *         description: Lỗi cập nhật project lead
+ */
+router.put(
+  "/project/:projectId/update-lead",
+  projectContributorController.updateProjectLead
+);
+
 export default router;
