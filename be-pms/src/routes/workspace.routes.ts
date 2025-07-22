@@ -42,6 +42,20 @@ router.get("/", authenticate, workspaceController.getAll);
 
 /**
  * @openapi
+ * /workspace/getbyuser:
+ *   get:
+ *     summary: Lấy workspace theo user Id
+ *     tags: [Workspace]
+ *     security: [bearerAuth: []]
+ *     responses:
+ *       200: { description: Lấy workspace thành công }
+ *       404: { description: Không tìm thấy workspace }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get("/getbyuser", authenticate, workspaceController.getByUserId);
+
+/**
+ * @openapi
  * /workspace/{id}:
  *   get:
  *     summary: Lấy workspace theo ID
