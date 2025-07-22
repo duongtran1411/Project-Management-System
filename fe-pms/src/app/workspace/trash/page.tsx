@@ -126,7 +126,7 @@ const TrashPage = () => {
           type="primary"
           onClick={() => router.push("/workspace/viewall")}
         >
-          Back to Projects
+          Back to view all projects
         </Button>
       </div>
 

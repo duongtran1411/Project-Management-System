@@ -252,7 +252,7 @@ const ProjectTable = () => {
             size="large"
             className="flex items-center"
           >
-            Trash
+            Project Deleted
           </Button>
           <Button
             type="primary"

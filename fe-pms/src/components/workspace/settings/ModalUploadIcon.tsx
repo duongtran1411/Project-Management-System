@@ -1,7 +1,9 @@
 "use client";
 
-import { Avatar, FormInstance, Modal } from "antd";
+import { Avatar, Button, FormInstance, Modal, Spin, Upload } from "antd";
 import { useState } from "react";
+import { updateProject } from "@/lib/services/project/project.service";
+import { UploadOutlined } from "@ant-design/icons";
 
 const presetIcons = [
   "/project-1.png",
@@ -18,6 +20,7 @@ interface Props {
   setCurrentIcon: (icon: string) => void;
   form: FormInstance;
   projectData: any;
+  mutate: () => void;
 }
 
 export const ModalUploadIcon: React.FC<Props> = ({
@@ -26,113 +29,99 @@ export const ModalUploadIcon: React.FC<Props> = ({
   setCurrentIcon,
   projectData,
   form,
+  mutate,
 }) => {
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
-  const [uploadedIcon, setUploadedIcon] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleIconModalOk = () => {
-    if (uploadedIcon) {
-      setCurrentIcon(uploadedIcon);
-      form.setFieldsValue({ icon: uploadedIcon });
-    } else if (selectedIcon) {
-      setCurrentIcon(selectedIcon);
-      form.setFieldsValue({ icon: selectedIcon });
+  const handleIconModalOk = async () => {
+    setLoading(true);
+    try {
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("icon", selectedFile || projectData?.data?.icon);
+        const response = await updateProject(projectData?.data?._id, formData);
+        if (response?.status === 200) {
+          setCurrentIcon(response?.data?.data?.icon);
+          form.setFieldsValue({ icon: response?.data?.data?.icon });
+          mutate();
+        }
+      }
+
+      setIsIconModalOpen(false);
+      setSelectedIcon(null);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-    setIsIconModalOpen(false);
   };
-
-  // const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  // const cloudURL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
-
-  // if (!preset || !cloudURL) {
-  //   throw new Error(
-  //     "Missing CLOUDINARY_UPLOAD_PRESET or CLOUDINARY_UPLOAD_URL"
-  //   );
-  // }
-
-  // const handleAvatarUpload = async (file: File) => {
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-  //   formData.append("upload_preset", preset);
-
-  //   const res = await fetch(cloudURL, {
-  //     method: "POST",
-  //     body: formData,
-  //   });
-  //   const data = await res.json();
-
-  //   return data.secure_url;
-  // };
 
   const handleModalCancel = () => {
     setCurrentIcon(projectData?.data?.icon || "/project.png");
     setIsIconModalOpen(false);
     setSelectedIcon(null);
-    setUploadedIcon(null);
+    setSelectedFile(null);
   };
+
   return (
-    <Modal
-      title="Choose an icon"
-      open={isIconModalOpen}
-      onCancel={handleModalCancel}
-      onOk={handleIconModalOk}
-      okText="Select"
-    >
-      {/* <div style={{ textAlign: "center", marginBottom: 16 }}>
-        <Upload
-          accept="image/*"
-          showUploadList={false}
-          customRequest={async ({ file, onSuccess, onError }) => {
-            try {
-              const url = await handleAvatarUpload(file as File);
-              setCurrentIcon(url);
-              setUploadedIcon(url);
+    <>
+      <Spin spinning={loading} fullscreen></Spin>
+      <Modal
+        title="Choose an icon"
+        open={isIconModalOpen}
+        onCancel={handleModalCancel}
+        onOk={handleIconModalOk}
+        okText="Save"
+        confirmLoading={loading}
+      >
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <Upload
+            accept="image/*"
+            showUploadList={false}
+            beforeUpload={(file) => {
+              setSelectedFile(file);
               setSelectedIcon(null);
-              form.setFieldsValue({ icon: url });
-              if (onSuccess) {
-                onSuccess("ok");
-              }
-            } catch (err) {
-              if (onError) {
-                onError(err as Error);
-              }
-            }
+              return false;
+            }}
+          >
+            <Button icon={<UploadOutlined />}>Upload a photo</Button>
+          </Upload>
+
+          {selectedFile && (
+            <div style={{ marginTop: 8, textAlign: "center", color: "#555" }}>
+              Selected file: <strong>{selectedFile.name}</strong>
+            </div>
+          )}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            justifyContent: "center",
+            flexWrap: "wrap",
           }}
         >
-          <Button icon={<UploadOutlined />}>Upload a photo</Button>
-        </Upload>
-        {uploadedIcon && (
-          <div style={{ marginTop: 16 }}>
-            <Avatar src={uploadedIcon} size={64} />
-          </div>
-        )}
-      </div> */}
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          justifyContent: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        {presetIcons.map((icon) => (
-          <Avatar
-            key={icon}
-            src={icon}
-            size={48}
-            style={{
-              border: selectedIcon === icon ? "2px solid #1890ff" : undefined,
-              cursor: "pointer",
-              boxShadow:
-                selectedIcon === icon ? "0 0 0 2px #1890ff" : undefined,
-            }}
-            onClick={() => {
-              setSelectedIcon(icon);
-              setUploadedIcon(null);
-            }}
-          />
-        ))}
-      </div>
-    </Modal>
+          {presetIcons.map((icon) => (
+            <Avatar
+              key={icon}
+              src={icon}
+              size={48}
+              style={{
+                border: selectedIcon === icon ? "2px solid #1890ff" : undefined,
+                cursor: "pointer",
+                boxShadow:
+                  selectedIcon === icon ? "0 0 0 2px #1890ff" : undefined,
+              }}
+              onClick={() => {
+                setSelectedIcon(icon);
+              }}
+            />
+          ))}
+        </div>
+      </Modal>
+    </>
   );
 };

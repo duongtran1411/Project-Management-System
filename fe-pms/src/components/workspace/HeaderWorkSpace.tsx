@@ -120,13 +120,16 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
       </div>
 
       {/* Center */}
-      <div className="flex  mx-4 gap-[10px] items-center justify-center">
+      <div className="flex ml-9  mx-4 gap-[10px] items-center justify-center">
         <Input
           placeholder="Search"
           prefix={<SearchOutlined className="text-gray-400" />}
-          className="bg-gray-100 w-[780px] h-[32px]"
+          className="bg-gray-100 w-[600px] h-[32px]"
         />
-        <Button className="bg-[#1868db] text-white">
+        <Button
+          className="bg-[#1868db] text-white"
+          onClick={() => router.push("/create-project")}
+        >
           <PlusOutlined />
           Create
         </Button>

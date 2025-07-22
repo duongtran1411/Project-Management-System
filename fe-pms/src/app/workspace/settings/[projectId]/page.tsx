@@ -35,7 +35,6 @@ const ProjectSettingPage = () => {
   const [loading, setLoading] = useState(false);
   const params = useParams();
   const projectId = params.projectId as string;
-  const router = useRouter();
   const [isIconModalOpen, setIsIconModalOpen] = useState(false);
 
   const {
@@ -46,6 +45,8 @@ const ProjectSettingPage = () => {
   } = useSWR(`${Endpoints.Project.GET_BY_ID(projectId || "")}`, fetcher);
 
   const initialProjectLeadId = projectData?.data?.projectLead?._id;
+
+  const router = useRouter();
 
   const [currentIcon, setCurrentIcon] = useState<string>(
     projectData?.data?.icon || "/project.png"
@@ -104,14 +105,12 @@ const ProjectSettingPage = () => {
           defaultAssignValue = null;
         }
 
-        const updateData = {
-          ...values,
-          projectType: "SOFTWARE",
-          defaultAssign: defaultAssignValue,
-          icon: values.icon || currentIcon,
-        };
-
-        await updateProject(projectId, updateData);
+        const formData = new FormData();
+        formData.append("name", values.name);
+        formData.append("description", values.description);
+        formData.append("status", values.status);
+        formData.append("defaultAssign", defaultAssignValue);
+        await updateProject(projectId, formData);
       }
 
       setCurrentIcon(values.icon || currentIcon);
@@ -154,6 +153,7 @@ const ProjectSettingPage = () => {
         setCurrentIcon={setCurrentIcon}
         form={form}
         projectData={projectData}
+        mutate={mutate}
       />
 
       {/* Main Content */}
@@ -171,7 +171,6 @@ const ProjectSettingPage = () => {
               size={80}
               icon={<UserOutlined />}
               className="mb-4"
-              style={{ backgroundColor: "#ff5722" }}
             />
             <Button type="default" onClick={() => setIsIconModalOpen(true)}>
               Change icon

@@ -151,7 +151,9 @@ export const changeProjectLead = async (
       });
 
     if (response.status === 200) {
-      showSuccessToast("Change project lead successfully!");
+      showSuccessToast(
+        response.data.message || "Change project lead successfully!"
+      );
       return response;
     }
   } catch (error: any) {
