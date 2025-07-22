@@ -4,11 +4,12 @@
 import {
   DeleteOutlined,
   MoreOutlined,
+  PlusOutlined,
   SearchOutlined,
   SettingOutlined,
   StarOutlined,
   UserAddOutlined,
-  PlusOutlined,
+  DeleteFilled,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -26,6 +27,7 @@ import {
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
+import { ModalDeleteProject } from "@/components/workspace/settings/ModalDeleteProject";
 import { ModalAddMember } from "@/components/workspace/view-all/ModdalAddMember";
 import { Constants } from "@/lib/constants";
 import { Endpoints } from "@/lib/endpoints";
@@ -33,7 +35,6 @@ import axiosService from "@/lib/services/axios.service";
 import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
-import { ModalDeleteProject } from "@/components/workspace/settings/ModalDeleteProject";
 
 interface DataType {
   _id: string;
@@ -46,6 +47,7 @@ interface DataType {
     email: string;
     avatar: string;
   };
+  deletedAt?: string;
 }
 
 const ProjectTable = () => {
@@ -142,7 +144,7 @@ const ProjectTable = () => {
       dataIndex: "projectLead",
       key: "lead",
       render: (lead) => (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 font-sans">
           <Avatar src={lead?.avatar} />
           <span>{lead?.fullName}</span>
         </div>
@@ -243,6 +245,15 @@ const ProjectTable = () => {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Projects</h2>
         <div className="flex gap-2">
+          <Button
+            type="primary"
+            onClick={() => router.push("/workspace/trash")}
+            icon={<DeleteFilled />}
+            size="large"
+            className="flex items-center"
+          >
+            Project Deleted
+          </Button>
           <Button
             type="primary"
             onClick={handleCreateProject}
