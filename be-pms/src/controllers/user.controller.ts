@@ -5,6 +5,7 @@ import { Role } from "../models";
 import cloudinary from "../utils/cloudinary";
 import fs from "fs";
 import path from "path";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 class UserController {
   create = async (req: Request, res: Response): Promise<void> => {
@@ -199,9 +200,10 @@ class UserController {
     }
   };
 
-  updateProfile = async (req: Request, res: Response): Promise<void> => {
+  updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const { id } = req.params;
+      const { id } = req.user._id?.toString();
+
       if (!mongoose.isValidObjectId(id)) {
         res.status(400).json({ success: false, message: "Invalid user ID" });
         return;
