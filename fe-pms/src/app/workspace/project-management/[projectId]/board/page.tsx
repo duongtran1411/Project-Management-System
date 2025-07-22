@@ -436,10 +436,9 @@ const BoardPage = () => {
                 max={{
                   count: 2,
                   style: { color: "#f56a00", backgroundColor: "#fde3cf" },
-                }}>
-                <Avatar
-                  style={{ backgroundColor: "#f56a00" }}
-                  src={contributors[0]?.userId?.avatar}></Avatar>
+                }}
+              >
+                <Avatar src={contributors[0]?.userId?.avatar}></Avatar>
                 {Array.isArray(contributors) && contributors.length > 0 && (
                   <Avatar
                     style={{

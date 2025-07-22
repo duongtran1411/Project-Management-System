@@ -228,12 +228,12 @@ const ProjectSettingPage = () => {
             >
               {contributorsData?.data?.map((contributor: any) => (
                 <Option
-                  key={contributor.userId._id}
-                  value={contributor.userId._id}
+                  key={contributor?.userId?._id}
+                  value={contributor?.userId?._id}
                 >
                   <div className="flex items-center gap-3 p-2">
-                    <Avatar src={contributor.userId.avatar} />
-                    <p>{contributor.userId.fullName}</p>
+                    <Avatar src={contributor?.userId?.avatar} />
+                    <p>{contributor?.userId?.fullName}</p>
                   </div>
                 </Option>
               ))}

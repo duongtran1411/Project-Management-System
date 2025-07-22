@@ -5,11 +5,13 @@ import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 interface Props {
   taskId: string | undefined;
   assignee: any;
   mutateTask: () => void;
+  setAssignee: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const fetcher = (url: string) =>
@@ -22,7 +24,11 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
   taskId,
   assignee,
   mutateTask,
+  setAssignee,
 }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const params = useParams();
   const projectId = params.projectId as string;
   const [members, setMembers] = useState<string[]>([]); //contributors & project_admin
@@ -53,11 +59,11 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
       ),
     },
     ...(members.map((option: any) => ({
-      key: option.userId._id,
+      key: option?.userId?._id,
       label: (
         <div className="flex items-center gap-3 p-2">
-          <Avatar src={option.userId.avatar} />
-          <p>{option.userId.fullName}</p>
+          <Avatar src={option?.userId?.avatar} />
+          <p>{option?.userId?.fullName}</p>
         </div>
       ),
     })) || []),
@@ -67,8 +73,11 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
     try {
       if (taskId) {
         const assigneeId = key === "null" ? null : key;
-        await updateTaskAssignee(taskId, assigneeId);
-        await mutateTask();
+        const response = await updateTaskAssignee(taskId, assigneeId);
+        if (response) {
+          setAssignee(response.assignee);
+          await mutateTask();
+        }
       }
     } catch (e) {
       console.log(e);
@@ -79,6 +88,7 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
     >
       <div className="flex rounded-full cursor-pointer">
         {assignee?.avatar ? (

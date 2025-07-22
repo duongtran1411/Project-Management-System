@@ -10,6 +10,7 @@ import mongoose from "mongoose";
 import { sendProjectInvitationEmail } from "../utils/email.util";
 import crypto from "crypto";
 import NotificationService from "./notification.service";
+import workspaceService from "./workspace.service";
 
 export class ProjectContributorService {
   private generateInvitationToken(): string {
@@ -173,10 +174,42 @@ export class ProjectContributorService {
       projectRoleId: invitation.projectRoleId,
     });
 
-    // Cập nhật status invitation
     await ProjectInvitation.findByIdAndUpdate(invitation._id, {
       status: "accepted",
     });
+
+    try {
+      let workspace;
+      try {
+        workspace = await workspaceService.getWorkspaceByUser(user);
+      } catch (err) {
+        // Nếu chưa có workspace thì tạo mới
+        workspace = await workspaceService.createWorkspace(
+          {
+            name: `${user.fullName || user.email}-workspace`,
+            ownerId: user._id as any,
+            projectIds: [invitation.projectId],
+          },
+          user
+        );
+      }
+      // Nếu đã có workspace, kiểm tra và thêm project nếu chưa có
+      if (
+        workspace &&
+        workspace.projectIds &&
+        !workspace.projectIds
+          .map((id: any) => id.toString())
+          .includes(invitation.projectId.toString())
+      ) {
+        await workspaceService.addProjectToWorkspace(
+          workspace._id.toString(),
+          invitation.projectId.toString(),
+          user
+        );
+      }
+    } catch (err) {
+      console.error("Failed to add project to user's workspace:", err);
+    }
 
     return contributor.populate([
       { path: "userId", select: "fullName email avatar" },
@@ -223,7 +256,7 @@ export class ProjectContributorService {
     const contributors = await ProjectContributor.find({ projectId })
       .select("-projectId")
       .populate([
-        { path: "userId", select: "fullName email avatar" },
+        { path: "userId", select: "fullName email avatar status" },
         { path: "projectRoleId", select: "name" },
       ])
       .lean();
@@ -300,6 +333,15 @@ export class ProjectContributorService {
       .map((c) => c.projectId)
       .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
   }
+
+  // async getRoleContributorByProjectId(
+  //   user: IUser,
+  //   projectId: string
+  // ): Promise<IProjectRole> {
+  //   const projectContributor = await ProjectContributor.find({
+  //     userId: user._id,
+  //     projectId: projectId,
+  //   });}
 
   async getRoleContributorByProjectId(
     user: IUser,

@@ -110,7 +110,6 @@ export const ModalAddMember: React.FC<Props> = ({
           projectRoleId,
         };
         const response = await inviteMemberMultiple(data);
-        console.log("response invite member", response);
 
         setLoading(false);
         if (response?.success && response?.success?.length > 0) {
@@ -156,12 +155,7 @@ export const ModalAddMember: React.FC<Props> = ({
     <>
       {contextHolder}
       {loading ? (
-        <Spin
-          size="large"
-          tip="Loading..."
-          style={{ color: "#667eea" }}
-          fullscreen
-        />
+        <Spin size="large" tip="Loading..." fullscreen />
       ) : (
         <Modal
           title={`Invite member to${

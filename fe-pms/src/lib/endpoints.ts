@@ -6,10 +6,12 @@ export class Endpoints {
     FORGOT_PASSWORD: "auth/forgot-password",
     CHANGE_PASSWORD: "auth/change-password",
     VERIFY_FORGOT_PASSWORD: "auth/verify-otp-reset-password",
+
     REGISTER: "auth/register",
     VERIFY_REGISTRATION_OTP: "auth/verify-registration-otp",
     RESEND_REGISTRATION_OTP: "auth/resend-registration-otp",
     SETUP_ACCOUNT: "auth/setup-account",
+
   };
 
   static readonly User = {
@@ -91,6 +93,12 @@ export class Endpoints {
       `project-contributor/invitation/confirm/${token}`,
     GET_ROLE_PROJECT_ID: (projectId: string) =>
       `project-contributor/project/role/${projectId}`,
+    DELETE_CONTRIBUTOR: (contributorId: string) =>
+      `project-contributor/${contributorId}`,
+    UPDATE_PROJECT_ROLE: (contributorId: string) =>
+      `project-contributor/${contributorId}`,
+    PROJECT_STATISTICS: (projectId: string) =>
+      `project-contributor/project/${projectId}/statistics`,
   };
 
   static readonly ProjectRole = {
@@ -143,5 +151,10 @@ export class Endpoints {
     CREATE_WORKLOG: "worklog",
     UPDATE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
     DELETE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
+    STATISTIC_BY_PROJECT: (projectId: string) =>
+      `worklog/statistics/project/${projectId}`,
+    WORKLOG_TOPS: (projectId: string) =>
+      `worklog/top-contributors/${projectId}`,
+    WORKLOG_BY_CONTRIBUTOR: (userId: string) => `worklog/contributor/${userId}`,
   };
 }

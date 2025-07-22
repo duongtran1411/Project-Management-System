@@ -5,6 +5,7 @@ import { Avatar, Dropdown, MenuProps } from "antd";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 interface Props {
   taskId: string | undefined;
@@ -19,6 +20,9 @@ const fetcher = (url: string) =>
     .then((res) => res.data);
 
 const ChangeAssignee: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const params = useParams();
   const projectId = params.projectId as string;
   const [members, setMembers] = useState<string[]>([]); //contributors & project_admin
@@ -49,11 +53,11 @@ const ChangeAssignee: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
       ),
     },
     ...(members.map((option: any) => ({
-      key: option.userId._id,
+      key: option?.userId?._id,
       label: (
         <div className="flex items-center gap-3 p-2">
-          <Avatar src={option.userId.avatar} />
-          <p>{option.userId.fullName}</p>
+          <Avatar src={option?.userId?.avatar} />
+          <p>{option?.userId?.fullName}</p>
         </div>
       ),
     })) || []),
@@ -75,6 +79,7 @@ const ChangeAssignee: React.FC<Props> = ({ taskId, assignee, mutateTask }) => {
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
     >
       <div className="flex rounded-full mx-3 cursor-pointer">
         {assignee?.avatar ? (
