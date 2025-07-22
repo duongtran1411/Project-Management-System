@@ -200,10 +200,9 @@ class UserController {
     }
   };
 
-  updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
+  updateProfile = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { id } = req.user._id?.toString();
-
+      const { id } = req.params;
       if (!mongoose.isValidObjectId(id)) {
         res.status(400).json({ success: false, message: "Invalid user ID" });
         return;
