@@ -246,11 +246,6 @@ const SprintSection: React.FC<Props> = ({
 
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
 
-  // Check if there's any active sprint
-  const hasActiveSprint = milestoneData?.some(
-    (milestone: Milestone) => milestone.status === "ACTIVE"
-  );
-
   return (
     <div>
       {milestoneData?.map((milestone: Milestone) => {
@@ -336,8 +331,7 @@ const SprintSection: React.FC<Props> = ({
                   disabled={
                     taskInMileStone.length === 0 ||
                     isReadOnlyContributor ||
-                    isReadOnlyStakeholder ||
-                    (milestone.status === "NOT_START" && hasActiveSprint)
+                    isReadOnlyStakeholder
                   }
                   onClick={() => handleSprintStatusChange(milestone)}
                 >

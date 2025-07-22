@@ -43,21 +43,6 @@ const getStatusColor = (status: string) => {
   return "default";
 };
 
-const stats = [
-  {
-    title: "TỔNG SỐ NGƯỜI DÙNG",
-    value: 7,
-  },
-  {
-    title: "NGƯỜI DÙNG ĐANG HOẠT ĐỘNG",
-    value: 7,
-  },
-  {
-    title: "QUẢN TRỊ VIÊN TỔ CHỨC",
-    value: 1,
-  },
-];
-
 const UserManagementPage = () => {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -81,6 +66,12 @@ const UserManagementPage = () => {
   //Fetch project
   const { data: project } = useSWR(
     `${Endpoints.Project.GET_BY_ID(projectId)}`,
+    fetcher
+  );
+
+  //Project statistics
+  const { data: projectStatistics, error: projectStatisticsError } = useSWR(
+    `${Endpoints.ProjectContributor.PROJECT_STATISTICS(projectId)}`,
     fetcher
   );
 
@@ -215,23 +206,46 @@ const UserManagementPage = () => {
         </h1>
 
         {/* Card statistic user */}
-        <Row gutter={[16, 16]} className="mt-4 mb-4">
-          {stats.map((item, index) => (
-            <Col key={index} xs={24} sm={12} md={8}>
+        {!projectStatisticsError && (
+          <Row gutter={[16, 16]} className="mt-4 mb-4">
+            <Col xs={24} sm={12} md={8}>
               <div className="p-[2px] rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
                 <Card bordered={false} className="rounded-xl bg-white">
                   <div className="text-sm text-gray-600 font-semibold mb-1">
-                    {item.title}
+                    TỔNG SỐ NGƯỜI DÙNG
                   </div>
                   <div className="text-2xl font-bold text-blue-950">
-                    {item.value}
+                    {projectStatistics?.data?.totalUsers}
                   </div>
                 </Card>
               </div>
             </Col>
-          ))}
-        </Row>
-
+            <Col xs={24} sm={12} md={8}>
+              <div className="p-[2px] rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
+                <Card bordered={false} className="rounded-xl bg-white">
+                  <div className="text-sm text-gray-600 font-semibold mb-1">
+                    NGƯỜI DÙNG ĐANG HOẠT ĐỘNG
+                  </div>
+                  <div className="text-2xl font-bold text-blue-950">
+                    {projectStatistics?.data?.activeUsers}
+                  </div>
+                </Card>
+              </div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <div className="p-[2px] rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
+                <Card bordered={false} className="rounded-xl bg-white">
+                  <div className="text-sm text-gray-600 font-semibold mb-1">
+                    QUẢN TRỊ VIÊN TỔ CHỨC
+                  </div>
+                  <div className="text-2xl font-bold text-blue-950">
+                    {projectStatistics?.data?.adminCount}
+                  </div>
+                </Card>
+              </div>
+            </Col>
+          </Row>
+        )}
         {/* Search and Filter Bar */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           {/* Search Input */}

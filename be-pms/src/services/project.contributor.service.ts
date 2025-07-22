@@ -301,14 +301,15 @@ export class ProjectContributorService {
       .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
   }
 
-  async getRoleContributorByProjectId(
-    user: IUser,
-    projectId: string
-  ): Promise<IProjectRole> {
-    const projectContributor = await ProjectContributor.find({
-      userId: user._id,
-      projectId: projectId,
-    });
+  // async getRoleContributorByProjectId(
+  //   user: IUser,
+  //   projectId: string
+  // ): Promise<IProjectRole> {
+  //   const projectContributor = await ProjectContributor.find({
+  //     userId: user._id,
+  //     projectId: projectId,
+  //   });}
+
   async getRoleContributorByProjectId(
     user: IUser,
     projectId: string

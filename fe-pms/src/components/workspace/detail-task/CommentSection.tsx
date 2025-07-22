@@ -18,12 +18,15 @@ import { mutate } from "swr";
 import { WorklogComponent } from "@/components/workspace/worklog/Worklog";
 import History from "@/components/workspace/history/History";
 import { TimeAgo } from "@/components/common/TimeAgo";
+import { ListWorklog } from "../worklog/ListWorklog";
+import { Task } from "@/models/task/task.model";
 
 interface CommentSectionProps {
   taskId: string;
   comments: Comment[];
   contributor: ProjectContributorTag[];
   onCommentAdded: () => void;
+  task: Task;
 }
 
 export const CommentSection: React.FC<CommentSectionProps> = ({
@@ -31,6 +34,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   comments,
   contributor,
   onCommentAdded,
+  task,
 }) => {
   const [newComment, setNewComment] = useState("");
   const [selectedMentions, setSelectedMentions] = useState<string[]>([]);
@@ -270,6 +274,14 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             Work log
           </Button>
         </div>
+
+        {/* All */}
+        {activeTab === "all" && (
+          <>
+            {taskId && <History taskId={taskId} />}
+            <ListWorklog task={task} />
+          </>
+        )}
 
         {/* Comments */}
         {activeTab === "comments" && (

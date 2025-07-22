@@ -89,6 +89,8 @@ export class Endpoints {
       `project-contributor/${contributorId}`,
     UPDATE_PROJECT_ROLE: (contributorId: string) =>
       `project-contributor/${contributorId}`,
+    PROJECT_STATISTICS: (projectId: string) =>
+      `project-contributor/project/${projectId}/statistics`,
   };
 
   static readonly ProjectRole = {
