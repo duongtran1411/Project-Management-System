@@ -14,29 +14,19 @@ const router = Router();
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             required: [name]
  *             properties:
  *               name: { type: string }
  *               description: { type: string }
- *               icon: { type: string, format: binary, description: "Icon file (image)" }
- *               projectType: { type: string, enum: [SOFTWARE, MARKETING, SALES] }
- *               defaultAssign: { type: string }
- *               workspaceId: { type: string }
- *               status: { type: string, enum: [TODO, INPROGRESS, COMPLETE] }
  *     responses:
  *       201: { description: Tạo project thành công }
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.post(
-  "/",
-  authenticate,
-  uploadProjectIcon,
-  projectController.createProject
-);
+router.post("/", authenticate, projectController.createProject);
 
 /**
  * @openapi
@@ -109,7 +99,6 @@ router.get("/:id", authenticate, projectController.getProjectById);
  *               icon: { type: string, format: binary, description: "Icon file (image)" }
  *               projectType: { type: string, enum: [SOFTWARE, MARKETING, SALES] }
  *               defaultAssign: { type: string }
- *               workspaceId: { type: string }
  *               status: { type: string, enum: [TODO, INPROGRESS, COMPLETE] }
  *     responses:
  *       200: { description: Cập nhật project thành công }
