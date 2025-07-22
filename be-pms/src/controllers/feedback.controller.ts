@@ -1,11 +1,16 @@
+import { AuthRequest } from "../middlewares/auth.middleware";
 import { Request, Response } from "express";
 import feedbackService from "../services/feedback.service";
 
 export class FeedbackController {
   // Tạo feedback mới
-  createFeedback = async (req: Request, res: Response): Promise<void> => {
+  createFeedback = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-      const feedback = await feedbackService.createFeedback(req.body);
+      const feedback = await feedbackService.createFeedback({
+        ...req.body,
+        createdBy: req.user?._id,
+      });
+
       res.status(201).json({
         success: true,
         message: "Tạo feedback thành công",
@@ -25,10 +30,11 @@ export class FeedbackController {
   // Lấy danh sách feedbacks
   getListFeedbacks = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { page = 1, limit = 10, type } = req.query;
+      const { page = 1, limit = 10, type, projectId } = req.query;
 
       const filter: any = {};
       if (type) filter.type = type;
+      if (projectId) filter.projectId = projectId;
 
       const result = await feedbackService.getFeedbacks(
         filter,
@@ -54,14 +60,14 @@ export class FeedbackController {
   };
 
   // Cập nhật feedback
-  updateFeedback = async (req: Request, res: Response): Promise<void> => {
+  updateFeedback = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
-      const updatedFeedback = await feedbackService.updateFeedback(
-        id,
-        req.body
-      );
+      const updatedFeedback = await feedbackService.updateFeedback(id, {
+        ...req.body,
+        updatedBy: req.user?._id,
+      });
 
       if (!updatedFeedback) {
         res.status(404).json({

@@ -20,19 +20,18 @@ router.use(authenticate);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [message]
+ *             required: [projectContributorId, message]
  *             properties:
- *               userId:
- *                 type: string
  *               projectContributorId:
  *                 type: string
- *               email:
- *                 type: string
+ *                 description: ID của project contributor
  *               message:
  *                 type: string
+ *                 description: Nội dung feedback
  *               type:
  *                 type: string
  *                 enum: [BUG, FEATURE_REQUEST, COMMENT]
+ *                 description: Loại feedback
  *     responses:
  *       201:
  *         description: Tạo feedback thành công
@@ -68,6 +67,11 @@ router.post("/", feedbackController.createFeedback);
  *           type: string
  *           enum: [BUG, FEATURE_REQUEST, COMMENT]
  *         description: Lọc feedback theo loại
+ *       - in: query
+ *         name: projectId
+ *         schema:
+ *           type: string
+ *         description: Lọc feedback theo projectId
  *     responses:
  *       200:
  *         description: Danh sách feedback
@@ -100,9 +104,11 @@ router.get("/", feedbackController.getListFeedbacks);
  *             properties:
  *               message:
  *                 type: string
+ *                 description: Nội dung mới của feedback
  *               type:
  *                 type: string
  *                 enum: [BUG, FEATURE_REQUEST, COMMENT]
+ *                 description: Loại feedback mới
  *     responses:
  *       200:
  *         description: Cập nhật feedback thành công
