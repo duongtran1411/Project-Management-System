@@ -18,6 +18,7 @@ import commentRoutes from "./comment.routes";
 import peopleYouWorkWithRoutes from "./people-you-work-with.routes";
 import notificationRoutes from "./notification.routes";
 import worklogRoutes from "./worklog.routes";
+import feedbackRoutes from "./feedback.routes";
 const router = Router();
 
 // Mount routes
@@ -40,5 +41,6 @@ router.use("/comment", commentRoutes);
 router.use("/people-you-work-with", peopleYouWorkWithRoutes);
 router.use("/notification", notificationRoutes);
 router.use("/worklog", worklogRoutes);
+router.use("/feedback", feedbackRoutes);
 
 export default router;
