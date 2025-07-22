@@ -435,12 +435,6 @@ export class AuthService {
       throw new Error("Mật khẩu phải có ít nhất 8 ký tự");
     }
 
-    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      throw new Error(
-        "Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số"
-      );
-    }
-
     // Tìm verification record
     const verificationRecord = await EmailVerification.findOne({
       token,

@@ -203,7 +203,8 @@ export default function Page() {
                     type: "email",
                     message: "Email must be include @example.com!",
                   },
-                ]}>
+                ]}
+              >
                 <Input
                   prefix={<UserOutlined />}
                   placeholder="Email"
@@ -219,7 +220,8 @@ export default function Page() {
                     message:
                       "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
                   },
-                ]}>
+                ]}
+              >
                 <Input
                   prefix={<LockOutlined />}
                   type="password"
@@ -234,7 +236,8 @@ export default function Page() {
                   </Form.Item>
                   <Link
                     href={"/authentication/forgot-password"}
-                    className="text-sm text-blue-500 hover:decoration-solid hover:underline">
+                    className="text-sm text-blue-500 hover:decoration-solid hover:underline"
+                  >
                     Forgot password?
                   </Link>
                 </Flex>
@@ -255,6 +258,18 @@ export default function Page() {
                   }}
                 />
               </Form.Item>
+
+              <div className="text-center mt-4">
+                <Text type="secondary">
+                  Chưa có tài khoản?{" "}
+                  <Link
+                    href="/authentication/register"
+                    className="text-blue-500 hover:text-blue-600 hover:underline"
+                  >
+                    Đăng ký ngay
+                  </Link>
+                </Text>
+              </div>
             </Form>
           </div>
         </div>
