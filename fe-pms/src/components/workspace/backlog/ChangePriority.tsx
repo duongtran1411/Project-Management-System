@@ -9,8 +9,9 @@ import { useRole } from "@/lib/auth/auth-project-context";
 
 interface Props {
   taskId: string | undefined;
-  priority: string;
+  priority: string | null;
   mutateTask: () => void;
+  setPriority: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const priorityOptions = [
@@ -41,18 +42,24 @@ const menuItems: MenuProps["items"] = priorityOptions.map((option) => ({
   ),
 }));
 
-const ChangePriority: React.FC<Props> = ({ taskId, priority, mutateTask }) => {
+const ChangePriority: React.FC<Props> = ({
+  taskId,
+  priority,
+  mutateTask,
+  setPriority,
+}) => {
   const { role } = useRole();
   const isReadOnlyContributor = role.name === "CONTRIBUTOR";
   const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const currentOption = priorityOptions.find(
-    (option) => option.value.toLowerCase() === priority.toLowerCase()
+    (option) => option.value.toLowerCase() === priority?.toLowerCase()
   );
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
         await updatePriorityTask(taskId, key);
         mutateTask();
+        setPriority(key);
       }
     } catch (e) {
       console.log(e);
@@ -69,7 +76,7 @@ const ChangePriority: React.FC<Props> = ({ taskId, priority, mutateTask }) => {
       <Tag color={currentOption?.color || "orange"} className="cursor-pointer">
         <span className="flex items-center gap-1">
           {currentOption?.icon}
-          {priority}
+          {priority || "None"}
         </span>
       </Tag>
     </Dropdown>

@@ -11,6 +11,7 @@ interface Props {
   taskId: string | undefined;
   assignee: any;
   mutateTask: () => void;
+  setAssignee: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const fetcher = (url: string) =>
@@ -23,6 +24,7 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
   taskId,
   assignee,
   mutateTask,
+  setAssignee,
 }) => {
   const { role } = useRole();
   const isReadOnlyContributor = role.name === "CONTRIBUTOR";
@@ -71,8 +73,11 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
     try {
       if (taskId) {
         const assigneeId = key === "null" ? null : key;
-        await updateTaskAssignee(taskId, assigneeId);
-        await mutateTask();
+        const response = await updateTaskAssignee(taskId, assigneeId);
+        if (response) {
+          setAssignee(response.assignee);
+          await mutateTask();
+        }
       }
     } catch (e) {
       console.log(e);
