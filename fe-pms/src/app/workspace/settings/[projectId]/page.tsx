@@ -1,10 +1,10 @@
 "use client";
 
 import { ModalUploadIcon } from "@/components/workspace/settings/ModalUploadIcon";
-import { Constants } from "@/lib/constants";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { updateProject } from "@/lib/services/project/project.service";
+import { changeProjectLead } from "@/lib/services/projectContributor/projectContributor.service";
 import { SaveOutlined, UserOutlined } from "@ant-design/icons";
 import {
   Alert,
@@ -16,7 +16,8 @@ import {
   Select,
   Spin,
 } from "antd";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
@@ -34,15 +35,8 @@ const ProjectSettingPage = () => {
   const [loading, setLoading] = useState(false);
   const params = useParams();
   const projectId = params.projectId as string;
-
+  const router = useRouter();
   const [isIconModalOpen, setIsIconModalOpen] = useState(false);
-
-  useEffect(() => {
-    const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (access_token) {
-      // setToken(access_token);
-    }
-  }, []);
 
   const {
     data: projectData,
@@ -50,6 +44,8 @@ const ProjectSettingPage = () => {
     isLoading,
     mutate,
   } = useSWR(`${Endpoints.Project.GET_BY_ID(projectId || "")}`, fetcher);
+
+  const initialProjectLeadId = projectData?.data?.projectLead?._id;
 
   const [currentIcon, setCurrentIcon] = useState<string>(
     projectData?.data?.icon || "/project.png"
@@ -84,26 +80,44 @@ const ProjectSettingPage = () => {
         (contributor: any) => contributor.userId._id === values.projectLead
       );
 
-      let defaultAssignValue = null;
-      if (values.defaultAssign === "Project Lead") {
-        defaultAssignValue = selectedProjectLead?.userId._id || null;
-      } else if (values.defaultAssign === "Unassigned") {
-        defaultAssignValue = null;
+      // Check if project lead has changed
+      const projectLeadChanged =
+        form.getFieldValue("projectLead") !== initialProjectLeadId;
+
+      // If only project lead changed
+      if (projectLeadChanged) {
+        const response = await changeProjectLead(
+          projectId,
+          initialProjectLeadId,
+          values.projectLead
+        );
+        if (response?.status === 200) {
+          router.push("/workspace/viewall");
+        }
       }
 
-      const updateData = {
-        ...values,
-        projectType: "SOFTWARE",
-        projectLead: selectedProjectLead?.userId._id || null,
-        defaultAssign: defaultAssignValue,
-        icon: values.icon || currentIcon,
-      };
+      if (!projectLeadChanged) {
+        let defaultAssignValue = null;
+        if (values.defaultAssign === "Project Lead") {
+          defaultAssignValue = selectedProjectLead?.userId._id || null;
+        } else if (values.defaultAssign === "Unassigned") {
+          defaultAssignValue = null;
+        }
 
-      await updateProject(projectId, updateData);
+        const updateData = {
+          ...values,
+          projectType: "SOFTWARE",
+          defaultAssign: defaultAssignValue,
+          icon: values.icon || currentIcon,
+        };
+
+        await updateProject(projectId, updateData);
+      }
+
       setCurrentIcon(values.icon || currentIcon);
       mutate();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       message.error("An error occurred while updating the project");
     } finally {
       setLoading(false);

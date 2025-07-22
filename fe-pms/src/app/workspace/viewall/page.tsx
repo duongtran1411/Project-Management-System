@@ -9,6 +9,7 @@ import {
   StarOutlined,
   UserAddOutlined,
   PlusOutlined,
+  UndoOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -46,6 +47,7 @@ interface DataType {
     email: string;
     avatar: string;
   };
+  deletedAt?: string;
 }
 
 const ProjectTable = () => {
@@ -81,6 +83,11 @@ const ProjectTable = () => {
           icon: <DeleteOutlined style={{ color: "red" }} />,
           label: <span style={{ color: "red" }}>Delete project</span>,
         },
+        {
+          key: "restore-project",
+          icon: <UndoOutlined />,
+          label: "Restore project",
+        },
       ]}
       style={{ width: 230 }}
       mode="vertical"
@@ -93,6 +100,8 @@ const ProjectTable = () => {
           router.push(`/workspace/settings/${record._id}`);
         } else if (key === "delete-project") {
           setIsModalDeleteOpen(true);
+        } else if (key === "restore-project") {
+          router.push(`/workspace/trash`);
         }
       }}
     />
@@ -233,10 +242,9 @@ const ProjectTable = () => {
     setCurrentPage(page);
   };
 
-  const paginatedProjects = filteredProjects.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const paginatedProjects = filteredProjects
+    .filter((project) => !project.deletedAt)
+    .slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">

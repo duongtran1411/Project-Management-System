@@ -64,3 +64,23 @@ export const deleteProject = async (projectId: string) => {
     }
   }
 };
+
+//restore project deleted
+export const restoreProject = async (projectId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .post(`${Endpoints.Project.RESTORE_PROJECT(projectId)}`);
+
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data.message || "Restore project successfully!"
+      );
+      return response.data?.data;
+    }
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(error.response.data.message || "Fail to restore project!");
+    }
+  }
+};

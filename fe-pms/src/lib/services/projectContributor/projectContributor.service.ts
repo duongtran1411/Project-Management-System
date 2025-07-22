@@ -135,3 +135,29 @@ export const updateProjectRole = async (
     return null;
   }
 };
+
+//Change project lead
+export const changeProjectLead = async (
+  projectId: string,
+  currentLeadId: string,
+  newLeadId: string
+) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .put(Endpoints.ProjectContributor.CHANGE_PROJECT_LEAD(projectId), {
+        currentLeadId,
+        newLeadId,
+      });
+
+    if (response.status === 200) {
+      showSuccessToast("Change project lead successfully!");
+      return response;
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Failed to change project lead.";
+    showErrorToast(message);
+    return null;
+  }
+};
