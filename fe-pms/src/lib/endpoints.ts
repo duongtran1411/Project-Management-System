@@ -63,6 +63,7 @@ export class Endpoints {
 
   static readonly Workspace = {
     GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
+    CREATE: 'workspace'
   };
 
   static readonly Project = {
