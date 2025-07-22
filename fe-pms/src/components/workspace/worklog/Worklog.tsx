@@ -2,7 +2,6 @@
 
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
-import { formatDateTime } from "@/lib/utils";
 import { Task } from "@/models/task/task.model";
 import { Worklog } from "@/models/worklog/worklog";
 import { Avatar, Button, Image } from "antd";
@@ -12,6 +11,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { ModalCreateWorklog } from "./ModalCreateWorklog";
 import { ModalDeleteWorklog } from "./ModalDeleteWorklog";
+import { formatDateTime } from "@/lib/utils";
 
 const fetcher = (url: string) =>
   axiosService
@@ -70,7 +70,7 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
   return (
     <div className="flex flex-col items-center justify-center py-8 max-w-[400px] ">
       {!worklogData?.data || worklogData?.data?.length === 0 ? (
-        <div className="mx-auto">
+        <div className="flex flex-col items-center justify-center text-center">
           <Image
             src="/clock-5.png"
             alt="Work log"
@@ -99,20 +99,17 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
             worklogData?.data?.map((worklog: Worklog, index: number) => (
               <div
                 key={worklog._id || index}
-                className="mb-4 p-4 bg-gray-100 rounded-lg"
+                className="mb-4 p-4 bg-gray-50 rounded-lg"
               >
                 <div className="flex items-start space-x-3">
                   {worklog.contributor?.avatar ? (
                     <Avatar
                       size={25}
-                      className="bg-blue-500 text-white font-semibold"
+                      className=" text-white font-semibold"
                       src={worklog.contributor?.avatar}
                     />
                   ) : (
-                    <Avatar
-                      size={25}
-                      className="bg-blue-500 text-white font-semibold"
-                    >
+                    <Avatar size={25} className=" text-white font-semibold">
                       U
                     </Avatar>
                   )}
@@ -128,7 +125,7 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
                       </span>
                     </div>
                     <div className="text-gray-800 mb-2 ml-2">
-                      {worklog.description || "No description"}
+                      {worklog.description || ""}
                     </div>
                     <div className="flex items-center space-x-1 text-sm">
                       <Button

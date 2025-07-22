@@ -12,7 +12,7 @@ import React, { useEffect, useState } from "react";
 const ProjectLayout = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<ProjectRole | null>(null);
   const { projectId } = useParams<{ projectId: string }>();
-  const router = useRouter()
+  const router = useRouter();
   useEffect(() => {
     const getRole = async () => {
       try {
@@ -39,8 +39,8 @@ const ProjectLayout = ({ children }: { children: React.ReactNode }) => {
   }
   return (
     <div className="max-h-screen bg-gray-50">
-      <HeaderProjectManagement />
       <RoleProvider role={role} projectId={projectId}>
+        <HeaderProjectManagement />
         <main className=" p-4">{children}</main>
       </RoleProvider>
     </div>

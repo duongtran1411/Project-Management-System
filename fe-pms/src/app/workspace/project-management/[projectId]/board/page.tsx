@@ -92,8 +92,8 @@ const BoardPage = () => {
   const [isOpenMileStoneModal, setIsOpenMileStoneModal] =
     useState<boolean>(false);
   const [showCreateInput, setShowCreateInput] = useState(false);
-  
-  const {role} = useRole();
+
+  const { role } = useRole();
 
   const isReadOnly = role.name === "CONTRIBUTOR";
 
@@ -443,10 +443,7 @@ const BoardPage = () => {
                   style: { color: "#f56a00", backgroundColor: "#fde3cf" },
                 }}
               >
-                <Avatar
-                  style={{ backgroundColor: "#f56a00" }}
-                  src={contributors[0]?.userId?.avatar}
-                ></Avatar>
+                <Avatar src={contributors[0]?.userId?.avatar}></Avatar>
                 {Array.isArray(contributors) && contributors.length > 0 && (
                   <Avatar
                     style={{
@@ -499,7 +496,8 @@ const BoardPage = () => {
           </Button>
         </div>
         <div>
-          <Button disabled={isReadOnly}
+          <Button
+            disabled={isReadOnly}
             className="bg-blue-500 text-zinc-200"
             onClick={() => {
               setIsOpenMileStoneModal(true);
@@ -604,14 +602,16 @@ const BoardPage = () => {
                                         key: "change_parent",
                                         label: "Change parent",
                                         disabled: true,
-                                        children: Array.isArray(epics) ? epics.map((epic) => ({
-                                          key: `parent_${epic._id}`,
-                                          label: (
-                                            <span className="font-medium text-purple-600">
-                                              {epic.name}
-                                            </span>
-                                          ),
-                                        })) : [],
+                                        children: Array.isArray(epics)
+                                          ? epics.map((epic) => ({
+                                              key: `parent_${epic._id}`,
+                                              label: (
+                                                <span className="font-medium text-purple-600">
+                                                  {epic.name}
+                                                </span>
+                                              ),
+                                            }))
+                                          : [],
                                       },
                                       {
                                         key: "delete",

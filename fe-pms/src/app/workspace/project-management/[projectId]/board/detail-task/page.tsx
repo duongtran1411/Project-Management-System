@@ -85,6 +85,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
         <div className="flex-1 p-4 lg:p-6 overflow-y-auto border-b lg:border-b-0 lg:border-r border-gray-200">
           <TaskHeader task={task} />
           <CommentSection
+            task={task}
             taskId={task._id || ""}
             comments={comments}
             contributor={contributor}

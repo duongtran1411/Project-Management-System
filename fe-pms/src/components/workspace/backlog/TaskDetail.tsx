@@ -14,6 +14,7 @@ import ChangeReporter from "./ChangeReporter";
 import { ChangeStartDate } from "./ChangeStartDate";
 import ChangeEpic from "./ChangeEpic";
 import History from "../history/History";
+import { ListWorklog } from "../worklog/ListWorklog";
 
 interface TaskDetailProps {
   task: Task | null;
@@ -221,6 +222,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               Work log
             </Button>
           </div>
+
+          {/* All */}
+          {activeTab === "all" && (
+            <>
+              {task._id && <History taskId={task._id} />}
+              <ListWorklog task={task} />
+            </>
+          )}
 
           {/* Activity Content */}
           {activeTab === "comments" && (

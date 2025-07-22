@@ -1,5 +1,6 @@
 "use client";
 
+import { useRole } from "@/lib/auth/auth-project-context";
 import { updateTaskDate } from "@/lib/services/task/task.service";
 
 import dayjs from "dayjs";
@@ -28,6 +29,8 @@ export const ChangeStartDate: React.FC<Props> = ({
   dueDate,
   mutateTask,
 }) => {
+  const { role } = useRole();
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const handleStartDateUpdate = async (date: string) => {
     try {
       if (!task._id) return;
@@ -45,7 +48,7 @@ export const ChangeStartDate: React.FC<Props> = ({
       {!isPickingStartDate && (
         <span
           className="text-gray-600 hover:bg-gray-200 py-1 rounded-[3px]cursor-pointer"
-          onClick={() => setIsPickingStartDate(true)}
+          onClick={() => setIsPickingStartDate(isProjectAdmin ? true : false)}
         >
           {startDate?.slice(0, 10) || "Add start date"}
         </span>

@@ -1,4 +1,5 @@
 import { updateTaskStatus } from "@/lib/services/task/task.service";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 import { Dropdown, MenuProps, Tag } from "antd";
 
@@ -24,6 +25,9 @@ const menuItems: MenuProps["items"] = statusOptions.map((option) => ({
 }));
 
 const ChangeTask: React.FC<Props> = ({ taskId, status, mutateTask }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
@@ -39,6 +43,7 @@ const ChangeTask: React.FC<Props> = ({ taskId, status, mutateTask }) => {
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
     >
       <Tag color={getColor(status)} className="cursor-pointer">
         {status.replace("_", " ")}

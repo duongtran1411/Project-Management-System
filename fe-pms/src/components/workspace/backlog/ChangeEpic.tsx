@@ -1,3 +1,4 @@
+import { useRole } from "@/lib/auth/auth-project-context";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { updateTaskEpic } from "@/lib/services/task/task.service";
@@ -20,6 +21,9 @@ const fetcher = (url: string) =>
 
 const ChangeEpic: React.FC<Props> = ({ taskId, epic, mutateTask }) => {
   const params = useParams();
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const projectId = params.projectId as string;
   const { data: epicData } = useSWR(
     `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
@@ -46,6 +50,7 @@ const ChangeEpic: React.FC<Props> = ({ taskId, epic, mutateTask }) => {
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
     >
       <Tag color="purple" className="cursor-pointer">
         {epic}

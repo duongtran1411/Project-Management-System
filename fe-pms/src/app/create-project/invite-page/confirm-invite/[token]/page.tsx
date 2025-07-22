@@ -20,15 +20,21 @@ export default function ConfirmInviteSuccessPage() {
   useEffect(() => {
     const confirm = async (token: string) => {
       try {
+        setLoading(true);
         const response = await confirmInvite(token);
 
         if (response) {
           notificationSuccess("topLeft");
-          router.push("/");
+
+          setTimeout(() => {
+            router.push("/");
+          }, 1000);
           return;
         } else {
-          setError(true);
-          notificationError("topLeft");
+          setTimeout(() => {
+            setError(true);
+            notificationError("topLeft");
+          }, 2000);
         }
       } catch (e) {
         console.log(e);
@@ -42,7 +48,7 @@ export default function ConfirmInviteSuccessPage() {
     if (typeof tokenConfirm === "string" && tokenConfirm.trim() !== "") {
       confirm(tokenConfirm);
     }
-  }, [tokenConfirm, router]);
+  }, [tokenConfirm]);
 
   const notificationSuccess = (placement: NotificationPlacement) => {
     api.success({

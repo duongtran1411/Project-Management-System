@@ -23,13 +23,12 @@ export default function AdminPage() {
       }
     } catch {
       router.replace("/authentication/login");
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   }, [router]);
 
-  
-   if (loading) {
+  if (loading) {
     return <Spinner />;
   }
 }
