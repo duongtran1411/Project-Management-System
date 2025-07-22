@@ -128,7 +128,7 @@ router.put(
  * @openapi
  * /project/{id}:
  *   delete:
- *     summary: Xoá project
+ *     summary: Xoá project (Chỉ project admin)
  *     tags: [Project]
  *     security: [bearerAuth: []]
  *     parameters:
@@ -139,6 +139,7 @@ router.put(
  *         description: ID của project
  *     responses:
  *       200: { description: Xoá project thành công }
+ *       403: { description: Không có quyền xóa project }
  *       404: { description: Không tìm thấy project }
  *       401: { description: Không có quyền truy cập }
  */
