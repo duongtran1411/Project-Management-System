@@ -186,7 +186,7 @@ export class ProjectContributorService {
         // Nếu chưa có workspace thì tạo mới
         workspace = await workspaceService.createWorkspace(
           {
-            name: `${user.fullName || user.email}-workspace`,
+            name: `${user.fullName || user.email}'s Workspace`,
             ownerId: user._id as any,
             projectIds: [invitation.projectId],
           },
