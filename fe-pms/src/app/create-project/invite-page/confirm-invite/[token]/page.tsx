@@ -22,7 +22,7 @@ export default function ConfirmInviteSuccessPage() {
       try {
         setLoading(true);
         const response = await confirmInvite(token);
-        console.log("response", response);
+
         if (response) {
           notificationSuccess("topLeft");
           router.push("/");
