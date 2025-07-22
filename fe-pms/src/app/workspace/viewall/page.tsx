@@ -4,12 +4,12 @@
 import {
   DeleteOutlined,
   MoreOutlined,
+  PlusOutlined,
   SearchOutlined,
   SettingOutlined,
   StarOutlined,
   UserAddOutlined,
-  PlusOutlined,
-  UndoOutlined,
+  DeleteFilled,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -27,6 +27,7 @@ import {
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
+import { ModalDeleteProject } from "@/components/workspace/settings/ModalDeleteProject";
 import { ModalAddMember } from "@/components/workspace/view-all/ModdalAddMember";
 import { Constants } from "@/lib/constants";
 import { Endpoints } from "@/lib/endpoints";
@@ -34,7 +35,6 @@ import axiosService from "@/lib/services/axios.service";
 import { TokenPayload } from "@/models/user/TokenPayload.model";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
-import { ModalDeleteProject } from "@/components/workspace/settings/ModalDeleteProject";
 
 interface DataType {
   _id: string;
@@ -83,11 +83,6 @@ const ProjectTable = () => {
           icon: <DeleteOutlined style={{ color: "red" }} />,
           label: <span style={{ color: "red" }}>Delete project</span>,
         },
-        {
-          key: "restore-project",
-          icon: <UndoOutlined />,
-          label: "Restore project",
-        },
       ]}
       style={{ width: 230 }}
       mode="vertical"
@@ -100,8 +95,6 @@ const ProjectTable = () => {
           router.push(`/workspace/settings/${record._id}`);
         } else if (key === "delete-project") {
           setIsModalDeleteOpen(true);
-        } else if (key === "restore-project") {
-          router.push(`/workspace/trash`);
         }
       }}
     />
@@ -242,15 +235,25 @@ const ProjectTable = () => {
     setCurrentPage(page);
   };
 
-  const paginatedProjects = filteredProjects
-    .filter((project) => project?.deletedAt == null)
-    .slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Projects</h2>
         <div className="flex gap-2">
+          <Button
+            type="primary"
+            onClick={() => router.push("/workspace/trash")}
+            icon={<DeleteFilled />}
+            size="large"
+            className="flex items-center"
+          >
+            Trash
+          </Button>
           <Button
             type="primary"
             onClick={handleCreateProject}
