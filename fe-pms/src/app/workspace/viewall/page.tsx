@@ -144,7 +144,7 @@ const ProjectTable = () => {
       dataIndex: "projectLead",
       key: "lead",
       render: (lead) => (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 font-sans">
           <Avatar src={lead?.avatar} />
           <span>{lead?.fullName}</span>
         </div>
