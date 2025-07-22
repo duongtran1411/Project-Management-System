@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 import { CloseOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 interface Props {
   task: Task;
@@ -26,6 +27,9 @@ export const ChangeName: React.FC<Props> = ({
   setName,
   onClose,
 }) => {
+  const { role } = useRole();
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
+
   const [lastSavedName, setLastSavedName] = useState(name);
 
   useEffect(() => {
@@ -77,7 +81,7 @@ export const ChangeName: React.FC<Props> = ({
       ) : (
         <h2
           className="mb-2 text-2xl font-semibold cursor-pointer hover:bg-gray-100 px-1 rounded"
-          onClick={() => setIsEditingName(true)}
+          onClick={() => setIsEditingName(isProjectAdmin ? true : false)}
         >
           {name}
         </h2>

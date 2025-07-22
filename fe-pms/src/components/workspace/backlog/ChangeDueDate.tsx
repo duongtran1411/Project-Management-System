@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 
 import { Task } from "@/models/task/task.model";
 import { DatePicker } from "antd";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 interface Props {
   task: Task;
@@ -26,6 +27,8 @@ export const ChangeDueDate: React.FC<Props> = ({
   startDate,
   mutateTask,
 }) => {
+  const { role } = useRole();
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const handleDueDateUpdate = async (date: string) => {
     try {
       if (!task._id) return;
@@ -44,7 +47,7 @@ export const ChangeDueDate: React.FC<Props> = ({
       {!isPickingDueDate && (
         <span
           className="text-gray-600 hover:bg-gray-200 py-1 rounded-[3px] cursor-pointer"
-          onClick={() => setIsPickingDueDate(true)}
+          onClick={() => setIsPickingDueDate(isProjectAdmin ? true : false)}
         >
           {dueDate?.slice(0, 10) || "Add due date"}
         </span>

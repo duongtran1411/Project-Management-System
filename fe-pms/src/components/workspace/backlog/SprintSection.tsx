@@ -32,6 +32,7 @@ import ChangeTask from "./ChangeTask";
 import EditSprintModal from "./EditSprintModal";
 import { Task } from "@/models/task/task.model";
 import { Milestone } from "@/models/milestone/milestone.model";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 const items = [
   {
@@ -65,6 +66,11 @@ const SprintSection: React.FC<Props> = ({
   setSelectedTask,
   selectedTask,
 }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
+
   const columns: TableProps<Task>["columns"] = [
     {
       title: "",
@@ -240,6 +246,11 @@ const SprintSection: React.FC<Props> = ({
 
   const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState(false);
 
+  // Check if there's any active sprint
+  const hasActiveSprint = milestoneData?.some(
+    (milestone: Milestone) => milestone.status === "ACTIVE"
+  );
+
   return (
     <div>
       {milestoneData?.map((milestone: Milestone) => {
@@ -271,7 +282,7 @@ const SprintSection: React.FC<Props> = ({
             <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
               {/* Left */}
               <div className="flex items-center gap-2">
-                <Checkbox onChange={onChange}></Checkbox>
+                {isProjectAdmin && <Checkbox onChange={onChange}></Checkbox>}
 
                 {expandedMilestones[milestone._id] ? (
                   <DownOutlined
@@ -322,7 +333,12 @@ const SprintSection: React.FC<Props> = ({
                 <Button
                   type="default"
                   className="font-semibold text-gray-600"
-                  disabled={taskInMileStone.length === 0}
+                  disabled={
+                    taskInMileStone.length === 0 ||
+                    isReadOnlyContributor ||
+                    isReadOnlyStakeholder ||
+                    (milestone.status === "NOT_START" && hasActiveSprint)
+                  }
                   onClick={() => handleSprintStatusChange(milestone)}
                 >
                   {milestone.status === "NOT_START"
@@ -342,6 +358,7 @@ const SprintSection: React.FC<Props> = ({
                   }}
                   placement="bottomRight"
                   trigger={["click"]}
+                  disabled={isReadOnlyContributor || isReadOnlyStakeholder}
                 >
                   <Button
                     icon={<EllipsisOutlined />}
@@ -371,7 +388,7 @@ const SprintSection: React.FC<Props> = ({
                     }
                   />
                 ) : (
-                  <div className="border border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
+                  <div className="border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
                     Your backlog is empty.
                   </div>
                 )}
@@ -380,6 +397,7 @@ const SprintSection: React.FC<Props> = ({
                   type="text"
                   className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
                   onClick={() => showModal(milestone)}
+                  disabled={isReadOnlyStakeholder || isReadOnlyContributor}
                 >
                   <span>
                     <PlusOutlined /> Create

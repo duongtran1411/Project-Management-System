@@ -10,10 +10,12 @@ import {
   TableOutlined,
   CalendarOutlined,
   BarsOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import { Constants } from "@/lib/constants";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 const fetcherWithToken = async ([url, token]: [string, string]) => {
   const res = await fetch(url, {
@@ -30,6 +32,8 @@ const HeaderProjectManagement = () => {
   const router = useRouter();
   const params = useParams();
   const projectId = params.projectId as string;
+  const { role } = useRole();
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const [token, setToken] = useState("");
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -99,6 +103,12 @@ const HeaderProjectManagement = () => {
       icon: <ClockCircleOutlined />,
       url: `/workspace/project-management/${projectId}/time-tracking`,
     },
+    {
+      key: "User Management",
+      label: "User Management",
+      icon: <UserOutlined />,
+      url: `/workspace/project-management/${projectId}/user-management`,
+    },
   ];
 
   return (
@@ -153,15 +163,26 @@ const HeaderProjectManagement = () => {
         }}
         className="w-full bg-transparent border-none [&_.ant-menu-item]:pt-[6px] [&_.ant-menu-item]:pb-[10px]"
         overflowedIndicator={null}
-        items={menuItems.map((item) => ({
-          key: item.key,
-          label: (
-            <span className="flex items-center gap-1 pr-1 text-sm font-semibold text-[#505258]">
-              {item.icon}
-              <span>{item.label}</span>
-            </span>
-          ),
-        }))}
+        items={menuItems
+          .filter((item) => {
+            if (
+              (item.key === "Time Tracking" ||
+                item.key === "User Management") &&
+              !isProjectAdmin
+            ) {
+              return false;
+            }
+            return true;
+          })
+          .map((item) => ({
+            key: item.key,
+            label: (
+              <span className="flex items-center gap-1 pr-1 text-sm font-semibold text-[#505258]">
+                {item.icon}
+                <span>{item.label}</span>
+              </span>
+            ),
+          }))}
       />
     </div>
   );

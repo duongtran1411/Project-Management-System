@@ -84,6 +84,10 @@ export class Endpoints {
       `project-contributor/invitation/confirm/${token}`,
     GET_ROLE_PROJECT_ID: (projectId: string) =>
       `project-contributor/project/role/${projectId}`,
+    DELETE_CONTRIBUTOR: (contributorId: string) =>
+      `project-contributor/${contributorId}`,
+    UPDATE_PROJECT_ROLE: (contributorId: string) =>
+      `project-contributor/${contributorId}`,
   };
 
   static readonly ProjectRole = {
@@ -136,7 +140,8 @@ export class Endpoints {
     DELETE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
     STATISTIC_BY_PROJECT: (projectId: string) =>
       `worklog/statistics/project/${projectId}`,
-    WORKLOG_TOPS: "worklog/top-contributors",
+    WORKLOG_TOPS: (projectId: string) =>
+      `worklog/top-contributors/${projectId}`,
     WORKLOG_BY_CONTRIBUTOR: (userId: string) => `worklog/contributor/${userId}`,
   };
 }

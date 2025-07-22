@@ -221,7 +221,7 @@ export class ProjectContributorService {
     const contributors = await ProjectContributor.find({ projectId })
       .select("-projectId")
       .populate([
-        { path: "userId", select: "fullName email avatar" },
+        { path: "userId", select: "fullName email avatar status" },
         { path: "projectRoleId", select: "name" },
       ])
       .lean();
@@ -299,16 +299,21 @@ export class ProjectContributorService {
       .filter((project) => project != null); // đảm bảo loại bỏ project null nếu contributor lỗi
   }
 
-  async getRoleContributorByProjectId(user: IUser, projectId: string): Promise<IProjectRole> {
-    const projectContributor = await ProjectContributor.find({ userId: user._id, projectId: projectId });
+  async getRoleContributorByProjectId(
+    user: IUser,
+    projectId: string
+  ): Promise<IProjectRole> {
+    const projectContributor = await ProjectContributor.find({
+      userId: user._id,
+      projectId: projectId,
+    });
 
     const projectRole = projectContributor.map((t) => t.projectRoleId);
 
-    const role = await ProjectRole.findById(projectRole).select('name');
+    const role = await ProjectRole.findById(projectRole).select("name");
 
-
-    if (!role) throw new Error('can not find role')
-    return role
+    if (!role) throw new Error("can not find role");
+    return role;
   }
 }
 
