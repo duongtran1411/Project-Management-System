@@ -417,6 +417,55 @@ export class ProjectContributorService {
       projectName: project.name,
     };
   }
+
+  async updateProjectLead(
+    projectId: string,
+    currentLeadId: string,
+    newLeadId: string
+  ): Promise<any> {
+    if (
+      !mongoose.Types.ObjectId.isValid(projectId) ||
+      !mongoose.Types.ObjectId.isValid(currentLeadId) ||
+      !mongoose.Types.ObjectId.isValid(newLeadId)
+    ) {
+      throw new Error("Invalid IDs provided");
+    }
+
+    const adminRole = await ProjectRole.findOne({ name: "PROJECT_ADMIN" });
+    const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
+    if (!adminRole || !contributorRole) {
+      throw new Error("Roles not found");
+    }
+
+    const currentLead = await ProjectContributor.findOne({
+      userId: currentLeadId,
+      projectId,
+    });
+    if (
+      !currentLead ||
+      currentLead.projectRoleId.toString() !== adminRole?._id?.toString()
+    ) {
+      throw new Error("Current lead is not PROJECT_ADMIN");
+    }
+
+    const newLead = await ProjectContributor.findOne({
+      userId: newLeadId,
+      projectId,
+    });
+    if (!newLead) {
+      throw new Error("New lead is not a contributor of this project");
+    }
+
+    currentLead.projectRoleId = contributorRole._id as any;
+    await currentLead.save();
+
+    newLead.projectRoleId = adminRole._id as any;
+    await newLead.save();
+
+    await Project.findByIdAndUpdate(projectId, { projectLead: newLeadId });
+
+    return { message: "Project lead updated successfully" };
+  }
 }
 
 export default new ProjectContributorService();
