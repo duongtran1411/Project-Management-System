@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { Alert, Image, Menu, Spin } from "antd";
 import {
   AppstoreOutlined,
@@ -29,14 +29,31 @@ const fetcherWithToken = async ([url, token]: [string, string]) => {
 };
 
 const HeaderProjectManagement = () => {
-  const [selectedKey, setSelectedKey] = useState("Board");
   const router = useRouter();
   const params = useParams();
   const projectId = params.projectId as string;
   const { role } = useRole();
   const isProjectAdmin = role.name === "PROJECT_ADMIN";
+  const isStakeholder = role.name === "STAKEHOLDER";
+  const pathname = usePathname();
+
+  // Tính key active từ pathname
+  const getKeyFromPath = () => {
+    const subpath = pathname.split(`/${projectId}`)[1];
+    if (!subpath || subpath === "" || subpath === "/") return "Board";
+    if (subpath.includes("summary")) return "Summary";
+    if (subpath.includes("timeline")) return "Timeline";
+    if (subpath.includes("backlog")) return "Backlog";
+    if (subpath.includes("calendar")) return "Calendar";
+    if (subpath.includes("list")) return "List";
+    if (subpath.includes("time-tracking")) return "Time Tracking";
+    if (subpath.includes("user-management")) return "User Management";
+    if (subpath.includes("feedback")) return "Feedback";
+    return "Board";
+  };
+  const selectedKey = getKeyFromPath();
+  
   const [token, setToken] = useState("");
-  const isStakeholder = role.name === "STAKEHOLDER"
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (access_token) {
@@ -59,7 +76,6 @@ const HeaderProjectManagement = () => {
       : null,
     fetcherWithToken
   );
-
   const menuItems = [
     {
       key: "Summary",
@@ -116,8 +132,9 @@ const HeaderProjectManagement = () => {
       label: "Feedback",
       icon: <SnippetsOutlined />,
       url: `/workspace/project-management/${projectId}/feedback`,
-    }
+    },
   ];
+
 
   return (
     <div className="w-full px-4 pt-3 bg-white shadow">
@@ -163,7 +180,6 @@ const HeaderProjectManagement = () => {
         mode="horizontal"
         selectedKeys={[selectedKey]}
         onClick={(e) => {
-          setSelectedKey(e.key);
           const selectedItem = menuItems.find((item) => item.key === e.key);
           if (selectedItem?.url) {
             router.push(selectedItem.url);
@@ -181,7 +197,8 @@ const HeaderProjectManagement = () => {
               return false;
             }
 
-            if((item.key === "Feedback") && (isProjectAdmin || isStakeholder)) return false;
+            if (item.key === "Feedback" && (isProjectAdmin || isStakeholder))
+              return true;
             return true;
           })
           .map((item) => ({

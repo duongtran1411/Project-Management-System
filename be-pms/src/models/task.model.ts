@@ -30,8 +30,7 @@ const taskSchema = new Schema<ITask>(
     },
     labels: {
       type:String,
-      enum: ["task", "bug", "story"],
-      required: true,
+      enum: ["task", "bug", "story"]
     },
     epic: {
       type: Schema.Types.ObjectId,

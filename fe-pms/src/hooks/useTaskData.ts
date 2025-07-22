@@ -13,6 +13,7 @@ import {
   updateAssigneeTask,
   updateEpicTask,
   updateReporterForTask,
+  updateTaskAssignee,
   updateTaskDate,
   updateTaskStatus,
 } from "@/lib/services/task/task.service";
@@ -128,7 +129,8 @@ export const useTaskData = (task: Task | undefined) => {
 
   const onAssigneeChange = async (assigneeId: string) => {
     try {
-      const response = await updateAssigneeTask(task?._id || "", assigneeId);
+      if(assigneeId === 'unassigned') assigneeId = ''
+      const response = await updateTaskAssignee(task?._id || "", assigneeId);
       if (response.success) {
         setAssignee(response.data.assignee);
       }

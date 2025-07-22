@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { useRole } from "@/lib/auth/auth-project-context";
 import { showWarningToast } from "@/components/common/toast/toast";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
 
@@ -66,6 +67,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
   const isReadOnlyContributor = role.name === "CONTRIBUTOR";
   const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const isDisabled = isReadOnlyContributor && isReadOnlyStakeholder;
+  const { projectId } = useParams<{ projectId: string }>();
   const handleMenuClick = async ({ key }: { key: string }) => {
     const nextStatus = key as Status;
     onStatusChange(nextStatus);
@@ -245,9 +247,6 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
             <DatePicker
               value={startDate ? dayjs(startDate).startOf("day") : null}
               onChange={(date) => {
-                if (date && date.isBefore(dayjs().startOf("day"))) {
-                  return;
-                }
                 onStartDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
@@ -261,9 +260,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
             <DatePicker
               value={dueDate ? dayjs(dueDate).startOf("day") : null}
               onChange={(date) => {
-                if (date && date.isBefore(dayjs().startOf("day"))) {
-                  return;
-                }
+                  
                 onDueDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
@@ -275,7 +272,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
           <div className="flex flex-col space-y-2">
             <span className="font-semibold text-gray-600">Sprint:</span>
             <span className="text-blue-600 truncate">
-              <Link href={'/workspace/backlog'}>{task.milestones?.name || "None"}</Link>
+              <Link href={`/workspace/project-management/${projectId}/backlog`}>{task.milestones?.name || "None"}</Link>
             </span>
           </div>
 
