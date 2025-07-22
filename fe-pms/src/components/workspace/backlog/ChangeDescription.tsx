@@ -10,7 +10,6 @@ import { useState, useEffect } from "react";
 interface Props {
   task: Task;
   description: string | null;
-
   setDescription: React.Dispatch<React.SetStateAction<any>>;
   mutateTask: () => void;
 }

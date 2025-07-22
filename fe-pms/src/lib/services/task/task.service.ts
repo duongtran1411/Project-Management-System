@@ -25,14 +25,18 @@ export const createTask = async (task: TaskModel) => {
   }
 };
 
-export const createTaskBoard = async (taskName: string, milestones: string, projectId: string) => {
+export const createTaskBoard = async (
+  taskName: string,
+  milestones: string,
+  projectId: string
+) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
       .post(`${Endpoints.Task.CREATE_TASK}`, {
         name: taskName,
         milestones: milestones,
-        projectId: projectId
+        projectId: projectId,
       });
 
     if (response.status === 201) {
@@ -44,7 +48,7 @@ export const createTaskBoard = async (taskName: string, milestones: string, proj
       showErrorToast(error.response.data.message || "Fail to create new task!");
     }
   }
-}
+};
 
 export const getTasksByProject = async (
   projectId: string
@@ -62,14 +66,11 @@ export const getTasksByProject = async (
   }
 };
 
-
-
-
 // export const updateTaskStatus = async (taskId: string, status: string) => {
 //   try {
 //     const response = await axiosService
 //       .getAxiosInstance()
-//       .put(Endpoints.Task.UPDATE_TASK(taskId), { status }); 
+//       .put(Endpoints.Task.UPDATE_TASK(taskId), { status });
 
 //     if (response.data?.success) {
 //       showSuccessToast("Cập nhật trạng thái status thành công!");
@@ -251,13 +252,13 @@ export const deleteOneTask = async (taskId: string) => {
       .getAxiosInstance()
       .delete(`${Endpoints.Task.DELETE_TASK(taskId)}`);
 
-    return response.data
+    return response.data;
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi xóa task!";
     showErrorToast(message);
     throw error;
   }
-}
+};
 
 export const updateTaskAssignee = async (
   taskId: string,
@@ -269,11 +270,14 @@ export const updateTaskAssignee = async (
       .patch(Endpoints.Task.UPDATE_ASSIGNEE(taskId), { assignee });
 
     if (response.status === 200) {
-      showSuccessToast("Cập nhật nhiệm vụ thành công!");
+      showSuccessToast(
+        response.data?.message || "Cập nhật assignee thành công!"
+      );
       return response?.data.data;
     }
   } catch (error: any) {
-    const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật assignee!";
     showErrorToast(message);
     throw error;
   }
@@ -292,7 +296,7 @@ export const updateTaskEpic = async (taskId: string, epic: string) => {
       return response?.data.data;
     }
   } catch (error: any) {
-    const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
+    const message = error?.response?.data?.message || "Lỗi khi cập nhật epic!";
     showErrorToast(message);
     throw error;
   }
@@ -362,21 +366,22 @@ export const updateTaskReporter = async (taskId: string, reporter: string) => {
   }
 };
 
-export const updateReporterForTask = async (taskId: string, reporter: string) => {
+export const updateReporterForTask = async (
+  taskId: string,
+  reporter: string
+) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
       .patch(Endpoints.Task.UPDATE_REPORTER(taskId), { reporter });
 
-    return response.data
+    return response.data;
   } catch (error: any) {
     const message = error?.response?.data?.message || "Lỗi khi cập nhật task!";
     showErrorToast(message);
     throw error;
   }
 };
-
-
 
 export const updateTaskName = async (taskId: string, name: string) => {
   try {
@@ -398,14 +403,13 @@ export const updateTaskName = async (taskId: string, name: string) => {
   }
 };
 
-
 export const getTaskNotDone = async (milestonesId: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
       .get(`${Endpoints.Task.COUNT_NUMBER_TASK_NOT_DONE(milestonesId)}`);
 
-    return response.data
+    return response.data;
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
@@ -414,20 +418,22 @@ export const getTaskNotDone = async (milestonesId: string) => {
   }
 };
 
-export const updateMileStoneForTasks = async (milestoneId: string, milestoneIdMove: string) => {
+export const updateMileStoneForTasks = async (
+  milestoneId: string,
+  milestoneIdMove: string
+) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
       .patch(`${Endpoints.Task.UPDATE_MILESTONES_FOR_TASK(milestoneId)}`, {
-        milestonesIdMove: milestoneIdMove
+        milestonesIdMove: milestoneIdMove,
       });
 
-    return response.data
+    return response.data;
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
     showErrorToast(message);
     throw error;
   }
-}
-
+};
