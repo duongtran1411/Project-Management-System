@@ -47,11 +47,6 @@ export default function AdminLayout({
 
   const items: MenuProps["items"] = [
     {
-      label: "Profile",
-      key: "profile",
-      icon: <UserOutlined />,
-    },
-    {
       type: "divider",
     },
     {
@@ -87,7 +82,6 @@ export default function AdminLayout({
                   onClick={() => router.push("/admin")}>
                   <MdDashboard />
                   <span className="flex-1 text-left">Dashboard</span>
-                  <HiOutlineChevronDown />
                 </button>
               </li>
 

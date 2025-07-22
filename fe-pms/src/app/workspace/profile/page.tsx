@@ -106,8 +106,7 @@ const UserProfilePage = () => {
             type="default"
             className="border-blue-500 text-blue-600 mb-6 w-full"
             style={{ borderColor: "#3b82f6" }}
-            onClick={handleOpenEdit}
-          >
+            onClick={handleOpenEdit}>
             Manage your account
           </Button>
 
@@ -150,8 +149,7 @@ const UserProfilePage = () => {
                       router.push(
                         `/workspace/project-management/${item.projectId}`
                       )
-                    }
-                  >
+                    }>
                     <List.Item.Meta
                       avatar={
                         <Image
@@ -185,15 +183,13 @@ const UserProfilePage = () => {
               <span>
                 <LockOutlined /> Change your password
               </span>
-            }
-          >
+            }>
             {showChangePassword ? (
               <Form
                 form={form}
                 layout="vertical"
                 onFinish={handlePasswordFinish}
-                className="max-w-md"
-              >
+                className="max-w-md">
                 <Form.Item
                   name="oldPassword"
                   label="Current password"
@@ -202,8 +198,7 @@ const UserProfilePage = () => {
                       required: true,
                       message: "Please enter your current password",
                     },
-                  ]}
-                >
+                  ]}>
                   <Input.Password />
                 </Form.Item>
                 <Form.Item
@@ -214,8 +209,12 @@ const UserProfilePage = () => {
                       required: true,
                       message: "Please enter your new password",
                     },
-                  ]}
-                >
+                    {
+                      pattern: /^[A-Za-z\d]{8,}$/,
+                      message:
+                        "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
+                    },
+                  ]}>
                   <Input.Password />
                 </Form.Item>
                 <Form.Item
@@ -227,6 +226,11 @@ const UserProfilePage = () => {
                       required: true,
                       message: "Please confirm your new password",
                     },
+                    {
+                      pattern: /^[A-Za-z\d]{8,}$/,
+                      message:
+                        "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
+                    },
                     ({ getFieldValue }) => ({
                       validator(_, value) {
                         if (!value || getFieldValue("newPassword") === value) {
@@ -237,8 +241,7 @@ const UserProfilePage = () => {
                         );
                       },
                     }),
-                  ]}
-                >
+                  ]}>
                   <Input.Password />
                 </Form.Item>
                 <Form.Item>
@@ -253,8 +256,7 @@ const UserProfilePage = () => {
             ) : (
               <Button
                 type="primary"
-                onClick={() => setShowChangePassword(true)}
-              >
+                onClick={() => setShowChangePassword(true)}>
                 Change your password
               </Button>
             )}

@@ -3,6 +3,7 @@ import ProjectContributor from "../models/project.contributor.model";
 import Project, { IProject } from "../models/project.model";
 import ProjectRole from "../models/project.role.model";
 import Workspace from "../models/workspace.model";
+import WorkspaceService from "./workspace.service";
 
 export class ProjectService {
   async createProject(data: Partial<IProject>, user: any): Promise<any> {
@@ -36,6 +37,20 @@ export class ProjectService {
       { path: "createdBy", select: "fullName email" },
       { path: "updatedBy", select: "fullName email" },
     ]);
+
+    // Tự động thêm project vào workspace nếu có workspaceId
+    if (data.workspaceId) {
+      try {
+        await WorkspaceService.addProjectToWorkspace(
+          data.workspaceId.toString(),
+          (project._id as any).toString(),
+          user
+        );
+      } catch (error) {
+        console.error("Failed to add project to workspace:", error);
+        // Không throw error vì project đã được tạo thành công
+      }
+    }
 
     const projectAdminRole = await ProjectRole.findOne({
       name: "PROJECT_ADMIN",
@@ -110,8 +125,24 @@ export class ProjectService {
   async deleteProject(projectId: string): Promise<boolean> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return false;
 
+    const project = await Project.findById(projectId);
+    if (!project) return false;
+
     const deleted = await Project.findByIdAndDelete(projectId);
     if (!deleted) return false;
+
+    // Xóa project khỏi workspace nếu có
+    if (project.workspaceId) {
+      try {
+        await WorkspaceService.removeProjectFromWorkspace(
+          project.workspaceId.toString(),
+          projectId,
+          { _id: project.updatedBy } // Sử dụng updatedBy của project
+        );
+      } catch (error) {
+        console.error("Failed to remove project from workspace:", error);
+      }
+    }
 
     await ProjectContributor.deleteMany({ projectId });
 

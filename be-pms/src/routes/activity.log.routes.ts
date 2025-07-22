@@ -199,11 +199,12 @@ router.get("/export", authenticate, activityLogController.exportLogsToCSV);
  *           schema:
  *             type: object
  *             properties:
- *               daysOld: { type: integer, default: 90 }
+ *               olderThanDays: { type: integer, default: 90, description: "Xóa các log cũ hơn X ngày tính từ hôm nay" }
+ *               beforeDate: { type: string, format: date, description: "Xóa các log trước ngày này (ưu tiên nếu truyền vào)" }
  *     responses:
  *       200: { description: Xóa logs cũ thành công }
  *       401: { description: Không có quyền truy cập }
  */
-router.post("/clean", authenticate, activityLogController.cleanOldLogs);
+router.post("/clean", authenticate, activityLogController.deleteLogsOlderThan);
 
 export default router;
