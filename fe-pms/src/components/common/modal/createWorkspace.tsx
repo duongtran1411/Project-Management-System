@@ -39,7 +39,7 @@ const CreateWorkspaceModal: React.FC<Props> = ({
       }
       open={isModalOpen}
       onCancel={handleCancel}
-      footer={null} // Không dùng nút OK/Cancel mặc định
+      footer={null}
     >
       <Divider />
       <Form

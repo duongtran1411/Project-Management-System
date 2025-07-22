@@ -819,7 +819,7 @@ const BoardPage = () => {
                               showWarningToast(
                                 "Bạn cần tạo Milestones ở backlog trước!"
                               );
-                              return; 
+                              return;
                             }
                             setShowCreateInput(!showCreateInput);
                           }}>
@@ -827,7 +827,7 @@ const BoardPage = () => {
                             ? "Close"
                             : "Create"}
                         </Button>
-                        {showCreateInput && milestones.length > 0 ? (
+                        {showCreateInput && (
                           <div className="mt-3">
                             <CreateTaskInput
                               onCreate={async (name, milestones) => {
@@ -837,14 +837,10 @@ const BoardPage = () => {
                                   milestones,
                                   projectId
                                 );
-                                taskMutate(); // refresh board
+                                taskMutate();
                               }}
                             />
                           </div>
-                        ) : (
-                          showWarningToast(
-                            "Bạn cần tạo Milestones ở backlog trước!"
-                          )
                         )}
                       </>
                     )}

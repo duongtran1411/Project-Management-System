@@ -8,6 +8,10 @@ import { Reporter } from "@/models/reporter/reporter.model";
 import { Epic } from "@/models/epic/epic.model";
 import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
 import dayjs from "dayjs";
+import { format } from "date-fns";
+import { useRole } from "@/lib/auth/auth-project-context";
+import { showWarningToast } from "@/components/common/toast/toast";
+import Link from "next/link";
 
 type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
 
@@ -58,6 +62,10 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
   onStartDateChange,
   onDueDateChange,
 }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
+  const isDisabled = isReadOnlyContributor && isReadOnlyStakeholder;
   const handleMenuClick = async ({ key }: { key: string }) => {
     const nextStatus = key as Status;
     onStatusChange(nextStatus);
@@ -77,15 +85,14 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
             onClick: handleMenuClick,
           }}
           trigger={["click"]}
-        >
+          disabled={isReadOnlyStakeholder}>
           <Tag
             color={statusColors[status]}
             style={{
               cursor: "pointer",
               fontWeight: 600,
               padding: "6px 12px",
-            }}
-          >
+            }}>
             {status.replaceAll("_", " ")} <DownOutlined />
           </Tag>
         </Dropdown>
@@ -165,19 +172,24 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 },
               }}
               trigger={["click"]}
-            >
+              disabled={isReadOnlyStakeholder}>
               <Tooltip
                 title={`Assignee: ${assignee?.fullName || "Unassigned"}`}
-                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
-              >
+                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
                 <Avatar
                   className={`cursor-pointer text-white ${
                     assignee?.fullName === "Unassigned" ? "bg-gray-400" : ""
                   }`}
                   size="default"
                   src={assignee?.avatar}
-                  onClick={(e) => e?.stopPropagation()}
-                >
+                  onClick={(e) => {
+                    e?.stopPropagation();
+                    if (isDisabled) {
+                      showWarningToast(
+                        "Bạn không có quyền cập nhật assignee cho task"
+                      );
+                    }
+                  }}>
                   {assignee?.fullName?.[0] || <UserOutlined />}
                 </Avatar>
                 <p className="truncate">{assignee?.fullName || "Unassigned"}</p>
@@ -197,12 +209,20 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
             <Select
               showSearch
               placeholder="Select epic"
-              style={{ width: "100%" }}
+              style={{
+                width: "100%",
+                pointerEvents: isDisabled ? "none" : "auto",
+                opacity: isDisabled ? 0.5 : 1,
+                cursor: isDisabled ? "not-allowed" : "pointer",
+              }}
               value={epic?._id || null}
               onChange={(value) => {
                 const selectedEpic = epics.find((e) => e._id === value);
                 if (selectedEpic) {
                   onEpicChange(selectedEpic._id || "");
+                }
+                if (isDisabled) {
+                  showWarningToast("Bạn không có quyền cập nhật epic cho task");
                 }
               }}
               optionLabelProp="label"
@@ -215,6 +235,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                   </div>
                 ),
               }))}
+              disabled={isReadOnlyStakeholder && isReadOnlyContributor}
             />
           </div>
 
@@ -230,6 +251,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 onStartDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
+              disabled={isReadOnlyContributor && isReadOnlyStakeholder}
             />
           </div>
 
@@ -245,6 +267,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 onDueDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
+              disabled={isReadOnlyContributor && isReadOnlyStakeholder}
             />
           </div>
 
@@ -252,7 +275,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
           <div className="flex flex-col space-y-2">
             <span className="font-semibold text-gray-600">Sprint:</span>
             <span className="text-blue-600 truncate">
-              {task.milestones?.name || "None"}
+              <Link href={'/workspace/backlog'}>{task.milestones?.name || "None"}</Link>
             </span>
           </div>
 
@@ -311,17 +334,15 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 },
               }}
               trigger={["click"]}
-            >
+              disabled={isReadOnlyContributor && isReadOnlyStakeholder}>
               <Tooltip
                 title={`Reporter: ${reporter?.fullName || "Unassigned"}`}
-                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
-              >
+                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
                 <Avatar
                   className={`cursor-pointer text-white`}
                   size="default"
                   src={reporter?.avatar}
-                  onClick={(e) => e?.stopPropagation()}
-                >
+                  onClick={(e) => e?.stopPropagation()}>
                   {reporter?.fullName?.[0] || <UserOutlined />}
                 </Avatar>
                 <p className="truncate">
@@ -329,6 +350,22 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 </p>
               </Tooltip>
             </Dropdown>
+            <div className="mt-4 mb-2">
+              <p className="text-[13px] p-1 ml-2 text-gray-500">
+                Created at:{" "}
+                {format(
+                  new Date(task?.createdAt ? task.createdAt : ""),
+                  "yyyy-MM-dd"
+                )}
+              </p>
+              <p className="text-[13px] p-1 ml-2 text-gray-500">
+                Updated at:{" "}
+                {format(
+                  new Date(task?.updatedAt ? task.updatedAt : ""),
+                  "yyyy-MM-dd"
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </div>
