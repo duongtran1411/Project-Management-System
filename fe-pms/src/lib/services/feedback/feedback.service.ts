@@ -16,3 +16,17 @@ export const createFeedback = async (projectContributorId: string, message: stri
         }
     }
 }
+
+export const updateFeedback = async (projectId:string, message: string, type: string) => {
+    try {
+        const response = await axiosService.getAxiosInstance().put(`${Endpoints.Feedback.UPDATE(projectId)}`,{
+            message: message,
+            type: type
+        })
+        return response.data
+    } catch (error: any) {
+        if (error) {
+            showErrorToast(error.response.data.message || "Lỗi khi cập nhật sprint!");
+        }
+    }
+}

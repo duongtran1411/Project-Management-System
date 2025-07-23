@@ -8,5 +8,9 @@ export interface FeedBack{
     type:string,
     createdAt:string,
     updatedAt:string,
-    createdBy: User
+    createdBy: User,
+    projectContributorId: {
+        _id:string
+        userId:User
+    }
 }

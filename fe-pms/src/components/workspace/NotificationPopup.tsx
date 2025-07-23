@@ -278,19 +278,18 @@ const NotificationPopup: React.FC = () => {
           className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
             !notification.isRead ? "bg-blue-50" : "bg-white"
           }`}
-          onClick={handleClick}
-        >
+          onClick={handleClick}>
           <div className="flex items-start gap-3">
             <Avatar
               src={
+                notification.senderId !== null &&
                 typeof notification.senderId === "object" &&
                 notification.senderId.avatar
                   ? notification.senderId.avatar
                   : undefined
               }
               style={{ backgroundColor: "#1890ff" }}
-              size={32}
-            >
+              size={32}>
               {getUserAvatar(notification.senderId)}
             </Avatar>
 
@@ -328,7 +327,7 @@ const NotificationPopup: React.FC = () => {
 
               {/* Hiển thị người gửi nếu có */}
               {typeof notification.senderId === "object" &&
-                notification.senderId.fullname && (
+                notification.senderId?.fullname && (
                   <div className="mt-2">
                     <Text className="text-xs text-gray-500">
                       Gửi bởi: {notification.senderId.fullname}
@@ -361,8 +360,7 @@ const NotificationPopup: React.FC = () => {
         label: (
           <div
             className="w-[500px] max-h-[600px] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
+            onClick={(e) => e.stopPropagation()}>
             <div className="flex-shrink-0 bg-white border-b border-gray-200">
               <div className="flex items-center justify-between p-4">
                 <Title level={5} className="mb-0">
@@ -442,8 +440,7 @@ const NotificationPopup: React.FC = () => {
                           <Button
                             type="link"
                             onClick={handleLoadMore}
-                            loading={loading}
-                          >
+                            loading={loading}>
                             Load more
                           </Button>
                         </div>
@@ -501,8 +498,7 @@ const NotificationPopup: React.FC = () => {
       getPopupContainer={(triggerNode) =>
         triggerNode.parentElement || document.body
       }
-      autoAdjustOverflow={false}
-    >
+      autoAdjustOverflow={false}>
       <Badge count={unreadCount > 0 ? unreadCount : 0} offset={[-5, 5]}>
         <Button
           type="text"
