@@ -55,6 +55,7 @@ export class Endpoints {
       `task/board/${projectId}`,
     UPDATE_MILESTONES_FOR_TASK: (milestoneId: string) =>
       `/task/updatemilestones/task/${milestoneId}`,
+    MY_TASKS: "task/my-tasks",
   };
 
   static readonly Milestone = {
@@ -69,9 +70,8 @@ export class Endpoints {
 
   static readonly Workspace = {
     GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
-    CREATE: 'workspace',
-    GET_BY_USER: 'workspace/getbyuser'
-
+    CREATE: "workspace",
+    GET_BY_USER: "workspace/getbyuser",
   };
 
   static readonly Project = {
@@ -166,8 +166,8 @@ export class Endpoints {
   };
 
   static readonly Feedback = {
-    CREATE: 'feedback',
-    GET_BY_PROJECT_ID: (projectId:string) =>  `feedback/${projectId}`,
-    UPDATE: (feedbackId:string) =>  `feedback/${feedbackId}`
-  }
+    CREATE: "feedback",
+    GET_BY_PROJECT_ID: (projectId: string) => `feedback/${projectId}`,
+    UPDATE: (feedbackId: string) => `feedback/${feedbackId}`,
+  };
 }
