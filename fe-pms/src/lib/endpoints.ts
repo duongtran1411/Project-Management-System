@@ -164,4 +164,10 @@ export class Endpoints {
       `worklog/top-contributors/${projectId}`,
     WORKLOG_BY_CONTRIBUTOR: (userId: string) => `worklog/contributor/${userId}`,
   };
+
+  static readonly Feedback = {
+    CREATE: 'feedback',
+    GET_BY_PROJECT_ID: (projectId:string) =>  `feedback/${projectId}`,
+    UPDATE: (feedbackId:string) =>  `feedback/${feedbackId}`
+  }
 }
