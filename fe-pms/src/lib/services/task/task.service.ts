@@ -437,3 +437,20 @@ export const updateMileStoneForTasks = async (
     throw error;
   }
 };
+
+
+export const getMyTasks = async (): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_MY_TASKS);
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy danh sách task cá nhân!";
+    showErrorToast(message);
+    return null;
+  }
+};
+
