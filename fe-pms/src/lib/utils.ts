@@ -3,6 +3,7 @@ import { Constants } from "@/lib/constants";
 export const logout = () => {
   localStorage.removeItem(Constants.API_TOKEN_KEY);
   localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+  localStorage.removeItem('currentUser')
   const currrentPath = window.location.pathname;
   if (currrentPath.startsWith("/authentication/login")) return;
 
@@ -38,3 +39,10 @@ export const formatDateTime = (date: string) => {
 
 export const isValidEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+export const comletePercentage = (
+  totalTimeSpent: number,
+  totalRemainTime: number
+) => {
+  return (totalTimeSpent / (totalTimeSpent + totalRemainTime)) * 100;
+};

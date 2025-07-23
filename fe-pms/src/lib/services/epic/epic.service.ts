@@ -19,22 +19,24 @@ export const getEpicsByProject = async (projectId: string) => {
   }
 };
 
-
-
 export const updateEpic = async (epicId: string, data: { name: string }) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
       .put(Endpoints.Epic.UPDATE_EPIC(epicId), data);
-    return response.data;
+    if (response.status === 200) {
+      showSuccessToast(response.data?.message || "Cập nhật epic thành công!");
+      return response?.data;
+    } else {
+      showErrorToast(response.data?.message || "Cập nhật epic thất bại");
+      return null;
+    }
   } catch (error: any) {
-    const message =
-      error?.response?.data?.message || "Failed to update epic!";
+    const message = error?.response?.data?.message || "Failed to update epic!";
     showErrorToast(message);
     throw error;
   }
 };
-
 
 export const createEpic = async (epicData: any) => {
   try {
@@ -55,3 +57,21 @@ export const createEpic = async (epicData: any) => {
   }
 };
 
+export const deleteEpic = async (epicId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .delete(Endpoints.Epic.DELETE_EPIC(epicId));
+    if (response.status === 200) {
+      showSuccessToast(response.data?.message || "Xóa epic thành công!");
+      return response?.data;
+    } else {
+      showErrorToast(response.data?.message || "Xóa epic thất bại");
+      return null;
+    }
+  } catch (error: any) {
+    const message = error?.response?.data?.message || "Failed to delete epic!";
+    showErrorToast(message);
+    throw error;
+  }
+};

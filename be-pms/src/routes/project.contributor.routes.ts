@@ -281,6 +281,100 @@ router.get(
  *       400:
  *         description: Lỗi không lấy được role project
  */
-router.get('/project/role/:projectId',authenticate,projectContributorController.getRoleByProjectId)
+router.get(
+  "/project/role/:projectId",
+  authenticate,
+  projectContributorController.getRoleByProjectId
+);
+
+/**
+ * @openapi
+ * /project-contributor/project/{projectId}/statistics:
+ *   get:
+ *     summary: Lấy thống kê tổng quan về project
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Thống kê tổng quan của project
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalUsers:
+ *                       type: number
+ *                       description: Tổng số người dùng trong project
+ *                     adminCount:
+ *                       type: number
+ *                       description: Số quản trị viên (PROJECT_ADMIN)
+ *                     activeUsers:
+ *                       type: number
+ *                       description: Số người dùng đang hoạt động (có lastLogin trong 30 ngày)
+ *                     projectName:
+ *                       type: string
+ *                       description: Tên project
+ *       400:
+ *         description: Lỗi không lấy được thống kê project
+ */
+router.get(
+  "/project/:projectId/statistics",
+  projectContributorController.getProjectStatistics
+);
+
+/**
+ * @openapi
+ * /project-contributor/project/{projectId}/update-lead:
+ *   put:
+ *     summary: Chuyển quyền PROJECT_ADMIN cho contributor khác
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentLeadId, newLeadId]
+ *             properties:
+ *               currentLeadId:
+ *                 type: string
+ *                 description: ID của user hiện tại là PROJECT_ADMIN
+ *               newLeadId:
+ *                 type: string
+ *                 description: ID của user sẽ được chuyển thành PROJECT_ADMIN
+ *     responses:
+ *       200:
+ *         description: Cập nhật project lead thành công
+ *       400:
+ *         description: Lỗi cập nhật project lead
+ */
+router.put(
+  "/project/:projectId/update-lead",
+  projectContributorController.updateProjectLead
+);
 
 export default router;

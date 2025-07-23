@@ -275,11 +275,19 @@ export class ProjectContributorController {
     }
   };
 
-  getRoleByProjectId = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  getRoleByProjectId = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
       const { projectId } = req.params;
-      const user = req.user
-      const role = await projectContributorService.getRoleContributorByProjectId(user, projectId)
+      const user = req.user;
+      const role =
+        await projectContributorService.getRoleContributorByProjectId(
+          user,
+          projectId
+        );
       if (!role) {
         res.status(400).json({
           success: false,
@@ -290,13 +298,13 @@ export class ProjectContributorController {
 
       res.status(200).json({
         status: 200,
-        message: 'Lấy role project thành công',
+        message: "Lấy role project thành công",
         success: true,
         data: {
           role: role,
-          user: user
-        }
-      })
+          user: user,
+        },
+      });
     } catch (error: any) {
       res.status(400).json({
         success: false,
@@ -304,7 +312,73 @@ export class ProjectContributorController {
         statusCode: 400,
       });
     }
-  }
+  };
+
+  updateProjectLead = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const { currentLeadId, newLeadId } = req.body;
+      if (!projectId || !currentLeadId || !newLeadId) {
+        res.status(400).json({
+          success: false,
+          message: "projectId, currentLeadId, newLeadId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+      const result = await projectContributorService.updateProjectLead(
+        projectId,
+        currentLeadId,
+        newLeadId
+      );
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật project lead thành công",
+        data: result,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi cập nhật project lead",
+        statusCode: 400,
+      });
+    }
+  };
+
+  // Lấy thống kê tổng quan về project
+  getProjectStatistics = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+
+      if (!projectId) {
+        res.status(400).json({
+          success: false,
+          message: "ProjectId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const statistics = await projectContributorService.getProjectStatistics(
+        projectId
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Lấy thống kê project thành công",
+        data: statistics,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Get project statistics error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi lấy thống kê project",
+        statusCode: 400,
+      });
+    }
+  };
 }
 
 export default new ProjectContributorController();

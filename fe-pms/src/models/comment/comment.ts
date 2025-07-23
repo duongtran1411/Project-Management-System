@@ -10,5 +10,8 @@ export interface Comment {
   attachments: {
     filename: string;
     url: string;
-  };
+  }[];
+  createdAt?: string;
+  isEdited?: boolean;
+  editedAt?: string;
 }

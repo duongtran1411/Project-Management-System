@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import { Comment, IComment, IUser } from "../models";
+import { Comment, IComment, IUser, Task } from "../models";
 import cloudinary from "../utils/cloudinary";
 import NotificationService from "./notification.service";
 import { emitNewComment } from "../utils/socket";
@@ -46,6 +46,13 @@ class CommentService {
       try {
         for (const mentionedUserId of commentData.mentions) {
           if (mentionedUserId.toString() !== (user._id as string).toString()) {
+            // Lấy thông tin task và project để truyền vào metadata
+            const task = await Task.findById(commentData.task).populate(
+              "projectId",
+              "name"
+            );
+            const project = task?.projectId;
+
             await NotificationService.createNotification({
               recipientId: mentionedUserId.toString(),
               senderId: user._id as string,
@@ -55,6 +62,11 @@ class CommentService {
               metadata: {
                 commentText: commentData.content,
                 taskId: commentData.task.toString(),
+                projectId: project?._id?.toString(),
+                projectName:
+                  typeof project === "object" && project && "name" in project
+                    ? (project as any).name
+                    : undefined,
                 mentionedUsers: [mentionedUserId.toString()],
               },
             });
@@ -77,6 +89,104 @@ class CommentService {
     }
 
     return comment;
+  }
+
+  async update(
+    commentId: string,
+    updateData: { content: string; mentions: Types.ObjectId[] },
+    user: IUser
+  ): Promise<IComment> {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      throw new Error("Comment không tồn tại");
+    }
+
+    // Kiểm tra quyền edit (chỉ author mới được edit)
+    if (comment.author.toString() !== (user._id as string).toString()) {
+      throw new Error("Bạn không có quyền chỉnh sửa comment này");
+    }
+
+    // Update comment
+    const updatedComment = await Comment.findByIdAndUpdate(
+      commentId,
+      {
+        content: updateData.content,
+        mentions: updateData.mentions,
+        isEdited: true,
+        editedAt: new Date(),
+      },
+      { new: true }
+    )
+      .populate("author", "fullName avatar")
+      .populate("mentions", "fullName avatar");
+
+    if (!updatedComment) {
+      throw new Error("Cập nhật comment thất bại");
+    }
+
+    // Create notifications for new mentions
+    if (updateData.mentions && updateData.mentions.length > 0) {
+      try {
+        for (const mentionedUserId of updateData.mentions) {
+          if (mentionedUserId.toString() !== (user._id as string).toString()) {
+            // Lấy thông tin task và project để truyền vào metadata
+            const task = await Task.findById(comment.task).populate(
+              "projectId",
+              "name"
+            );
+            const project = task?.projectId;
+
+            await NotificationService.createNotification({
+              recipientId: mentionedUserId.toString(),
+              senderId: user._id as string,
+              type: "MENTION",
+              entityType: "Comment",
+              entityId: commentId,
+              metadata: {
+                commentText: updateData.content,
+                taskId: comment.task.toString(),
+                projectId: project?._id?.toString(),
+                projectName:
+                  typeof project === "object" && project && "name" in project
+                    ? (project as any).name
+                    : undefined,
+                mentionedUsers: [mentionedUserId.toString()],
+              },
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to create mention notifications:", error);
+      }
+    }
+
+    return updatedComment;
+  }
+
+  async delete(commentId: string): Promise<void> {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      throw new Error("Comment không tồn tại");
+    }
+
+    // Xóa attachments trên Cloudinary nếu có
+    if (comment.attachments && comment.attachments.length > 0) {
+      try {
+        for (const attachment of comment.attachments) {
+          if (attachment.url.includes("cloudinary.com")) {
+            // Extract public_id from URL
+            const urlParts = attachment.url.split("/");
+            const publicId = urlParts[urlParts.length - 1].split(".")[0];
+            await cloudinary.deleteImage(publicId);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to delete attachments from Cloudinary:", error);
+      }
+    }
+
+    // Xóa comment
+    await Comment.findByIdAndDelete(commentId);
   }
 
   async getCommentByTask(taskId: string): Promise<IComment[]> {

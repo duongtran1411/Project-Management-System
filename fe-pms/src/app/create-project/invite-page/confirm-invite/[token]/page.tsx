@@ -1,10 +1,11 @@
 "use client";
 
-import { Alert, Spin, notification } from "antd";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import type { NotificationArgsProps } from "antd";
 import { confirmInvite } from "@/lib/services/projectContributor/projectContributor.service";
+import { HomeOutlined } from "@ant-design/icons";
+import type { NotificationArgsProps } from "antd";
+import { Button, Result, Spin, notification } from "antd";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type NotificationPlacement = NotificationArgsProps["placement"];
 
@@ -20,15 +21,20 @@ export default function ConfirmInviteSuccessPage() {
   useEffect(() => {
     const confirm = async (token: string) => {
       try {
+        setLoading(true);
         const response = await confirmInvite(token);
 
         if (response) {
-          notificationSuccess("topLeft");
-          router.push("/");
+          setTimeout(() => {
+            notificationSuccess("topLeft");
+            router.push("/");
+          }, 1000);
           return;
         } else {
+          setTimeout(() => {
+            notificationError("topLeft");
+          }, 1000);
           setError(true);
-          notificationError("topLeft");
         }
       } catch (e) {
         console.log(e);
@@ -42,7 +48,7 @@ export default function ConfirmInviteSuccessPage() {
     if (typeof tokenConfirm === "string" && tokenConfirm.trim() !== "") {
       confirm(tokenConfirm);
     }
-  }, [tokenConfirm, router]);
+  }, [tokenConfirm]);
 
   const notificationSuccess = (placement: NotificationPlacement) => {
     api.success({
@@ -66,11 +72,20 @@ export default function ConfirmInviteSuccessPage() {
       {loading ? (
         <Spin size="large" />
       ) : error ? (
-        <Alert
-          message="Xác nhận thất bại"
-          description="Có lỗi xảy ra khi xác nhận lời mời. Vui lòng thử lại sau hoặc liên hệ quản trị viên."
-          type="error"
-          showIcon
+        <Result
+          status="error"
+          title="Xác nhận thất bại"
+          subTitle={error}
+          extra={[
+            <Button
+              type="primary"
+              key="home"
+              icon={<HomeOutlined />}
+              onClick={() => router.push("/")}
+            >
+              Về trang chủ
+            </Button>,
+          ]}
         />
       ) : null}
     </div>

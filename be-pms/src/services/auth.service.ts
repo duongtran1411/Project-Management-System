@@ -1,7 +1,12 @@
 import crypto from "crypto";
 import { PasswordReset, Role } from "../models";
 import User, { IUser } from "../models/user.model";
-import { sendOTPEmail, sendPasswordEmail } from "../utils/email.util";
+import EmailVerification from "../models/email.verification.model";
+import {
+  sendOTPEmail,
+  sendPasswordEmail,
+  sendRegistrationOTPEmail,
+} from "../utils/email.util";
 import { verifyGoogleIdToken } from "../utils/google-auth.util";
 import {
   generateRefreshToken,
@@ -22,6 +27,11 @@ interface LoginResponse {
   access_token: string;
   refresh_token: string;
   token_id: string;
+}
+
+interface RegisterResponse {
+  message: string;
+  userId: string;
 }
 
 export class AuthService {
@@ -85,6 +95,14 @@ export class AuthService {
     if (!user.isActive) {
       throw new Error("Tài khoản đã bị vô hiệu hoá");
     }
+
+    // Kiểm tra email verification (chỉ áp dụng cho user thường, không áp dụng cho admin)
+    if (!user.verified && user.role && (user.role as any).name !== "ADMIN") {
+      const err: any = new Error("Vui lòng xác thực email trước khi đăng nhập");
+      err.requireEmailVerification = true;
+      throw err;
+    }
+
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
@@ -328,6 +346,220 @@ export class AuthService {
       console.error("Error revoking refresh token:", error);
       throw error;
     }
+  }
+
+  async register(email: string): Promise<RegisterResponse> {
+    // Kiểm tra email đã tồn tại
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new Error("Email đã được sử dụng");
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Email không hợp lệ");
+    }
+
+    // Tạo OTP code (6 chữ số)
+    const otp = generateOTP();
+
+    // Lưu OTP vào EmailVerification model
+    await EmailVerification.create({
+      email,
+      otp: hashOTP(otp),
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 phút
+      isUsed: false,
+    });
+
+    // Gửi email với OTP code cho registration
+    await sendRegistrationOTPEmail(email, otp);
+
+    console.log(`Registration OTP sent to ${email}: ${otp}`);
+
+    return {
+      message: "Mã xác thực đã được gửi đến email của bạn",
+      userId: "",
+    };
+  }
+
+  async verifyRegistrationOTP(
+    email: string,
+    otp: string
+  ): Promise<{ token: string; message: string }> {
+    const verificationRecord = await EmailVerification.findOne({
+      email,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!verificationRecord) {
+      throw new Error("Email không tồn tại hoặc mã đã hết hạn");
+    }
+
+    // Kiểm tra số lần thử
+    if ((verificationRecord.attempts || 0) >= 3) {
+      throw new Error("Đã vượt quá số lần thử, vui lòng yêu cầu mã mới");
+    }
+
+    // Tăng số lần thử
+    verificationRecord.attempts = (verificationRecord.attempts || 0) + 1;
+    await verificationRecord.save();
+
+    // Xác thực OTP
+    if (!verificationRecord.otp || !verifyOTP(otp, verificationRecord.otp)) {
+      throw new Error("Mã xác thực không đúng");
+    }
+
+    // Tạo setup token cho bước tiếp theo
+    const setupToken = crypto.randomBytes(32).toString("hex");
+
+    // Cập nhật record với setup token
+    verificationRecord.token = setupToken;
+    verificationRecord.isUsed = false;
+    await verificationRecord.save();
+
+    return {
+      token: setupToken,
+      message: "Xác thực email thành công",
+    };
+  }
+
+  async setupAccount(
+    token: string,
+    fullName: string,
+    password: string
+  ): Promise<RegisterResponse> {
+    // Validate password strength (giống Jira)
+    if (password.length < 8) {
+      throw new Error("Mật khẩu phải có ít nhất 8 ký tự");
+    }
+
+    // Tìm verification record
+    const verificationRecord = await EmailVerification.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!verificationRecord) {
+      throw new Error("Token không hợp lệ hoặc đã hết hạn");
+    }
+
+    // Kiểm tra email đã được sử dụng chưa
+    const existingUser = await User.findOne({
+      email: verificationRecord.email,
+    });
+    if (existingUser) {
+      throw new Error("Email đã được sử dụng");
+    }
+
+    // Lấy role mặc định
+    const roleDefault = await Role.findOne({ name: { $eq: "USER" } });
+    if (!roleDefault) {
+      throw new Error("Không tìm thấy role mặc định");
+    }
+
+    // Tạo user mới với trạng thái đã verify
+    const user = await User.create({
+      fullName,
+      email: verificationRecord.email,
+      password,
+      status: "ACTIVE",
+      verified: true, // Đã verify qua token
+      role: roleDefault._id,
+      failedLoginAttempts: 0,
+    });
+
+    // Đánh dấu token đã sử dụng
+    verificationRecord.isUsed = true;
+    await verificationRecord.save();
+
+    return {
+      message:
+        "Tài khoản đã được tạo thành công. Bạn có thể đăng nhập ngay bây giờ.",
+      userId: (user._id as any).toString(),
+    };
+  }
+
+  async sendVerificationEmail(
+    email: string,
+    fullName: string,
+    userId: string
+  ): Promise<void> {
+    // Tạo verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    // Lưu token vào EmailVerification model
+    await EmailVerification.create({
+      email,
+      token: verificationToken,
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 phút
+      isUsed: false,
+    });
+
+    // Gửi email verification
+    const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
+
+    console.log(
+      `Verification email sent to ${email} with URL: ${verificationUrl}`
+    );
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    const verificationRecord = await EmailVerification.findOne({
+      token,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!verificationRecord) {
+      throw new Error("Token xác thực không hợp lệ hoặc đã hết hạn");
+    }
+
+    const user = await User.findOne({ email: verificationRecord.email });
+    if (!user) {
+      throw new Error("Không tìm thấy người dùng");
+    }
+
+    user.verified = true;
+    await user.save();
+
+    verificationRecord.isUsed = true;
+    await verificationRecord.save();
+  }
+
+  async resendVerificationEmail(email: string): Promise<void> {
+    // Kiểm tra có verification record pending không
+    const verificationRecord = await EmailVerification.findOne({
+      email,
+      isUsed: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!verificationRecord) {
+      throw new Error(
+        "Email không tồn tại hoặc không có yêu cầu xác thực đang chờ"
+      );
+    }
+
+    // Xóa verification record cũ
+    await EmailVerification.deleteMany({ email, isUsed: false });
+
+    // Gửi lại OTP mới
+    const otp = generateOTP();
+
+    await EmailVerification.create({
+      email,
+      otp: hashOTP(otp),
+      expiresAt: new Date(Date.now() + 2 * 60 * 1000), // 2 phút
+      isUsed: false,
+    });
+
+    // Gửi email với OTP mới
+    await sendRegistrationOTPEmail(email, otp);
+
+    console.log(`Resend registration OTP to ${email}: ${otp}`);
   }
 }
 

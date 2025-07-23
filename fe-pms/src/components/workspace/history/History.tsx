@@ -25,7 +25,7 @@ const History: React.FC<{ taskId: string }> = ({ taskId }) => {
     fetcher
   );
   return (
-    <div className="bg-white overflow-hidden h-[270px]">
+    <div className="bg-white overflow-hidden h-auto">
       {isLoading ? (
         <div className="text-center text-gray-500 text-sm">
           <Spin size="large" tip="Loading...">
@@ -41,10 +41,7 @@ const History: React.FC<{ taskId: string }> = ({ taskId }) => {
           {/* Updated By */}
           <div className="flex items-start gap-3 bg-gray-50 pt-4 my-3">
             {data?.data?.updatedBy?.avatar ? (
-              <Avatar
-                size="small"
-                src={data?.data?.updatedBy?.avatar}
-              />
+              <Avatar size="small" src={data?.data?.updatedBy?.avatar} />
             ) : (
               <Avatar className="bg-gray-400" size="small">
                 U
@@ -91,10 +88,7 @@ const History: React.FC<{ taskId: string }> = ({ taskId }) => {
           {/* Created By */}
           <div className="flex items-start gap-3 bg-gray-50 pt-4 my-3">
             {data?.data?.createdBy?.avatar ? (
-              <Avatar
-                size="small"
-                src={data?.data?.createdBy?.avatar}
-              />
+              <Avatar size="small" src={data?.data?.createdBy?.avatar} />
             ) : (
               <Avatar className="bg-gray-400" size="small">
                 U

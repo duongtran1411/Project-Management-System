@@ -2,6 +2,7 @@ import { Router } from "express";
 import userController from "../controllers/user.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { auth } from "google-auth-library";
+import { uploadSingleFile } from "../middlewares/upload.middleware";
 
 const router = Router();
 
@@ -189,7 +190,7 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
 /**
  * @openapi
  * /user/{id}/updateProfile:
- *   patch:
+ *   put:
  *     summary: Cập nhật thông tin profile của người dùng
  *     security: [bearerAuth: []]
  *     tags: [User]
@@ -203,14 +204,20 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
- *               fullName: { type: string }
- *               email: { type: string }
- *               avatar: { type: string }
- *               phone: { type: string }
+ *               fullName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Ảnh avatar mới (file image)
  *     responses:
  *       200:
  *         description: Cập nhật profile thành công
@@ -219,6 +226,11 @@ router.get("/:id/profile", authenticate, userController.getUserProfile);
  *       404:
  *         description: Không tìm thấy người dùng
  */
-router.patch("/:id/updateProfile", authenticate, userController.udpateProfile);
+router.put(
+  "/:id/updateProfile",
+  authenticate,
+  uploadSingleFile,
+  userController.updateProfile
+);
 
 export default router;

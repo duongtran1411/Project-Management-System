@@ -104,11 +104,14 @@ const notificationSchema = new Schema<INotification>(
     metadata: {
       taskName: String,
       taskId: String,
+      projectId: String,
       taskStatus: String,
       projectName: String,
       epicName: String,
       milestoneName: String,
       commentText: String,
+      updateType: String,
+      updateDescription: String,
       mentionedUsers: [
         {
           type: Schema.Types.ObjectId,
@@ -186,11 +189,14 @@ export interface CreateNotificationData {
   metadata?: {
     taskName?: string;
     taskId?: string;
+    projectId?: string;
     taskStatus?: string;
     projectName?: string;
     epicName?: string;
     milestoneName?: string;
     commentText?: string;
+    updateType?: string;
+    updateDescription?: string;
     mentionedUsers?: string[];
     assigneeUpdate?: {
       oldAssignee?: string;

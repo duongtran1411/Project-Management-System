@@ -85,4 +85,103 @@ router.get("/:taskId", authenticate, commentController.getCommentTask);
  */
 router.post("/", authenticate, uploadFiles, commentController.createComment);
 
+/**
+ * @openapi
+ * /comment/{commentId}:
+ *   put:
+ *     summary: Cập nhật comment
+ *     tags: [Comment]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của comment cần cập nhật
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 description: Nội dung comment mới
+ *               mentions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Danh sách user IDs được mention
+ *     responses:
+ *       200:
+ *         description: Cập nhật comment thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     comment:
+ *                       type: object
+ *                       description: Comment đã cập nhật
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ *       403:
+ *         description: Không có quyền chỉnh sửa comment
+ *       404:
+ *         description: Comment không tồn tại
+ *       500:
+ *         description: Cập nhật comment thất bại
+ */
+router.put("/:commentId", authenticate, commentController.updateComment);
+
+/**
+ * @openapi
+ * /comment/{commentId}:
+ *   delete:
+ *     summary: Xóa comment
+ *     tags: [Comment]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: commentId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của comment cần xóa
+ *     responses:
+ *       200:
+ *         description: Xóa comment thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     commentId:
+ *                       type: string
+ *                       description: ID của comment đã xóa
+ *       400:
+ *         description: Comment ID không hợp lệ
+ *       403:
+ *         description: Không có quyền xóa comment
+ *       404:
+ *         description: Comment không tồn tại
+ *       500:
+ *         description: Xóa comment thất bại
+ */
+router.delete("/:commentId", authenticate, commentController.deleteComment);
+
 export default router;

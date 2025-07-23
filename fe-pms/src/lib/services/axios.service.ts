@@ -31,16 +31,51 @@ class AxiosService {
     });
 
     this.instance.interceptors.response.use(
-      (response) => this.handleResponse(response), // Handle success responses
+      (response) => this.handleResponse(response),
       async (error) => {
         const originalRequest = error.config;
+
         if (originalRequest?.url?.includes("/authentication/login")) {
           return Promise.reject(error);
+        }
+
+       
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          try {
+            const refreshToken = localStorage.getItem(Constants.API_REFRESH_TOKEN_KEY);
+            if (!refreshToken) {
+              return Promise.reject(error);
+            }
+
+            // Gọi API refresh token
+            const refreshResponse = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Auth.REFRESH}`, {
+              refresh_token: refreshToken,
+            });
+
+            const { accessToken } = refreshResponse.data.data.access_token;
+
+            // Lưu lại token mới
+            localStorage.setItem(Constants.API_TOKEN_KEY, accessToken);
+
+            // Gán access token mới vào header
+            this.instance.defaults.headers.Authorization = `Bearer ${accessToken}`;
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+            // Retry lại request cũ
+            return this.instance(originalRequest);
+          } catch (refreshError) {
+            localStorage.removeItem(Constants.API_TOKEN_KEY);
+            localStorage.removeItem(Constants.API_REFRESH_TOKEN_KEY);
+            window.location.href = "/authentication/login";
+            return Promise.reject(refreshError);
+          }
         }
 
         return Promise.reject(error);
       }
     );
+
   }
 
   /**

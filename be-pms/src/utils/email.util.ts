@@ -68,6 +68,44 @@ export async function sendOTPEmail(to: string, name: string, otp: string) {
   });
 }
 
+export async function sendRegistrationOTPEmail(to: string, otp: string) {
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || "noreply@example.com",
+    to,
+    subject: "Mã xác thực đăng ký tài khoản",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); padding: 20px; text-align: center;">
+          <h2 style="color: white; margin: 0; font-size: 18px;">🔐 Xác thực đăng ký</h2>
+        </div>
+        
+        <div style="padding: 25px; background-color: #ffffff;">
+          <p style="margin: 0 0 15px 0; color: #333;">Xin chào,</p>
+          
+          <p style="margin: 0 0 20px 0; color: #333;">
+            Cảm ơn bạn đã đăng ký tài khoản. Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác thực dưới đây:
+          </p>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; border: 2px dashed #007bff;">
+            <p style="margin: 0 0 10px 0; color: #333; font-size: 16px;"><strong>Mã xác thực của bạn:</strong></p>
+            <p style="margin: 0; font-size: 32px; font-weight: bold; color: #007bff; letter-spacing: 5px;">${otp}</p>
+          </div>
+          
+          <p style="color: #666; font-size: 14px; margin: 20px 0;">
+            <strong>⚠️ Lưu ý:</strong> Mã này có hiệu lực trong 2 phút. Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.
+          </p>
+          
+      
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e0e0e0;">
+          <p style="margin: 0;">Project Management System</p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 export async function sendProjectInvitationEmail(
   to: string,
   inviterName: string,

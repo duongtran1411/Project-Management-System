@@ -8,4 +8,5 @@ export interface Project {
   defaultAssign?: string;
   workspaceId?: string;
   status?: string;
+  deletedAt?: string;
 }

@@ -41,8 +41,8 @@ const router = Router();
  *                 example: "60d21b4667d0d8992e610c85"
  *               startDate: { type: string, format: date }
  *               dueDate: { type: string, format: date }
- *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
- *               priority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
+ *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE] }
+ *               priority: { type: string, enum: [LOW, MEDIUM, HIGH] }
  *               labels: { type: array, items: { type: string } }
  *     responses:
  *       201: { description: Tạo task thành công }
@@ -65,11 +65,11 @@ router.post("/", authenticate, taskController.createTask);
  *         description: Lọc theo ID dự án
  *       - in: query
  *         name: status
- *         schema: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
+ *         schema: { type: string, enum: [TO_DO, IN_PROGRESS, DONE] }
  *         description: Lọc theo trạng thái
  *       - in: query
  *         name: priority
- *         schema: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
+ *         schema: { type: string, enum: [LOW, MEDIUM, HIGH] }
  *         description: Lọc theo độ ưu tiên
  *       - in: query
  *         name: assignee
@@ -89,6 +89,96 @@ router.post("/", authenticate, taskController.createTask);
  *       401: { description: Không có quyền truy cập }
  */
 router.get("/", authenticate, taskController.getAllTasks);
+
+/**
+ * @openapi
+ * /task/my-tasks:
+ *   get:
+ *     summary: Lấy tất cả task của user đã đăng nhập trong tất cả project
+ *     tags: [Task]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string, enum: [TO_DO, IN_PROGRESS, DONE] }
+ *         description: Lọc theo trạng thái
+ *       - in: query
+ *         name: priority
+ *         schema: { type: string, enum: [LOW, MEDIUM, HIGH] }
+ *         description: Lọc theo độ ưu tiên
+ *       - in: query
+ *         name: projectId
+ *         schema: { type: string }
+ *         description: Lọc theo ID dự án
+ *       - in: query
+ *         name: epic
+ *         schema: { type: string }
+ *         description: Lọc theo epic
+ *       - in: query
+ *         name: milestones
+ *         schema: { type: string }
+ *         description: Lọc theo milestone
+ *     responses:
+ *       200:
+ *         description: Lấy danh sách task của user thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id: { type: string }
+ *                       name: { type: string }
+ *                       description: { type: string }
+ *                       status: { type: string }
+ *                       priority: { type: string }
+ *                       assignee:
+ *                         type: object
+ *                         properties:
+ *                           _id: { type: string }
+ *                           fullName: { type: string }
+ *                           email: { type: string }
+ *                           avatar: { type: string }
+ *                       reporter:
+ *                         type: object
+ *                         properties:
+ *                           _id: { type: string }
+ *                           fullName: { type: string }
+ *                           email: { type: string }
+ *                           avatar: { type: string }
+ *                       projectId:
+ *                         type: object
+ *                         properties:
+ *                           _id: { type: string }
+ *                           name: { type: string }
+ *                           description: { type: string }
+ *                       epic:
+ *                         type: object
+ *                         properties:
+ *                           _id: { type: string }
+ *                           name: { type: string }
+ *                           description: { type: string }
+ *                       milestones:
+ *                         type: object
+ *                         properties:
+ *                           _id: { type: string }
+ *                           name: { type: string }
+ *                           description: { type: string }
+ *                       startDate: { type: string, format: date }
+ *                       dueDate: { type: string, format: date }
+ *                       labels: { type: array, items: { type: string } }
+ *                       createdAt: { type: string, format: date }
+ *                       updatedAt: { type: string, format: date }
+ *       400: { description: Dữ liệu không hợp lệ }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get("/my-tasks", authenticate, taskController.getAllTasksForCurrentUser);
 
 /**
  * @openapi
@@ -150,8 +240,8 @@ router.get("/:id", authenticate, taskController.getTaskById);
  *                 example: "60d21b4667d0d8992e610c85"
  *               startDate: { type: string, format: date }
  *               dueDate: { type: string, format: date }
- *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
- *               priority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
+ *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE] }
+ *               priority: { type: string, enum: [LOW, MEDIUM, HIGH] }
  *               labels: { type: array, items: { type: string } }
  *     responses:
  *       200: { description: Cập nhật task thành công }
@@ -343,7 +433,7 @@ router.get(
  *             type: object
  *             required: [status]
  *             properties:
- *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE, BLOCKED] }
+ *               status: { type: string, enum: [TO_DO, IN_PROGRESS, DONE] }
  *     responses:
  *       200: { description: Cập nhật trạng thái task thành công }
  *       404: { description: Không tìm thấy task }
@@ -373,18 +463,14 @@ router.patch("/:id/status", authenticate, taskController.updateTaskStatus);
  *             type: object
  *             required: [priority]
  *             properties:
- *               priority: { type: string, enum: [LOW, MEDIUM, HIGH, URGENT] }
+ *               priority: { type: string, enum: [LOW, MEDIUM, HIGH] }
  *     responses:
  *       200: { description: Cập nhật độ ưu tiên task thành công }
  *       404: { description: Không tìm thấy task }
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/priority",
-  authenticate,
-  taskController.updateTaskPriority
-);
+router.patch("/:id/priority", authenticate, taskController.updateTaskPriority);
 
 /**
  * @openapi
@@ -414,11 +500,7 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/name",
-  authenticate,
-  taskController.updateTaskName
-);
+router.patch("/:id/name", authenticate, taskController.updateTaskName);
 
 /**
  * @openapi
@@ -484,11 +566,7 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/assignee",
-  authenticate,
-  taskController.updateTaskAssignee
-);
+router.patch("/:id/assignee", authenticate, taskController.updateTaskAssignee);
 
 /**
  * @openapi
@@ -518,11 +596,7 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/reporter",
-  authenticate,
-  taskController.updateTaskReporter
-);
+router.patch("/:id/reporter", authenticate, taskController.updateTaskReporter);
 
 /**
  * @openapi
@@ -552,11 +626,7 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/epic",
-  authenticate,
-  taskController.updateTaskEpic
-);
+router.patch("/:id/epic", authenticate, taskController.updateTaskEpic);
 
 /**
  * @openapi
@@ -620,11 +690,7 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/dates",
-  authenticate,
-  taskController.updateTaskDates
-);
+router.patch("/:id/dates", authenticate, taskController.updateTaskDates);
 
 /**
  * @openapi
@@ -656,12 +722,7 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch(
-  "/:id/labels",
-  authenticate,
-  taskController.updateTaskLabels
-);
-
+router.patch("/:id/labels", authenticate, taskController.updateTaskLabels);
 
 /**
  * @openapi
@@ -682,8 +743,11 @@ router.patch(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.get('/count/:milestoneId', authenticate, taskController.countTaskNotDoneByMileStone)
-
+router.get(
+  "/count/:milestoneId",
+  authenticate,
+  taskController.countTaskNotDoneByMileStone
+);
 
 /**
  * @openapi
@@ -712,8 +776,6 @@ router.get(
   authenticate,
   taskController.getTaskByProjectId
 );
-
-
 
 /**
  * @openapi
@@ -744,6 +806,10 @@ router.get(
  *       400: { description: Dữ liệu không hợp lệ }
  *       401: { description: Không có quyền truy cập }
  */
-router.patch('/updatemilestones/task/:milestoneId',authenticate,taskController.updateMileStonesForTask)
+router.patch(
+  "/updatemilestones/task/:milestoneId",
+  authenticate,
+  taskController.updateMileStonesForTask
+);
 
 export default router;

@@ -215,6 +215,11 @@ export default function Page() {
                 name="password"
                 rules={[
                   { required: true, message: "Please input your Password!" },
+                  {
+                    pattern: /^[A-Za-z\d]{8,}$/,
+                    message:
+                      "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
+                  },
                 ]}
               >
                 <Input
@@ -253,6 +258,18 @@ export default function Page() {
                   }}
                 />
               </Form.Item>
+
+              <div className="text-center mt-4">
+                <Text type="secondary">
+                  Chưa có tài khoản?{" "}
+                  <Link
+                    href="/authentication/register"
+                    className="text-blue-500 hover:text-blue-600 hover:underline"
+                  >
+                    Đăng ký ngay
+                  </Link>
+                </Text>
+              </div>
             </Form>
           </div>
         </div>
