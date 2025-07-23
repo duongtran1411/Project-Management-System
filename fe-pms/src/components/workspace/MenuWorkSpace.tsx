@@ -95,7 +95,7 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
         icon: <FilterOutlined />,
         children: [
           {
-            label: "Search work items",
+            label: <Link href="/workspace/filters/search-work-items">Search work items</Link>,
             key: "search-work-items",
             icon: <SearchOutlined />,
           },
@@ -163,9 +163,8 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
 
   return (
     <div
-      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${
-        colapsed ? "w-max" : "w-64"
-      } transition-all duration-300`}
+      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${colapsed ? "w-max" : "w-64"
+        } transition-all duration-300`}
     >
       <Menu
         mode="inline"
