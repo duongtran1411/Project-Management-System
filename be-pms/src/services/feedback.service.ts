@@ -39,16 +39,16 @@ export class FeedbackService {
 
   // Lấy danh sách feedback
   async getFeedbacks(
-    filter: any = {},
     page = 1,
-    limit = 10
+    limit = 10,
+    projectId:string
   ): Promise<{ data: IFeedback[]; total: number }> {
     const skip = (page - 1) * limit;
 
     const [feedbacks, total] = await Promise.all([
-      Feedback.find(filter)
-        .populate("createdBy", "fullName email")
-        .populate("updatedBy", "fullName email")
+      Feedback.find({projectId: projectId})
+        .populate("createdBy", "fullName email avatar")
+        .populate("updatedBy", "fullName email avatar")
         .populate({
           path: "projectContributorId",
           select: "-projectId",
@@ -62,7 +62,7 @@ export class FeedbackService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      Feedback.countDocuments(filter),
+      Feedback.countDocuments({}),
     ]);
 
     return { data: feedbacks, total };

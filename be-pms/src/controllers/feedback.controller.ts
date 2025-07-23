@@ -30,16 +30,14 @@ export class FeedbackController {
   // Lấy danh sách feedbacks
   getListFeedbacks = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { page = 1, limit = 10, type, projectId } = req.query;
+      const { page = 1, limit = 10 } = req.query;
+      const {projectId} = req.params
 
-      const filter: any = {};
-      if (type) filter.type = type;
-      if (projectId) filter.projectId = projectId;
 
       const result = await feedbackService.getFeedbacks(
-        filter,
         Number(page),
-        Number(limit)
+        Number(limit),
+        projectId
       );
 
       res.status(200).json({
