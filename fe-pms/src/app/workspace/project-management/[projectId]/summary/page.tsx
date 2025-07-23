@@ -1,5 +1,5 @@
 "use client";
-
+import dynamic from "next/dynamic";
 import React, { useEffect, useState } from "react";
 import { Card, Table, Tag, Avatar, Row, Col } from "antd";
 import {
@@ -9,10 +9,26 @@ import {
   SnippetsOutlined,
 } from "@ant-design/icons";
 
-import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTask";
-import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumnChart";
-import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
-import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
+// import StatusOverviewChart from "@/components/workspace/SummaryChart/PieChartTask";
+// import PriorityBarChart from "@/components/workspace/SummaryChart/PriorityColumnChart";
+// import ActivityRecent from "@/components/workspace/SummaryChart/ActivityRecent";
+// import ProgressChart from "@/components/workspace/SummaryChart/EpicProgressChart";
+const StatusOverviewChart = dynamic(
+  () => import("@/components/workspace/SummaryChart/PieChartTask"),
+  { ssr: false }
+);
+const PriorityBarChart = dynamic(
+  () => import("@/components/workspace/SummaryChart/PriorityColumnChart"),
+  { ssr: false }
+);
+const ActivityRecent = dynamic(
+  () => import("@/components/workspace/SummaryChart/ActivityRecent"),
+  { ssr: false }
+);
+const ProgressChart = dynamic(
+  () => import("@/components/workspace/SummaryChart/EpicProgressChart"),
+  { ssr: false }
+);
 import { useParams } from "next/navigation";
 
 import { getTaskStatistic } from "@/lib/services/statistics/statistics.service";
@@ -142,8 +158,7 @@ export default function SummaryPage() {
                   gap: "10px",
                 },
               }}
-              className=" h-full !shadow !rounded-xl"
-            >
+              className=" h-full !shadow !rounded-xl">
               <div className={`${card.bgColor} rounded-[4px]`}>{card.icon}</div>
               <div className="text-2xl font-bold">{card.value}</div>
               <span className="font-semibold text-gray-700">{card.title}</span>

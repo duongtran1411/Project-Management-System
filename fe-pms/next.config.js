@@ -1,85 +1,87 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    /* config options here */
-    reactStrictMode: true,
+  /* config options here */
+  reactStrictMode: false,
 
-    // Performance optimizations
-    experimental: {
-        optimizePackageImports: ['antd', '@ant-design/icons', 'lucide-react'],
-        // Optimize CSS loading
-        optimizeCss: true,
-        // Reduce bundle size
-        optimizePackageImports: ['antd', '@ant-design/icons'],
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: ["antd", "@ant-design/icons", "lucide-react"],
+    // Optimize CSS loading
+    optimizeCss: true,
+    turbo: {
+      loaders: {}, // hoặc thêm các cấu hình ở đây nếu cần
     },
-
-    // Image optimization
-    images: {
-        domains: ['localhost'],
-        formats: ['image/webp', 'image/avif'],
-    },
-
     // Reduce bundle size
-    swcMinify: true,
+    optimizePackageImports: ["antd", "@ant-design/icons"],
+  },
 
-    // Webpack optimization cho development
-    webpack: (config, { dev, isServer }) => {
-        // Tối ưu cho development
-        if (dev && !isServer) {
-            config.watchOptions = {
-                poll: 1000,
-                aggregateTimeout: 300,
-            };
+  // Image optimization
+  images: {
+    domains: ["localhost"],
+    formats: ["image/webp", "image/avif"],
+  },
 
-            // Tăng tốc compile
-            config.optimization = {
-                ...config.optimization,
-                removeAvailableModules: false,
-                removeEmptyChunks: false,
-                splitChunks: false,
-                minimize: false,
-                concatenateModules: false,
-            };
+  // Reduce bundle size
+  swcMinify: true,
 
-            // Disable source maps trong development
-            config.devtool = 'eval';
-        }
+  // Webpack optimization cho development
+  webpack: (config, { dev, isServer }) => {
+    // Tối ưu cho development
+    if (dev && !isServer) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
 
-        return config;
-    },
+      // Tăng tốc compile
+      config.optimization = {
+        ...config.optimization,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+        minimize: false,
+        concatenateModules: false,
+      };
 
-    // Tối ưu TypeScript - bỏ qua lỗi trong development
-    typescript: {
-        ignoreBuildErrors: true,
-    },
+      // Disable source maps trong development
+      config.devtool = "eval";
+    }
 
-    // Tối ưu ESLint - bỏ qua trong development
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
+    return config;
+  },
 
-    // Headers for better caching
-    async headers() {
-        return [
-            {
-                source: '/(.*)',
-                headers: [
-                    {
-                        key: 'X-Content-Type-Options',
-                        value: 'nosniff',
-                    },
-                    {
-                        key: 'X-Frame-Options',
-                        value: 'DENY',
-                    },
-                    {
-                        key: 'X-XSS-Protection',
-                        value: '1; mode=block',
-                    },
-                ],
-            },
-        ];
-    },
+  // Tối ưu TypeScript - bỏ qua lỗi trong development
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
+  // Tối ưu ESLint - bỏ qua trong development
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Headers for better caching
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+        ],
+      },
+    ];
+  },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

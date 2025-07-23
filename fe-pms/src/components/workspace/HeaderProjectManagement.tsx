@@ -133,6 +133,12 @@ const HeaderProjectManagement = () => {
       icon: <SnippetsOutlined />,
       url: `/workspace/project-management/${projectId}/feedback`,
     },
+    // {
+    //   key: "Board2",
+    //   label: "Board2",
+    //   icon: <TableOutlined />,
+    //   url: `/workspace/project-management/${projectId}/board2`,
+    // },
   ];
 
 
