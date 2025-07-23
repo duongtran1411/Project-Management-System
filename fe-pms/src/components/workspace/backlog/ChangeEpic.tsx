@@ -1,3 +1,4 @@
+import { useRole } from "@/lib/auth/auth-project-context";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { updateTaskEpic } from "@/lib/services/task/task.service";
@@ -8,8 +9,10 @@ import useSWR from "swr";
 
 interface Props {
   taskId: string | undefined;
-  epic: string | undefined;
+  epic: string | null;
   mutateTask: () => void;
+  setEpic: (epic: any) => void;
+  milestoneId: string | undefined;
 }
 
 const fetcher = (url: string) =>
@@ -18,24 +21,39 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-const ChangeEpic: React.FC<Props> = ({ taskId, epic, mutateTask }) => {
+const ChangeEpic: React.FC<Props> = ({
+  taskId,
+  epic,
+  mutateTask,
+  setEpic,
+  milestoneId,
+}) => {
   const params = useParams();
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const projectId = params.projectId as string;
   const { data: epicData } = useSWR(
     `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
   );
 
-  const menuItems: MenuProps["items"] = epicData?.data?.map((option: any) => ({
-    key: option._id,
-    label: <Tag color="purple">{option.name}</Tag>,
-  }));
+  const menuItems: MenuProps["items"] = epicData?.data
+    ?.filter((option: any) => option.milestonesId?._id === milestoneId)
+    .map((option: any) => ({
+      key: option._id,
+      label: <Tag color="purple">{option.name}</Tag>,
+    }));
 
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
       if (taskId) {
-        await updateTaskEpic(taskId, key);
-        await mutateTask();
+        const response = await updateTaskEpic(taskId, key);
+
+        if (response) {
+          setEpic(response.epic.name);
+          await mutateTask();
+        }
       }
     } catch (e) {
       console.log(e);
@@ -46,6 +64,7 @@ const ChangeEpic: React.FC<Props> = ({ taskId, epic, mutateTask }) => {
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
+      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
     >
       <Tag color="purple" className="cursor-pointer">
         {epic}

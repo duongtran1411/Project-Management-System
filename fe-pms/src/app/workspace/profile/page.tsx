@@ -214,6 +214,11 @@ const UserProfilePage = () => {
                       required: true,
                       message: "Please enter your new password",
                     },
+                    {
+                      pattern: /^[A-Za-z\d]{8,}$/,
+                      message:
+                        "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
+                    },
                   ]}
                 >
                   <Input.Password />
@@ -226,6 +231,11 @@ const UserProfilePage = () => {
                     {
                       required: true,
                       message: "Please confirm your new password",
+                    },
+                    {
+                      pattern: /^[A-Za-z\d]{8,}$/,
+                      message:
+                        "Mật khẩu phải tối thiểu 8 ký tự, chỉ chứa chữ và số, không chứa khoảng trắng!",
                     },
                     ({ getFieldValue }) => ({
                       validator(_, value) {
@@ -269,7 +279,6 @@ const UserProfilePage = () => {
           showEditModal={showEditModal}
           setShowEditModal={setShowEditModal}
           avatarPreview={avatarPreview}
-          setAvatarPreview={setAvatarPreview}
           formEdit={formEdit}
         />
       )}

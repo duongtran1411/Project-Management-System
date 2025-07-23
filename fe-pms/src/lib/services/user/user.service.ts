@@ -21,32 +21,28 @@ export const getAll = async (url: string) => {
   }
 };
 
-export const updateUser = async (
-  id: string,
-  data: Partial<{
-    fullName: string;
-    email: string;
-    avatar: string;
-    phone: string;
-  }>
-) => {
+export const updateProfile = async (userId: string, formData: any) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .patch(Endpoints.User.UPDATE(id), data);
+      .put(Endpoints.User.UPDATE(userId), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    if (response?.data.success) {
-      showSuccessToast("Cập nhật thông tin người dùng thành công");
-      return response?.data?.data;
+    if (response.status === 200) {
+      showSuccessToast(response.data.message || "Update profile successfully!");
+      return response;
     } else {
-      throw new Error(response.data?.message || "Cập nhật thất bại");
+      throw new Error(response.data?.message || "Update profile failed!");
     }
   } catch (error: any) {
     const errorMessage =
-      error?.data?.response?.messsage || error?.message || "đã có lỗi xảy ra";
-    if (errorMessage) {
-      showErrorToast(errorMessage);
-    }
+      error?.response?.data?.message ||
+      error?.message ||
+      "Fail to update profile!";
+    showErrorToast(errorMessage);
     throw error;
   }
 };

@@ -1,7 +1,10 @@
 "use client";
 import { createStyles } from "@/components/common/antd/createStyle";
 import Spinner from "@/components/common/spinner/spin";
-import { showErrorToast, showSuccessToast } from "@/components/common/toast/toast";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "@/components/common/toast/toast";
 import { Constants } from "@/lib/constants";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
@@ -177,7 +180,6 @@ export default function Page() {
   };
 
   const [isRemoveLogModalOpen, setIsRemoveLogModalOpen] = useState(false);
-  const [daysToKeep, setDaysToKeep] = useState(0);
   useEffect(() => {
     const token = localStorage.getItem(Constants.API_TOKEN_KEY);
     if (token) {
@@ -236,12 +238,21 @@ export default function Page() {
     }
   }, [data]);
 
-  const handleRemoveLog = async (days: number) => {
+  const handleRemoveLog = async (days: number, beforeDay: Dayjs | null) => {
     try {
-      const response = await removeLog(days);
-      if (response.successs) {
+      const response = await removeLog(
+        days,
+        beforeDay ? beforeDay.toString() : ""
+      );
+      console.log(response);
+      if (response.success) {
         setIsRemoveLogModalOpen(false);
-        showSuccessToast(response.message)
+        showSuccessToast(
+          `Đã xóa ${response.data.deletedCount} logs trước ngày ${format(
+            new Date(response.data.cutoffDate),
+            "yyyy-MM-dd"
+          )}`
+        );
         mutate();
       }
     } catch (error: any) {
@@ -289,7 +300,7 @@ export default function Page() {
                 }}
               />
             </Tooltip>
-            <Select
+            {/* <Select
               style={{ width: 200 }}
               mode="tags"
               allowClear
@@ -307,7 +318,7 @@ export default function Page() {
               <Option value="DEL">
                 <Tag color="red">DELETE</Tag>
               </Option>
-            </Select>
+            </Select> */}
             <Select
               defaultValue={selectedStatus}
               style={{ width: 200 }}
@@ -377,7 +388,9 @@ export default function Page() {
         onCancel={() => {
           setIsRemoveLogModalOpen(false);
         }}
-        onConfirm={(day: number) => handleRemoveLog(day)}
+        onConfirm={(numberDay, beforeDay) => {
+          handleRemoveLog(numberDay, beforeDay)
+        }}
       />
     </div>
   );

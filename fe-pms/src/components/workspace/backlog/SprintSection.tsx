@@ -26,12 +26,13 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import ChangeAssignee from "./ChangeAssignee";
-import ChangeEpic from "./ChangeEpic";
-import ChangePriority from "./ChangePriority";
 import ChangeTask from "./ChangeTask";
 import EditSprintModal from "./EditSprintModal";
 import { Task } from "@/models/task/task.model";
 import { Milestone } from "@/models/milestone/milestone.model";
+import { useRole } from "@/lib/auth/auth-project-context";
+import ChangeEpicInBacklog from "./ChangeEpicInBacklog";
+import ChangePriorityInBacklog from "./ChangePriorityInBacklog";
 
 const items = [
   {
@@ -65,6 +66,11 @@ const SprintSection: React.FC<Props> = ({
   setSelectedTask,
   selectedTask,
 }) => {
+  const { role } = useRole();
+  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
+
   const columns: TableProps<Task>["columns"] = [
     {
       title: "",
@@ -77,10 +83,11 @@ const SprintSection: React.FC<Props> = ({
       render: (epic: any, record: Task) => {
         return (
           <div onClick={(e) => e.stopPropagation()}>
-            <ChangeEpic
+            <ChangeEpicInBacklog
               taskId={record._id}
               epic={epic?.name}
               mutateTask={mutateTask}
+              milestoneId={record.milestones?._id}
             />
           </div>
         );
@@ -117,7 +124,7 @@ const SprintSection: React.FC<Props> = ({
       render: (priority: string, record: Task) => {
         return (
           <div onClick={(e) => e.stopPropagation()}>
-            <ChangePriority
+            <ChangePriorityInBacklog
               taskId={record._id}
               priority={priority}
               mutateTask={mutateTask}
@@ -271,7 +278,7 @@ const SprintSection: React.FC<Props> = ({
             <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
               {/* Left */}
               <div className="flex items-center gap-2">
-                <Checkbox onChange={onChange}></Checkbox>
+                {isProjectAdmin && <Checkbox onChange={onChange}></Checkbox>}
 
                 {expandedMilestones[milestone._id] ? (
                   <DownOutlined
@@ -322,7 +329,11 @@ const SprintSection: React.FC<Props> = ({
                 <Button
                   type="default"
                   className="font-semibold text-gray-600"
-                  disabled={taskInMileStone.length === 0}
+                  disabled={
+                    taskInMileStone.length === 0 ||
+                    isReadOnlyContributor ||
+                    isReadOnlyStakeholder
+                  }
                   onClick={() => handleSprintStatusChange(milestone)}
                 >
                   {milestone.status === "NOT_START"
@@ -342,6 +353,7 @@ const SprintSection: React.FC<Props> = ({
                   }}
                   placement="bottomRight"
                   trigger={["click"]}
+                  disabled={isReadOnlyContributor || isReadOnlyStakeholder}
                 >
                   <Button
                     icon={<EllipsisOutlined />}
@@ -371,7 +383,7 @@ const SprintSection: React.FC<Props> = ({
                     }
                   />
                 ) : (
-                  <div className="border border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
+                  <div className="border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
                     Your backlog is empty.
                   </div>
                 )}
@@ -380,6 +392,7 @@ const SprintSection: React.FC<Props> = ({
                   type="text"
                   className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
                   onClick={() => showModal(milestone)}
+                  disabled={isReadOnlyStakeholder || isReadOnlyContributor}
                 >
                   <span>
                     <PlusOutlined /> Create

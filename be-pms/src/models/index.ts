@@ -20,3 +20,7 @@ export {
   IPasswordReset,
 } from "./password.reset.model";
 export { default as Notification, INotification } from "./notification.model";
+export {
+  default as EmailVerification,
+  IEmailVerification,
+} from "./email.verification.model";

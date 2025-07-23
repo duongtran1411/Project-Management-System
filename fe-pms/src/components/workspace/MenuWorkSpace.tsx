@@ -95,7 +95,7 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
         icon: <FilterOutlined />,
         children: [
           {
-            label: "Search work items",
+            label: <Link href="/workspace/filters/search-work-items">Search work items</Link>,
             key: "search-work-items",
             icon: <SearchOutlined />,
           },
@@ -162,15 +162,11 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
   }, [projectList, isLoading]);
 
   return (
-    <div
-      className={`min-h-screen bg-white shadow p-2  border-r border-gray-300 ${
-        colapsed ? "w-max" : "w-64"
-      } transition-all duration-300`}
-    >
+    <div className="h-full bg-white shadow-sm">
       <Menu
         mode="inline"
         defaultSelectedKeys={["view-all-projects"]}
-        style={{ borderRight: 0 }}
+        style={{ borderRight: 0, height: "100%" }}
         items={menuItems}
         inlineCollapsed={colapsed}
       />

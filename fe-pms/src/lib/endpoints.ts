@@ -5,6 +5,12 @@ export class Endpoints {
     LOGIN_WITH_GOOGLE: "auth/google-login",
     FORGOT_PASSWORD: "auth/forgot-password",
     CHANGE_PASSWORD: "auth/change-password",
+    VERIFY_FORGOT_PASSWORD: "auth/verify-otp-reset-password",
+
+    REGISTER: "auth/register",
+    VERIFY_REGISTRATION_OTP: "auth/verify-registration-otp",
+    RESEND_REGISTRATION_OTP: "auth/resend-registration-otp",
+    SETUP_ACCOUNT: "auth/setup-account",
   };
 
   static readonly User = {
@@ -62,6 +68,9 @@ export class Endpoints {
 
   static readonly Workspace = {
     GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
+    CREATE: 'workspace',
+    GET_BY_USER: 'workspace/getbyuser'
+
   };
 
   static readonly Project = {
@@ -69,6 +78,8 @@ export class Endpoints {
     GET_BY_ID: (projectId: string) => `project/${projectId}`,
     UPDATE_PROJECT: (projectId: string) => `project/${projectId}`,
     DELETE_PROJECT: (projectId: string) => `project/${projectId}`,
+    TRASH_PROJECT: "project/deleted",
+    RESTORE_PROJECT: (projectId: string) => `project/${projectId}/restore`,
   };
 
   static readonly ProjectContributor = {
@@ -82,7 +93,18 @@ export class Endpoints {
     INVITE_MULTIPLE: "project-contributor/invitation/multiple",
     CONFIRM_INVITE: (token: string) =>
       `project-contributor/invitation/confirm/${token}`,
-    GET_ROLE_PROJECT_ID: (projectId: string) => `project-contributor/project/role/${projectId}`
+    GET_ROLE_PROJECT_ID: (projectId: string) =>
+      `project-contributor/project/role/${projectId}`,
+    DELETE_CONTRIBUTOR: (contributorId: string) =>
+      `project-contributor/${contributorId}`,
+    UPDATE_PROJECT_ROLE: (contributorId: string) =>
+      `project-contributor/${contributorId}`,
+    PROJECT_STATISTICS: (projectId: string) =>
+      `project-contributor/project/${projectId}/statistics`,
+    GET_PROJECT_BY_USER: (userId: string) =>
+      `project-contributor/user/${userId}/projects`,
+    CHANGE_PROJECT_LEAD: (projectId: string) =>
+      `project-contributor/project/${projectId}/update-lead`,
   };
 
   static readonly ProjectRole = {
@@ -105,6 +127,8 @@ export class Endpoints {
   static readonly Comment = {
     GET_COMMENT_BY_TASK: (taskId: string) => `comment/${taskId}`,
     CREATE_COMMENT: "comment",
+    UPDATE_COMMENT: (commentId: string) => `comment/${commentId}`,
+    DELETE_COMMENT: (commentId: string) => `comment/${commentId}`,
   };
 
   static readonly Notification = {
@@ -133,5 +157,10 @@ export class Endpoints {
     CREATE_WORKLOG: "worklog",
     UPDATE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
     DELETE_WORKLOG: (worklogId: string) => `worklog/${worklogId}`,
+    STATISTIC_BY_PROJECT: (projectId: string) =>
+      `worklog/statistics/project/${projectId}`,
+    WORKLOG_TOPS: (projectId: string) =>
+      `worklog/top-contributors/${projectId}`,
+    WORKLOG_BY_CONTRIBUTOR: (userId: string) => `worklog/contributor/${userId}`,
   };
 }

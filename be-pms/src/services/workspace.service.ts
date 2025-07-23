@@ -1,3 +1,4 @@
+import { IUser } from "../models";
 import Workspace, { IWorkspace } from "../models/workspace.model";
 import mongoose from "mongoose";
 
@@ -8,7 +9,78 @@ class WorkspaceService {
       ownerId: user._id,
       createdBy: user._id,
       updatedBy: user._id,
+      projectIds: data.projectIds || [],
     });
+
+    return workspace.populate([
+      { path: "ownerId", select: "fullName email" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectIds", select: "name" },
+    ]);
+  }
+
+  async addProjectToWorkspace(
+    workspaceId: string,
+    projectId: string,
+    user: any
+  ): Promise<any> {
+    if (
+      !mongoose.Types.ObjectId.isValid(workspaceId) ||
+      !mongoose.Types.ObjectId.isValid(projectId)
+    ) {
+      throw new Error("Workspace ID hoặc Project ID không hợp lệ");
+    }
+
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+      throw new Error("Workspace không tồn tại");
+    }
+
+    // Kiểm tra xem project đã có trong workspace chưa
+    if (workspace.projectIds?.toString().includes(projectId)) {
+      throw new Error("Project đã tồn tại trong workspace này");
+    }
+
+    // Thêm project vào workspace
+    workspace.projectIds?.push(
+      new mongoose.Types.ObjectId(projectId.toString())
+    );
+    workspace.updatedBy = user._id;
+    await workspace.save();
+
+    return workspace.populate([
+      { path: "ownerId", select: "fullName email" },
+      { path: "createdBy", select: "fullName email" },
+      { path: "updatedBy", select: "fullName email" },
+      { path: "projectIds", select: "name" },
+    ]);
+  }
+
+  async removeProjectFromWorkspace(
+    workspaceId: string,
+    projectId: string,
+    user: any
+  ): Promise<any> {
+    if (
+      !mongoose.Types.ObjectId.isValid(workspaceId) ||
+      !mongoose.Types.ObjectId.isValid(projectId)
+    ) {
+      throw new Error("Workspace ID hoặc Project ID không hợp lệ");
+    }
+
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+      throw new Error("Workspace không tồn tại");
+    }
+
+    // Xóa project khỏi workspace
+    workspace.projectIds = workspace.projectIds?.filter(
+      (id) => id.toString() !== projectId
+    );
+
+    workspace.updatedBy = user._id;
+    await workspace.save();
 
     return workspace.populate([
       { path: "ownerId", select: "fullName email" },
@@ -69,6 +141,21 @@ class WorkspaceService {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
     const deleted = await Workspace.findByIdAndDelete(id);
     return !!deleted;
+  }
+
+  async getWorkspaceByUser(user: IUser): Promise<IWorkspace> {
+    const id = user._id;
+    if (!id) {
+      console.error("Không tìm thấy ID của user");
+      throw new Error("Invalid user ID");
+    }
+
+    const workspace = await Workspace.findOne({ ownerId: id });
+
+    if (!workspace) {
+      throw new Error(`Bạn chưa tạo workspace`);
+    }
+    return workspace;
   }
 }
 

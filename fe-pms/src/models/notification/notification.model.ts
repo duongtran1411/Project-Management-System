@@ -27,11 +27,14 @@ export interface INotification {
   metadata: {
     taskName?: string;
     taskId?: string;
+    projectId?: string;
     taskStatus?: string;
     projectName?: string;
     epicName?: string;
     milestoneName?: string;
     commentText?: string;
+    updateType?: string;
+    updateDescription?: string;
     mentionedUsers?:
       | string[]
       | { _id: string; fullname: string; avatar?: string; email: string }[];
@@ -69,11 +72,14 @@ export interface CreateNotificationData {
   metadata?: {
     taskName?: string;
     taskId?: string;
+    projectId?: string;
     taskStatus?: string;
     projectName?: string;
     epicName?: string;
     milestoneName?: string;
     commentText?: string;
+    updateType?: string;
+    updateDescription?: string;
     mentionedUsers?: string[];
     assigneeUpdate?: {
       oldAssignee?: string;

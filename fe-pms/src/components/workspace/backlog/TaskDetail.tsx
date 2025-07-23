@@ -1,7 +1,6 @@
 "use client";
 
 import { formatDateTime } from "@/lib/utils";
-import { Task } from "@/models/task/task.model";
 import { Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { WorklogComponent } from "../worklog/Worklog";
@@ -14,9 +13,10 @@ import ChangeReporter from "./ChangeReporter";
 import { ChangeStartDate } from "./ChangeStartDate";
 import ChangeEpic from "./ChangeEpic";
 import History from "../history/History";
+import { ListWorklog } from "../worklog/ListWorklog";
 
 interface TaskDetailProps {
-  task: Task | null;
+  task: any | null;
   onClose: () => void;
   mutateTask: () => void;
 }
@@ -29,7 +29,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   const [description, setDescription] = useState<string | null>(
     task?.description || ""
   );
-
+  const [priority, setPriority] = useState<string | null>(task?.priority || "");
+  const [assignee, setAssignee] = useState<any>(task?.assignee || null);
+  const [epic, setEpic] = useState<string>(task?.epic?.name || "");
   const [newComment, setNewComment] = useState("");
   const [dueDate, setDueDate] = useState<string | null>(task?.dueDate || null);
   const [isPickingDueDate, setIsPickingDueDate] = useState(false);
@@ -55,6 +57,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
       setDateError(null);
       setReporter(task.reporter || null);
       setName(task.name || "");
+      setPriority(task.priority || "");
+      setAssignee(task?.assignee || null);
+      setEpic(task?.epic?.name || "");
     }
   }, [task]);
 
@@ -85,11 +90,11 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
         {/* Priority */}
         <div className="mb-4 flex items-center justify-content">
           <span className="mr-2 text-sm text-gray-500">Priority:</span>
-
           <ChangePriority
             taskId={task._id}
-            priority={task.priority || "None"}
+            priority={priority}
             mutateTask={mutateTask}
+            setPriority={setPriority}
           />
         </div>
 
@@ -103,8 +108,9 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               <div className="flex items-center space-x-2 ">
                 <ChangeAssigneeInDetailTask
                   taskId={task._id}
-                  assignee={task.assignee}
+                  assignee={assignee}
                   mutateTask={mutateTask}
+                  setAssignee={setAssignee}
                 />
               </div>
               {/* Labels */}
@@ -125,10 +131,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
 
               {/* Epic */}
               <span className="font-semibold text-gray-600">Parents</span>
+
               <ChangeEpic
                 taskId={task._id}
-                epic={task.epic?.name || "None"}
+                epic={epic || "None"}
                 mutateTask={mutateTask}
+                setEpic={setEpic}
+                milestoneId={task.milestonesId?._id}
               />
 
               {/* Start Date */}
@@ -221,6 +230,14 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               Work log
             </Button>
           </div>
+
+          {/* All */}
+          {activeTab === "all" && (
+            <>
+              {task._id && <History taskId={task._id} />}
+              <ListWorklog task={task} />
+            </>
+          )}
 
           {/* Activity Content */}
           {activeTab === "comments" && (

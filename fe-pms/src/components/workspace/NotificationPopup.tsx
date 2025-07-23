@@ -31,6 +31,8 @@ import {
 } from "antd";
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useSocket } from "@/hooks/useSocket";
+import { useSocketEvent } from "@/hooks/useSocketEvent";
+import { useRouter } from "next/navigation";
 
 const { Text, Title } = Typography;
 
@@ -45,69 +47,59 @@ const NotificationPopup: React.FC = () => {
   const [showOnlyUnread, setShowOnlyUnread] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const { socket, connected, on, off } = useSocket();
+  const { connected } = useSocket();
+  const router = useRouter();
 
   useEffect(() => {
     const currentUserId = getCurrentUserId();
     setUserId(currentUserId);
   }, []);
 
-  useEffect(() => {
-    if (!socket || !userId) return;
-
-    const cleanupFunctions: (() => void)[] = [];
-
-    const newNotificationCleanup = on(
-      "new-notification",
-      (data: { notification: INotification }) => {
-        setNotifications((prev) => [data.notification, ...prev]);
-        setStats((prev) =>
-          prev
-            ? { ...prev, unread: prev.unread + 1, total: prev.total + 1 }
-            : null
-        );
-      }
-    );
-    if (newNotificationCleanup) cleanupFunctions.push(newNotificationCleanup);
-
-    const notificationReadCleanup = on(
-      "notification-read",
-      (data: { notificationId: string }) => {
-        setNotifications((prev) =>
-          prev.map((notification) =>
-            notification._id === data.notificationId
-              ? { ...notification, isRead: true }
-              : notification
-          )
-        );
-        setStats((prev) =>
-          prev ? { ...prev, unread: Math.max(0, prev.unread - 1) } : null
-        );
-      }
-    );
-    if (notificationReadCleanup) cleanupFunctions.push(notificationReadCleanup);
-
-    const allNotificationsReadCleanup = on("all-notifications-read", () => {
+  useSocketEvent(
+    "new-notification",
+    (data: { notification: INotification }) => {
+      setNotifications((prev) => [data.notification, ...prev]);
+      setStats((prev) =>
+        prev
+          ? { ...prev, unread: prev.unread + 1, total: prev.total + 1 }
+          : null
+      );
+    },
+    [userId]
+  );
+  useSocketEvent(
+    "notification-read",
+    (data: { notificationId: string }) => {
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification._id === data.notificationId
+            ? { ...notification, isRead: true }
+            : notification
+        )
+      );
+      setStats((prev) =>
+        prev ? { ...prev, unread: Math.max(0, prev.unread - 1) } : null
+      );
+    },
+    [userId]
+  );
+  useSocketEvent(
+    "all-notifications-read",
+    () => {
       setNotifications((prev) =>
         prev.map((notification) => ({ ...notification, isRead: true }))
       );
       setStats((prev) => (prev ? { ...prev, unread: 0 } : null));
-    });
-    if (allNotificationsReadCleanup)
-      cleanupFunctions.push(allNotificationsReadCleanup);
-
-    const statsUpdateCleanup = on(
-      "notification-stats-updated",
-      (data: { stats: NotificationStats }) => {
-        setStats(data.stats);
-      }
-    );
-    if (statsUpdateCleanup) cleanupFunctions.push(statsUpdateCleanup);
-
-    return () => {
-      cleanupFunctions.forEach((cleanup) => cleanup());
-    };
-  }, [socket, userId, on, off]);
+    },
+    [userId]
+  );
+  useSocketEvent(
+    "notification-stats-updated",
+    (data: { stats: NotificationStats }) => {
+      setStats(data.stats);
+    },
+    [userId]
+  );
 
   const fetchNotifications = useCallback(
     async (pageNum: number = 1, append: boolean = false) => {
@@ -223,72 +215,143 @@ const NotificationPopup: React.FC = () => {
   const unreadCount = useMemo(() => stats?.unread || 0, [stats]);
 
   const renderNotificationItem = useCallback(
-    (notification: INotification) => (
-      <div
-        key={notification._id}
-        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
-          !notification.isRead ? "bg-blue-50" : "bg-white"
-        }`}
-        onClick={() => handleMarkAsRead(notification._id)}
-      >
-        <div className="flex items-start gap-3">
-          <Avatar
-            src={
-              typeof notification.senderId === "object" &&
-              notification.senderId.avatar
-                ? notification.senderId.avatar
-                : undefined
+    (notification: INotification) => {
+      const taskId = notification.metadata?.taskId;
+      const projectId = notification.metadata?.projectId;
+
+      const handleClick = async () => {
+        console.log("Notification click:", {
+          taskId,
+          projectId,
+          metadata: notification.metadata,
+          type: notification.type,
+        });
+
+        if (taskId && projectId) {
+          try {
+            await router.push(
+              `/workspace/project-management/${projectId}/detail-task/${taskId}`
+            );
+
+            // Only mark as read if navigation is successful
+            if (!notification.isRead) {
+              try {
+                await handleMarkAsRead(notification._id);
+                setNotifications((prev) =>
+                  prev.map((n) =>
+                    n._id === notification._id ? { ...n, isRead: true } : n
+                  )
+                );
+              } catch (error) {
+                console.error("Failed to mark notification as read:", error);
+              }
             }
-            style={{ backgroundColor: "#1890ff" }}
-            size={32}
-          >
-            {getUserAvatar(notification.senderId)}
-          </Avatar>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Text className="text-sm font-medium text-gray-900">
-                {notification.title}
-              </Text>
-              <Text className="text-xs text-gray-500">
-                {formatTimeAgo(notification.createdAt)}
-              </Text>
-              {!notification.isRead && (
-                <div className="w-2 h-2 bg-blue-500 rounded-full ml-auto" />
-              )}
-            </div>
+            setDropdownOpen(false);
+          } catch (error) {
+            console.error("Navigation failed:", error);
+            // Don't mark as read if navigation fails
+          }
+        } else {
+          console.log("No taskId or projectId, notification marked as read");
+          // Mark as read even if no navigation is needed
+          if (!notification.isRead) {
+            try {
+              await handleMarkAsRead(notification._id);
+              setNotifications((prev) =>
+                prev.map((n) =>
+                  n._id === notification._id ? { ...n, isRead: true } : n
+                )
+              );
+            } catch (error) {
+              console.error("Failed to mark notification as read:", error);
+            }
+          }
 
-            {notification.metadata?.taskName && (
-              <div className="flex items-center gap-2 mb-2">
-                <CheckOutlined className="text-gray-400 text-xs" />
-                <Text className="text-sm text-gray-700">
-                  {notification.metadata.taskName}
+          setDropdownOpen(false);
+        }
+      };
+
+      return (
+        <div
+          key={notification._id}
+          className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all duration-200 ${
+            !notification.isRead ? "bg-blue-50" : "bg-white"
+          }`}
+          onClick={handleClick}
+        >
+          <div className="flex items-start gap-3">
+            <Avatar
+              src={
+                typeof notification.senderId === "object" &&
+                notification.senderId.avatar
+                  ? notification.senderId.avatar
+                  : undefined
+              }
+              style={{ backgroundColor: "#1890ff" }}
+              size={32}
+            >
+              {getUserAvatar(notification.senderId)}
+            </Avatar>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <Text className="text-sm font-medium text-gray-900">
+                  {notification.title}
                 </Text>
-              </div>
-            )}
-
-            {notification.metadata?.commentText && (
-              <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                <Text className="text-sm text-gray-700">
-                  {notification.metadata.commentText}
+                <Text className="text-xs text-gray-500">
+                  {formatTimeAgo(notification.createdAt)}
                 </Text>
+                {!notification.isRead && (
+                  <div className="w-2 h-2 bg-blue-500 rounded-full ml-auto" />
+                )}
               </div>
-            )}
 
-            {notification.metadata?.mentionedUsers &&
-              notification.metadata.mentionedUsers.length > 0 && (
-                <div className="mt-2">
-                  <Text className="text-xs text-blue-600">
-                    +{notification.metadata.mentionedUsers.length} mention from{" "}
-                    {notification.title}
+              {/* Hiển thị tên task nếu có */}
+              {notification.metadata?.taskName && (
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckOutlined className="text-gray-400 text-xs" />
+                  <Text className="text-sm text-gray-700">
+                    {notification.metadata.taskName}
                   </Text>
                 </div>
               )}
+
+              {/* Hiển thị nội dung comment nếu có */}
+              {notification.metadata?.commentText && (
+                <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                  <Text className="text-sm text-gray-700">
+                    {notification.metadata.commentText}
+                  </Text>
+                </div>
+              )}
+
+              {/* Hiển thị người gửi nếu có */}
+              {typeof notification.senderId === "object" &&
+                notification.senderId.fullname && (
+                  <div className="mt-2">
+                    <Text className="text-xs text-gray-500">
+                      Gửi bởi: {notification.senderId.fullname}
+                    </Text>
+                  </div>
+                )}
+
+              {/* Hiển thị mention nếu có */}
+              {notification.metadata?.mentionedUsers &&
+                notification.metadata.mentionedUsers.length > 0 && (
+                  <div className="mt-2">
+                    <Text className="text-xs text-blue-600">
+                      +{notification.metadata.mentionedUsers.length} mention
+                      from {notification.title}
+                    </Text>
+                  </div>
+                )}
+            </div>
           </div>
         </div>
-      </div>
-    ),
-    [handleMarkAsRead]
+      );
+    },
+    [handleMarkAsRead, router]
   );
 
   const items = useMemo(

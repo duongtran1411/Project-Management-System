@@ -6,13 +6,13 @@ export interface IProject extends Document {
   projectType?: "SOFTWARE" | "MARKETING" | "SALES";
   projectLead?: mongoose.Types.ObjectId;
   defaultAssign?: mongoose.Types.ObjectId;
-  workspaceId?: mongoose.Types.ObjectId;
   createdBy?: mongoose.Types.ObjectId;
   updatedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
   description: string;
   status: "TODO" | "INPROGRESS" | "COMPLETE";
+  deletedAt?: Date;
 }
 
 const projectSchema = new Schema<IProject>(
@@ -23,7 +23,6 @@ const projectSchema = new Schema<IProject>(
     },
     icon: {
       type: String,
-      default: "sonditrongmua",
     },
     projectType: {
       type: String,
@@ -40,10 +39,6 @@ const projectSchema = new Schema<IProject>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    workspaceId: {
-      type: Schema.Types.ObjectId,
-      ref: "Workspace",
-    },
     description: { type: String },
     status: {
       type: String,
@@ -57,6 +52,10 @@ const projectSchema = new Schema<IProject>(
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

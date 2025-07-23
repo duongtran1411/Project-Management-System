@@ -16,7 +16,7 @@ export interface ITask extends Document {
   updatedAt: Date;
   status: string;
   priority: string;
-  labels: string[];
+  labels: ("task" | "bug" | "story");
 }
 
 const taskSchema = new Schema<ITask>(
@@ -28,7 +28,10 @@ const taskSchema = new Schema<ITask>(
     description: {
       type: String
     },
-    labels: [String],
+    labels: {
+      type:String,
+      enum: ["task", "bug", "story"]
+    },
     epic: {
       type: Schema.Types.ObjectId,
       ref: "Epic",

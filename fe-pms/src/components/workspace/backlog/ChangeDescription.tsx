@@ -1,5 +1,6 @@
 "use client";
 
+import { useRole } from "@/lib/auth/auth-project-context";
 import { updateTaskDescription } from "@/lib/services/task/task.service";
 import { Task } from "@/models/task/task.model";
 
@@ -9,7 +10,6 @@ import { useState, useEffect } from "react";
 interface Props {
   task: Task;
   description: string | null;
-
   setDescription: React.Dispatch<React.SetStateAction<any>>;
   mutateTask: () => void;
 }
@@ -20,6 +20,8 @@ export const ChangeDescription: React.FC<Props> = ({
   setDescription,
   mutateTask,
 }) => {
+  const { role } = useRole();
+  const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [lastSavedDescription, setLastSavedDescription] = useState(description);
 
@@ -70,7 +72,7 @@ export const ChangeDescription: React.FC<Props> = ({
         </div>
       ) : (
         <div
-          onClick={() => setIsEditingDescription(true)}
+          onClick={() => setIsEditingDescription(isProjectAdmin ? true : false)}
           className="cursor-pointer min-h-[50px]"
         >
           {description ? (

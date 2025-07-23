@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import User from "../models/user.model";
 import mongoose from "mongoose";
 import { Role } from "../models";
+import cloudinary from "../utils/cloudinary";
+import fs from "fs";
+import path from "path";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 class UserController {
   create = async (req: Request, res: Response): Promise<void> => {
@@ -196,21 +200,15 @@ class UserController {
     }
   };
 
-  udpateProfile = async (req: Request, res: Response): Promise<void> => {
+  updateProfile = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       if (!mongoose.isValidObjectId(id)) {
         res.status(400).json({ success: false, message: "Invalid user ID" });
+        return;
       }
 
-      const allowedFields = [
-        "fullName",
-        "email",
-        "password",
-        "avatar",
-        "phone",
-      ];
-
+      const allowedFields = ["fullName", "email", "password", "phone"];
       const updateData: any = {};
 
       for (const field of allowedFields) {
@@ -219,10 +217,37 @@ class UserController {
         }
       }
 
+      // Xử lý file upload avatar (field: file)
+      if (req.file) {
+        try {
+          const result = await cloudinary.uploadImage(req.file.path, {
+            public_id: `avatars/${id}_${Date.now()}_${req.file.originalname}`,
+          });
+
+          updateData.avatar = result.url;
+        } catch (uploadError) {
+          console.error("Error uploading avatar:", uploadError);
+          res
+            .status(500)
+            .json({ success: false, message: "Upload avatar failed" });
+          return;
+        } finally {
+          // Xoá file local nếu có
+          if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+        }
+      }
+      // Nếu không có file nhưng có avatar URL trong body
+      else if (req.body.avatar) {
+        updateData.avatar = req.body.avatar;
+      }
+
       if (Object.keys(updateData).length === 0) {
         res
           .status(400)
           .json({ success: false, message: "No valid fields to update" });
+        return;
       }
 
       const updatedUser = await User.findByIdAndUpdate(id, updateData, {
@@ -232,6 +257,7 @@ class UserController {
 
       if (!updatedUser) {
         res.status(404).json({ success: false, message: "User not found" });
+        return;
       }
 
       res.json({ success: true, data: updatedUser });

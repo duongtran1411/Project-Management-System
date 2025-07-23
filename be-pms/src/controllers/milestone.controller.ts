@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthRequest } from "../middlewares/auth.middleware";
 import milestoneService from "../services/milestone.service";
-import { Milestone } from "../models";
-import { stat } from "fs";
 
 export class MilestoneController {
   createMilestone = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -206,9 +204,7 @@ export class MilestoneController {
   ): Promise<void> => {
     try {
       const { projectId } = req.params;
-      const milestones = await milestoneService.getMilestonesActive(
-        projectId
-      );
+      const milestones = await milestoneService.getMilestonesActive(projectId);
 
       res.status(200).json({
         success: true,
@@ -251,7 +247,6 @@ export class MilestoneController {
       });
     }
   };
-
 
   getMilestonesByDateRange = async (
     req: Request,
@@ -343,28 +338,35 @@ export class MilestoneController {
     }
   };
 
-  updateStatus = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  updateStatus = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
-      const { id } = req.params
-      const { status } = req.body
-      const user = req.user
-      const milestone = await milestoneService.updateStatusMilestones(id, status, user)
+      const { id } = req.params;
+      const { status } = req.body;
+      const user = req.user;
+      const milestone = await milestoneService.updateStatusMilestones(
+        id,
+        status,
+        user
+      );
 
       if (!milestone) {
         res.status(400).json({
           status: 400,
           success: true,
-          message: `Can not update milestone with id ${id}`
-        })
+          message: `Can not update milestone with id ${id}`,
+        });
       }
 
       res.status(200).json({
         status: 200,
         success: true,
-        message: 'Update status milestone success',
-        data: milestone
-      })
-
+        message: "Update status milestone success",
+        data: milestone,
+      });
     } catch (error: any) {
       res.status(400).json({
         success: false,
@@ -372,7 +374,7 @@ export class MilestoneController {
         statusCode: 400,
       });
     }
-  }
+  };
 }
 
 export default new MilestoneController();
