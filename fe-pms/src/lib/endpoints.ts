@@ -30,6 +30,7 @@ export class Endpoints {
   };
 
   static readonly Task = {
+    GET_MY_TASKS: "task/my-tasks",
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     GET_BY_MILESTONE: (milestoneId: string) => `task/milestone/${milestoneId}`,
     CREATE_TASK: "task",
