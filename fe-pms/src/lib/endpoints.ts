@@ -30,6 +30,7 @@ export class Endpoints {
   };
 
   static readonly Task = {
+    GET_MY_TASKS: "task/my-tasks",
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     GET_BY_MILESTONE: (milestoneId: string) => `task/milestone/${milestoneId}`,
     CREATE_TASK: "task",
@@ -163,4 +164,10 @@ export class Endpoints {
       `worklog/top-contributors/${projectId}`,
     WORKLOG_BY_CONTRIBUTOR: (userId: string) => `worklog/contributor/${userId}`,
   };
+
+  static readonly Feedback = {
+    CREATE: 'feedback',
+    GET_BY_PROJECT_ID: (projectId:string) =>  `feedback/${projectId}`,
+    UPDATE: (feedbackId:string) =>  `feedback/${feedbackId}`
+  }
 }

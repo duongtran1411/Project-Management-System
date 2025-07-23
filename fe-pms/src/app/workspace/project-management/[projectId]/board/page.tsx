@@ -436,8 +436,7 @@ const BoardPage = () => {
                 max={{
                   count: 2,
                   style: { color: "#f56a00", backgroundColor: "#fde3cf" },
-                }}
-              >
+                }}>
                 <Avatar src={contributors[0]?.userId?.avatar}></Avatar>
                 {Array.isArray(contributors) && contributors.length > 0 && (
                   <Avatar
@@ -738,33 +737,34 @@ const BoardPage = () => {
                                             </div>
                                           ),
                                         },
-                                        ...contributors
-                                          .filter((t) => {
-                                            return (
-                                              t.userId?._id !==
-                                              task.assignee?._id
-                                            );
-                                          })
-                                          .map((e) => ({
-                                            key: e.userId?._id,
-                                            label: (
-                                              <div className="flex items-center gap-2">
-                                                <Avatar
-                                                  src={e.userId?.avatar}
-                                                  size="small">
-                                                  {e.userId?.fullName[0]}
-                                                </Avatar>
-                                                <div>
-                                                  <p className="font-medium">
-                                                    {e.userId?.fullName}
-                                                  </p>
-                                                  <p className="text-xs text-gray-400">
-                                                    {e.userId?.email}
-                                                  </p>
-                                                </div>
-                                              </div>
-                                            ),
-                                          })),
+                                        ...(Array.isArray(contributors)
+                                          ? contributors
+                                              .filter(
+                                                (t) =>
+                                                  t.userId?._id !==
+                                                  task.assignee?._id
+                                              )
+                                              .map((e) => ({
+                                                key: e.userId?._id,
+                                                label: (
+                                                  <div className="flex items-center gap-2">
+                                                    <Avatar
+                                                      src={e.userId?.avatar}
+                                                      size="small">
+                                                      {e.userId?.fullName[0]}
+                                                    </Avatar>
+                                                    <div>
+                                                      <p className="font-medium">
+                                                        {e.userId?.fullName}
+                                                      </p>
+                                                      <p className="text-xs text-gray-400">
+                                                        {e.userId?.email}
+                                                      </p>
+                                                    </div>
+                                                  </div>
+                                                ),
+                                              }))
+                                          : []),
                                       ],
                                       onClick: ({ key, domEvent }) => {
                                         setIsModalOpen(false);
