@@ -26,6 +26,7 @@ import {
 import { ProjectContributor } from "@/models/projectcontributor/project.contributor.model";
 import { useRole } from "@/lib/auth/auth-project-context";
 import { Project } from "@/models/project/project.model";
+import { useAuth } from "@/lib/auth/auth-context";
 const { Option } = Select;
 export default function Page() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -38,6 +39,7 @@ export default function Page() {
   const [projects, setProject] = useState<Project | null>(null);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const { role } = useRole();
+  const {userInfo} = useAuth()
   const isReadOnly = role.name === "PROJECT_ADMIN";
   const fetcher = async (url: string): Promise<FeedBack[]> => {
     try {
@@ -180,7 +182,7 @@ export default function Page() {
       <Typography className="text-center text-xl font-semibold">
         Feedback about {project?.name}
       </Typography>
-      {isReadOnly && (
+      {!isReadOnly && (
         <div className="flex justify-end">
           <Button
             className="bg-blue-500 text-zinc-100 hover:bg-blue-300"
@@ -209,8 +211,7 @@ export default function Page() {
                     <span>{item.email}</span>{" "}
                     <span style={{ color: "gray" }}>
                       {item.message}{" "}
-                      {item.projectContributorId.userId.email ===
-                        item.email && (
+                      {item.createdBy._id === userInfo?.userId && (
                         <EditOutlined
                           className="mx-2 hover:bg-gray-300"
                           onClick={() => {
