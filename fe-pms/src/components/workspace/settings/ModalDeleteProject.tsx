@@ -18,7 +18,6 @@ export const ModalDeleteProject: React.FC<Props> = ({
   isOpen,
   onClose,
   projectId,
-  projectname,
   mutate,
 }) => {
   const router = useRouter();
@@ -64,9 +63,12 @@ export const ModalDeleteProject: React.FC<Props> = ({
         }}
       >
         <p>
-          Are you sure you want to delete project:{" "}
-          <strong>{projectname}</strong> ?{" "}
+          The project along with its work items, Hub components, attachments,
+          and versions will be available in the trash for 30 days after which it
+          will be permanently deleted.
         </p>
+        <br />
+        <p>Only this project admin can restore the project from the trash.</p>
       </Modal>
     </>
   );

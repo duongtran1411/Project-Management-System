@@ -1,7 +1,6 @@
 "use client";
 
 import { formatDateTime } from "@/lib/utils";
-import { Task } from "@/models/task/task.model";
 import { Button, Input, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { WorklogComponent } from "../worklog/Worklog";
@@ -17,7 +16,7 @@ import History from "../history/History";
 import { ListWorklog } from "../worklog/ListWorklog";
 
 interface TaskDetailProps {
-  task: Task | null;
+  task: any | null;
   onClose: () => void;
   mutateTask: () => void;
 }
@@ -138,6 +137,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                 epic={epic || "None"}
                 mutateTask={mutateTask}
                 setEpic={setEpic}
+                milestoneId={task.milestonesId?._id}
               />
 
               {/* Start Date */}

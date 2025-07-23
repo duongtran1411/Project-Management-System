@@ -26,7 +26,6 @@ const menuItems: MenuProps["items"] = statusOptions.map((option) => ({
 
 const ChangeTask: React.FC<Props> = ({ taskId, status, mutateTask }) => {
   const { role } = useRole();
-  const isReadOnlyContributor = role.name === "CONTRIBUTOR";
   const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
@@ -43,7 +42,7 @@ const ChangeTask: React.FC<Props> = ({ taskId, status, mutateTask }) => {
     <Dropdown
       menu={{ items: menuItems, onClick: handleMenuClick }}
       trigger={["click"]}
-      disabled={isReadOnlyContributor || isReadOnlyStakeholder}
+      disabled={isReadOnlyStakeholder}
     >
       <Tag color={getColor(status)} className="cursor-pointer">
         {status.replace("_", " ")}

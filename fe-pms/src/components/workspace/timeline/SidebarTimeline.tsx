@@ -200,10 +200,20 @@ export const SidebarTimeline: React.FC<Props> = ({
           >
             <Input placeholder="Enter epic name" />
           </Form.Item>
-          <Form.Item name="description" label="Description">
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[
+              { required: true, message: "Please enter epic description" },
+            ]}
+          >
             <Input.TextArea rows={3} placeholder="Enter epic description" />
           </Form.Item>
-          <Form.Item name="milestonesId" label="Sprint">
+          <Form.Item
+            name="milestonesId"
+            label="Sprint"
+            rules={[{ required: true, message: "Please select a sprint" }]}
+          >
             <Select allowClear placeholder="Select sprint (optional)">
               {milestones.map((m) => (
                 <Option key={m._id} value={m._id}>

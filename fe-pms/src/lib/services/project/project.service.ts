@@ -25,20 +25,29 @@ export const createProject = async (project: Project) => {
   }
 };
 
-export const updateProject = async (projectId: string, project: Project) => {
+export const updateProject = async (projectId: string, formData: any) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .put(`${Endpoints.Project.UPDATE_PROJECT(projectId)}`, project);
+      .put(Endpoints.Project.UPDATE_PROJECT(projectId), formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    if (response.data.statusCode === 200) {
+    if (response.status === 200) {
       showSuccessToast(response.data.message || "Update project successfully!");
-      return response.data?.data;
+      return response;
+    } else {
+      throw new Error(response.data?.message || "Update project failed!");
     }
   } catch (error: any) {
-    if (error) {
-      showErrorToast(error.response.data.message || "Fail to update project!");
-    }
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Fail to update project!";
+    showErrorToast(errorMessage);
+    throw error;
   }
 };
 
@@ -61,6 +70,26 @@ export const deleteProject = async (projectId: string) => {
   } catch (error: any) {
     if (error) {
       showErrorToast(error.response.data.message || "Fail to delete project!");
+    }
+  }
+};
+
+//restore project deleted
+export const restoreProject = async (projectId: string) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .put(`${Endpoints.Project.RESTORE_PROJECT(projectId)}`);
+
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data.message || "Restore project successfully!"
+      );
+      return response;
+    }
+  } catch (error: any) {
+    if (error) {
+      showErrorToast(error.response.data.message || "Fail to restore project!");
     }
   }
 };

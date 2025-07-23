@@ -95,7 +95,7 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
         icon: <FilterOutlined />,
         children: [
           {
-            label: "Search work items",
+            label: <Link href="/workspace/filters/search-work-items">Search work items</Link>,
             key: "search-work-items",
             icon: <SearchOutlined />,
           },

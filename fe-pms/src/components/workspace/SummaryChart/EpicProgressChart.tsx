@@ -21,7 +21,7 @@ export default function ProgressChartAnt() {
   );
 
   return (
-    <div className="w-full max-w-xl space-y-6 h-[270px] overflow-y-auto mt-6">
+    <div className="w-full max-w-xl space-y-6 h-[200px] overflow-y-auto mt-6">
       {/* Tasks */}
       {statisticsEpic?.data?.epicStats.map((task: any) => (
         <div key={task.name}>

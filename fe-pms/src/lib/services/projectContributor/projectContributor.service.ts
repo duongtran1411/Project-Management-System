@@ -58,7 +58,9 @@ export const confirmInvite = async (token: string) => {
       .post(Endpoints.ProjectContributor.CONFIRM_INVITE(token));
 
     if (response.status === 200) {
-      showSuccessToast("Confirm invitation members successfully!");
+      showSuccessToast(
+        response?.data?.message || "Confirm invitation members successfully!"
+      );
       return response.data?.data;
     }
   } catch (error: any) {
@@ -129,6 +131,34 @@ export const updateProjectRole = async (
   } catch (error: any) {
     const message =
       error?.response?.data?.message || "Failed to update project role.";
+    showErrorToast(message);
+    return null;
+  }
+};
+
+//Change project lead
+export const changeProjectLead = async (
+  projectId: string,
+  currentLeadId: string,
+  newLeadId: string
+) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .put(Endpoints.ProjectContributor.CHANGE_PROJECT_LEAD(projectId), {
+        currentLeadId,
+        newLeadId,
+      });
+
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data.message || "Change project lead successfully!"
+      );
+      return response;
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Failed to change project lead.";
     showErrorToast(message);
     return null;
   }

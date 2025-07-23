@@ -11,7 +11,6 @@ export class Endpoints {
     VERIFY_REGISTRATION_OTP: "auth/verify-registration-otp",
     RESEND_REGISTRATION_OTP: "auth/resend-registration-otp",
     SETUP_ACCOUNT: "auth/setup-account",
-
   };
 
   static readonly User = {
@@ -31,6 +30,7 @@ export class Endpoints {
   };
 
   static readonly Task = {
+    GET_MY_TASKS: "task/my-tasks",
     GET_BY_PROJECT: (projectId: string) => `task/project/${projectId}`,
     GET_BY_MILESTONE: (milestoneId: string) => `task/milestone/${milestoneId}`,
     CREATE_TASK: "task",
@@ -71,6 +71,7 @@ export class Endpoints {
     GET_BY_ID: (workspaceId: string) => `workspace/${workspaceId}`,
     CREATE: 'workspace',
     GET_BY_USER: 'workspace/getbyuser'
+
   };
 
   static readonly Project = {
@@ -78,6 +79,8 @@ export class Endpoints {
     GET_BY_ID: (projectId: string) => `project/${projectId}`,
     UPDATE_PROJECT: (projectId: string) => `project/${projectId}`,
     DELETE_PROJECT: (projectId: string) => `project/${projectId}`,
+    TRASH_PROJECT: "project/deleted",
+    RESTORE_PROJECT: (projectId: string) => `project/${projectId}/restore`,
   };
 
   static readonly ProjectContributor = {
@@ -99,6 +102,10 @@ export class Endpoints {
       `project-contributor/${contributorId}`,
     PROJECT_STATISTICS: (projectId: string) =>
       `project-contributor/project/${projectId}/statistics`,
+    GET_PROJECT_BY_USER: (userId: string) =>
+      `project-contributor/user/${userId}/projects`,
+    CHANGE_PROJECT_LEAD: (projectId: string) =>
+      `project-contributor/project/${projectId}/update-lead`,
   };
 
   static readonly ProjectRole = {
