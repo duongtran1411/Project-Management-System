@@ -5,7 +5,7 @@ export interface INotification {
     | { _id: string; fullname: string; avatar?: string; email: string };
   senderId:
     | string
-    | { _id: string; fullname: string; avatar?: string; email: string };
+    | { _id: string; fullname?: string; avatar?: string; email: string };
   type:
     | "MENTION"
     | "TASK_UPDATE"

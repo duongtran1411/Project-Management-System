@@ -33,6 +33,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { useOnClickOutside } from "usehooks-ts";
 import NotificationPopup from "./NotificationPopup";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const fetcher = (url: string) =>
   axiosService
@@ -95,22 +96,8 @@ const mockTasks = [
 
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
-  const [userId, setUserId] = useState<string | null>(null);
-  const { data: user } = useSWR(
-    userId ? `${Endpoints.User.GET_BY_ID(userId)}` : null,
-    fetcher
-  );
-
-  useEffect(() => {
-    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
-    if (token) {
-      const decoded = jwtDecode<TokenPayload>(token);
-      if (decoded) {
-        setUserId(decoded.userId);
-      }
-    }
-  }, []);
-
+  const { userInfo } = useAuth();
+  console.log("avatar", userInfo?.avatar);
   const [searchText, setSearchText] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -171,8 +158,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         zIndex: 1000,
         backdropFilter: "blur(8px)",
         backgroundColor: "rgba(255, 255, 255, 0.95)",
-      }}
-    >
+      }}>
       {/* Left */}
       <div className="flex items-center gap-x-3">
         <Button
@@ -182,8 +168,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         />
         <div
           className="flex items-center gap-x-1 cursor-pointer"
-          onClick={() => router.push("/")}
-        >
+          onClick={() => router.push("/")}>
           <Image src="/jira_icon.png" alt="Jira Logo" width={24} height={24} />
           <Typography.Text strong className="text-xl font-semibold">
             Hub
@@ -216,8 +201,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
                             `/workspace/project-management/${task.projectId}/detail-task/${task.taskId}`
                           );
                           setIsSearchFocused(false);
-                        }}
-                      >
+                        }}>
                         <SelectOutlined
                           className="font-semibold"
                           style={{ color: "#764ba2" }}
@@ -247,8 +231,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
           <Button
             type="primary"
             className="bg-[#1868db] text-white"
-            onClick={() => router.push("/create-project")}
-          >
+            onClick={() => router.push("/create-project")}>
             <PlusOutlined />
             Create
           </Button>
@@ -262,19 +245,18 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {userId ? (
+          {userInfo ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
-              className="header-workspace-dropdown"
-            >
+              className="header-workspace-dropdown">
               <Space className="cursor-pointer">
-                {user?.data?.avatar ? (
-                  <Avatar src={user?.data?.avatar} />
+                {userInfo.avatar ? (
+                  <Avatar src={userInfo.avatar} />
                 ) : (
                   <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
                 )}
-                <span className="text-gray-700">{user?.data?.fullName}</span>
+                <span className="text-gray-700">{userInfo.fullname}</span>
               </Space>
             </Dropdown>
           ) : (
