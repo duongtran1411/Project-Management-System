@@ -35,8 +35,8 @@ const HeaderProjectManagement = () => {
   const { role } = useRole();
   const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const isStakeholder = role.name === "STAKEHOLDER";
+  console.log(role.name);
   const pathname = usePathname();
-
   // Tính key active từ pathname
   const getKeyFromPath = () => {
     const subpath = pathname.split(`/${projectId}`)[1];
@@ -133,6 +133,12 @@ const HeaderProjectManagement = () => {
       icon: <SnippetsOutlined />,
       url: `/workspace/project-management/${projectId}/feedback`,
     },
+    // {
+    //   key: "Board2",
+    //   label: "Board2",
+    //   icon: <TableOutlined />,
+    //   url: `/workspace/project-management/${projectId}/board2`,
+    // },
   ];
 
 
@@ -197,8 +203,8 @@ const HeaderProjectManagement = () => {
               return false;
             }
 
-            if (item.key === "Feedback" && (isProjectAdmin || isStakeholder))
-              return true;
+            if (item.key === "Feedback" )
+              return isProjectAdmin || isStakeholder;
             return true;
           })
           .map((item) => ({

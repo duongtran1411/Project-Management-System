@@ -8,6 +8,9 @@ const nextConfig = {
     optimizePackageImports: ["antd", "@ant-design/icons", "lucide-react"],
     // Optimize CSS loading
     optimizeCss: true,
+    turbo: {
+      loaders: {}, // hoặc thêm các cấu hình ở đây nếu cần
+    },
     // Reduce bundle size
     optimizePackageImports: ["antd", "@ant-design/icons"],
   },

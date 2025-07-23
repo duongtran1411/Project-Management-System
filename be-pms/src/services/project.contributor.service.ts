@@ -505,6 +505,15 @@ export class ProjectContributorService {
 
     return { message: "Project lead updated successfully" };
   }
+
+  async getContributorByUser (user:IUser,projectId: string):Promise<IProjectContributor> {
+    const contributor = await ProjectContributor.findOne({userId: user._id,projectId:projectId})
+    if(!contributor){
+      throw new Error("can not find project contributor");
+    }
+
+    return contributor
+  }
 }
 
 export default new ProjectContributorService();

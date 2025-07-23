@@ -42,13 +42,19 @@ router.post("/", feedbackController.createFeedback);
 
 /**
  * @openapi
- * /feedback:
+ * /feedback/{projectId}:
  *   get:
- *     summary: Lấy danh sách feedback
+ *     summary: Lấy danh sách feedback theo projectId
  *     tags: [Feedback]
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của proejct cần lấy
  *       - in: query
  *         name: page
  *         schema:
@@ -78,7 +84,7 @@ router.post("/", feedbackController.createFeedback);
  *       400:
  *         description: Lỗi lấy danh sách feedback
  */
-router.get("/", feedbackController.getListFeedbacks);
+router.get("/:projectId", feedbackController.getListFeedbacks);
 
 /**
  * @openapi

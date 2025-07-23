@@ -96,7 +96,7 @@ const BoardPage = () => {
 
   const { role } = useRole();
 
-  const isReadOnly = role.name === "CONTRIBUTOR";
+  const isReadOnly = role.name === "CONTRIBUTOR" || role.name === "STAKEHOLDER";
 
   const {
     data: taskData,
@@ -436,8 +436,7 @@ const BoardPage = () => {
                 max={{
                   count: 2,
                   style: { color: "#f56a00", backgroundColor: "#fde3cf" },
-                }}
-              >
+                }}>
                 <Avatar src={contributors[0]?.userId?.avatar}></Avatar>
                 {Array.isArray(contributors) && contributors.length > 0 && (
                   <Avatar
@@ -520,9 +519,9 @@ const BoardPage = () => {
                     }`}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <h2 className="font-semibold text-gray-700">
+                        <p className="font-semibold text-gray-700 mb-0">
                           {col.title}
-                        </h2>
+                        </p>
                         <span className="text-gray-500">{filtered.length}</span>
                       </div>
                     </div>
@@ -588,7 +587,7 @@ const BoardPage = () => {
                                       {
                                         key: "change_parent",
                                         label: "Change parent",
-                                        disabled: true,
+                                        disabled: isReadOnly,
                                         children: Array.isArray(epics)
                                           ? epics.map((epic) => ({
                                               key: `parent_${epic._id}`,
@@ -604,7 +603,7 @@ const BoardPage = () => {
                                         key: "delete",
                                         label: "Delete",
                                         danger: true,
-                                        disabled: true,
+                                        disabled: isReadOnly,
                                       },
                                     ],
                                     onClick: ({ key, domEvent }) => {
@@ -616,11 +615,9 @@ const BoardPage = () => {
                                           epic
                                         );
                                       } else if (key === "delete") {
-                                        console.log("Delete task:", task._id);
                                         setSelectedTaskDel(task);
                                         setIsOpenModalDel(true);
                                       } else if (key.startsWith("status_")) {
-                                        debugger;
                                         const status = key.replace(
                                           "status_",
                                           ""
@@ -738,33 +735,34 @@ const BoardPage = () => {
                                             </div>
                                           ),
                                         },
-                                        ...contributors
-                                          .filter((t) => {
-                                            return (
-                                              t.userId?._id !==
-                                              task.assignee?._id
-                                            );
-                                          })
-                                          .map((e) => ({
-                                            key: e.userId?._id,
-                                            label: (
-                                              <div className="flex items-center gap-2">
-                                                <Avatar
-                                                  src={e.userId?.avatar}
-                                                  size="small">
-                                                  {e.userId?.fullName[0]}
-                                                </Avatar>
-                                                <div>
-                                                  <p className="font-medium">
-                                                    {e.userId?.fullName}
-                                                  </p>
-                                                  <p className="text-xs text-gray-400">
-                                                    {e.userId?.email}
-                                                  </p>
-                                                </div>
-                                              </div>
-                                            ),
-                                          })),
+                                        ...(Array.isArray(contributors)
+                                          ? contributors
+                                              .filter(
+                                                (t) =>
+                                                  t.userId?._id !==
+                                                  task.assignee?._id
+                                              )
+                                              .map((e) => ({
+                                                key: e.userId?._id,
+                                                label: (
+                                                  <div className="flex items-center gap-2">
+                                                    <Avatar
+                                                      src={e.userId?.avatar}
+                                                      size="small">
+                                                      {e.userId?.fullName[0]}
+                                                    </Avatar>
+                                                    <div>
+                                                      <p className="font-medium">
+                                                        {e.userId?.fullName}
+                                                      </p>
+                                                      <p className="text-xs text-gray-400">
+                                                        {e.userId?.email}
+                                                      </p>
+                                                    </div>
+                                                  </div>
+                                                ),
+                                              }))
+                                          : []),
                                       ],
                                       onClick: ({ key, domEvent }) => {
                                         setIsModalOpen(false);

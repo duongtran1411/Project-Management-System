@@ -377,4 +377,27 @@ router.put(
   projectContributorController.updateProjectLead
 );
 
+/**
+ * @openapi
+ * /project-contributor/getcontributor/{projectId}:
+ *   get:
+ *     summary: Lấy contributor theo projectId
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: contributor project của user
+ *       400:
+ *         description: Lỗi không lấy được contributor project
+ */
+router.get('/getcontributor/:projectId',authenticate,projectContributorController.getContributorByUserId)
+
 export default router;
