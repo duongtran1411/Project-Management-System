@@ -571,7 +571,7 @@ const EpicPage = () => {
             width: 150,
             render: (date: string, record: any) => {
                 if (record.isEpic) {
-                    if (!date) return ""; // hoặc return null;
+                    if (!date) return "";
                     return (
                         <div className="flex items-center gap-2 px-2 py-1 text-gray-700 bg-white border rounded">
                             <CalendarOutlined />
