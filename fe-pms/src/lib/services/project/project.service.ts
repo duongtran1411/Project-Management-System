@@ -25,23 +25,6 @@ export const createProject = async (project: Project) => {
   }
 };
 
-// export const updateProject = async (projectId: string, project: Project) => {
-//   try {
-//     const response = await axiosService
-//       .getAxiosInstance()
-//       .put(`${Endpoints.Project.UPDATE_PROJECT(projectId)}`, project);
-
-//     if (response.data.statusCode === 200) {
-//       showSuccessToast(response.data.message || "Update project successfully!");
-//       return response.data?.data;
-//     }
-//   } catch (error: any) {
-//     if (error) {
-//       showErrorToast(error.response.data.message || "Fail to update project!");
-//     }
-//   }
-// };
-
 export const updateProject = async (projectId: string, formData: any) => {
   try {
     const response = await axiosService

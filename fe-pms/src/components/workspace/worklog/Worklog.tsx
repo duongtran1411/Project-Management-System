@@ -12,6 +12,7 @@ import useSWR from "swr";
 import { ModalCreateWorklog } from "./ModalCreateWorklog";
 import { ModalDeleteWorklog } from "./ModalDeleteWorklog";
 import { formatDateTime } from "@/lib/utils";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const fetcher = (url: string) =>
   axiosService
@@ -20,6 +21,7 @@ const fetcher = (url: string) =>
     .then((res) => res.data);
 
 export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
+  const { userInfo } = useAuth();
   const [showWorkLogModal, setShowWorkLogModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingWorklog, setEditingWorklog] = useState<Worklog | null>(null);
@@ -47,6 +49,10 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
   const { data: worklogData, mutate: mutateWorklog } = useSWR(
     task._id ? Endpoints.Worklog.GET_BY_TASK(task._id) : null,
     fetcher
+  );
+
+  const ownerWorklog = worklogData?.data?.some(
+    (worklog: Worklog) => worklog.contributor?._id === userInfo?.userId
   );
 
   // Helper function to handle edit worklog
@@ -128,23 +134,27 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
                       {worklog.description || ""}
                     </div>
                     <div className="flex items-center space-x-1 text-sm">
-                      <Button
-                        type="text"
-                        size="small"
-                        className="p-1 h-auto text-gray-600 font-semibold hover:text-blue-600"
-                        onClick={() => handleEditWorklog(worklog)}
-                      >
-                        Edit
-                      </Button>
-                      <span className="text-gray-400">•</span>
-                      <Button
-                        type="text"
-                        size="small"
-                        className="p-1 h-auto text-gray-600 font-semibold hover:text-red-600"
-                        onClick={() => handleDeleteWorklog(worklog._id!)}
-                      >
-                        Delete
-                      </Button>
+                      {ownerWorklog && (
+                        <>
+                          <Button
+                            type="text"
+                            size="small"
+                            className="p-1 h-auto text-gray-600 font-semibold hover:text-blue-600"
+                            onClick={() => handleEditWorklog(worklog)}
+                          >
+                            Edit
+                          </Button>
+                          <span className="text-gray-400">•</span>
+                          <Button
+                            type="text"
+                            size="small"
+                            className="p-1 h-auto text-gray-600 font-semibold hover:text-red-600"
+                            onClick={() => handleDeleteWorklog(worklog._id!)}
+                          >
+                            Delete
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

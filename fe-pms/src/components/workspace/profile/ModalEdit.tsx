@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/lib/auth/auth-context";
-import { updateUser } from "@/lib/services/user/user.service";
+import { updateProfile } from "@/lib/services/user/user.service";
 import { UploadOutlined } from "@ant-design/icons";
 import { Button, Form, FormInstance, Image, Input, Modal, Upload } from "antd";
 import { useState } from "react";
@@ -10,7 +10,6 @@ interface Props {
   userId: string;
   mutate: () => void;
   setShowEditModal: React.Dispatch<React.SetStateAction<any>>;
-  setAvatarPreview: React.Dispatch<React.SetStateAction<any>>;
   showEditModal: boolean;
   avatarPreview: string | undefined;
   formEdit: FormInstance<any>;
@@ -20,44 +19,25 @@ export const ModalEdit: React.FC<Props> = ({
   mutate,
   setShowEditModal,
   showEditModal,
-  setAvatarPreview,
-  avatarPreview,
   formEdit,
+  avatarPreview,
 }) => {
   const { setUserInfo } = useAuth();
   const [editLoading, setEditLoading] = useState(false);
-  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  const preset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-  const cloudURL = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_URL;
-
-  if (!preset || !cloudURL) {
-    throw new Error(
-      "Missing CLOUDINARY_UPLOAD_PRESET or CLOUDINARY_UPLOAD_URL"
-    );
-  }
-
-  const handleAvatarUpload = async (file: File) => {
-    setAvatarUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", preset);
-
-    const res = await fetch(cloudURL, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    setAvatarUploading(false);
-    return data.secure_url;
-  };
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleEditProfile = async (values: any) => {
     setEditLoading(true);
     try {
-      if (userId) {
-        const response = await updateUser(userId, values);
-
+      if (selectedFile) {
+        console.log("selectedFile", selectedFile);
+        const formData = new FormData();
+        formData.append("fullName", values.fullName);
+        formData.append("email", values.email);
+        formData.append("phone", values.phone);
+        formData.append("file", selectedFile);
+        const response = await updateProfile(userId, formData);
         if (response) {
           setUserInfo(response);
         }
@@ -99,26 +79,14 @@ export const ModalEdit: React.FC<Props> = ({
         </Form.Item>
         <Form.Item label="Avatar">
           <Upload
-            showUploadList={false}
-            customRequest={async ({ file, onSuccess, onError }) => {
-              try {
-                const url = await handleAvatarUpload(file as File);
-                setAvatarPreview(url);
-                formEdit.setFieldsValue({ avatar: url });
-                if (onSuccess) {
-                  onSuccess("ok");
-                }
-              } catch (err) {
-                if (onError) {
-                  onError(err as Error);
-                }
-              }
-            }}
             accept="image/*"
+            showUploadList={false}
+            beforeUpload={(file) => {
+              setSelectedFile(file);
+              return false;
+            }}
           >
-            <Button icon={<UploadOutlined />} loading={avatarUploading}>
-              Upload Avatar
-            </Button>
+            <Button icon={<UploadOutlined />}>Upload Avatar</Button>
           </Upload>
           {avatarPreview && (
             <div className="mt-2">
@@ -135,10 +103,16 @@ export const ModalEdit: React.FC<Props> = ({
               />
             </div>
           )}
+
+          {selectedFile && (
+            <div style={{ marginTop: 8, textAlign: "center", color: "#555" }}>
+              Selected file: <strong>{selectedFile.name}</strong>
+            </div>
+          )}
           {/* Ẩn input URL, chỉ dùng upload file và preview ảnh */}
-          <Form.Item name="avatar" hidden>
+          {/* <Form.Item name="avatar" hidden>
             <Input type="hidden" />
-          </Form.Item>
+          </Form.Item> */}
         </Form.Item>
         <Form.Item
           name="phone"

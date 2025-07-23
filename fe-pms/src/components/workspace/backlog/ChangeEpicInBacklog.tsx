@@ -11,7 +11,6 @@ interface Props {
   taskId: string | undefined;
   epic: string | null;
   mutateTask: () => void;
-  setEpic: (epic: any) => void;
   milestoneId: string | undefined;
 }
 
@@ -21,11 +20,10 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-const ChangeEpic: React.FC<Props> = ({
+const ChangeEpicInBacklog: React.FC<Props> = ({
   taskId,
   epic,
   mutateTask,
-  setEpic,
   milestoneId,
 }) => {
   const params = useParams();
@@ -36,6 +34,14 @@ const ChangeEpic: React.FC<Props> = ({
   const { data: epicData } = useSWR(
     `${Endpoints.Epic.GET_BY_PROJECT(projectId)}`,
     fetcher
+  );
+
+  console.log("milestoneId", milestoneId);
+  console.log(
+    "epicData",
+    epicData?.data.filter(
+      (option: any) => option.milestonesId?._id === milestoneId
+    )
   );
 
   const menuItems: MenuProps["items"] = epicData?.data
@@ -51,7 +57,6 @@ const ChangeEpic: React.FC<Props> = ({
         const response = await updateTaskEpic(taskId, key);
 
         if (response) {
-          setEpic(response.epic.name);
           await mutateTask();
         }
       }
@@ -72,4 +77,4 @@ const ChangeEpic: React.FC<Props> = ({
     </Dropdown>
   );
 };
-export default ChangeEpic;
+export default ChangeEpicInBacklog;

@@ -26,13 +26,13 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import ChangeAssignee from "./ChangeAssignee";
-import ChangeEpic from "./ChangeEpic";
-import ChangePriority from "./ChangePriority";
 import ChangeTask from "./ChangeTask";
 import EditSprintModal from "./EditSprintModal";
 import { Task } from "@/models/task/task.model";
 import { Milestone } from "@/models/milestone/milestone.model";
 import { useRole } from "@/lib/auth/auth-project-context";
+import ChangeEpicInBacklog from "./ChangeEpicInBacklog";
+import ChangePriorityInBacklog from "./ChangePriorityInBacklog";
 
 const items = [
   {
@@ -83,10 +83,11 @@ const SprintSection: React.FC<Props> = ({
       render: (epic: any, record: Task) => {
         return (
           <div onClick={(e) => e.stopPropagation()}>
-            <ChangeEpic
+            <ChangeEpicInBacklog
               taskId={record._id}
               epic={epic?.name}
               mutateTask={mutateTask}
+              milestoneId={record.milestones?._id}
             />
           </div>
         );
@@ -123,7 +124,7 @@ const SprintSection: React.FC<Props> = ({
       render: (priority: string, record: Task) => {
         return (
           <div onClick={(e) => e.stopPropagation()}>
-            <ChangePriority
+            <ChangePriorityInBacklog
               taskId={record._id}
               priority={priority}
               mutateTask={mutateTask}
