@@ -212,7 +212,7 @@ const UserManagementPage = () => {
               <div className="p-[2px] rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
                 <Card bordered={false} className="rounded-xl bg-white">
                   <div className="text-sm text-gray-600 font-semibold mb-1">
-                    TỔNG SỐ NGƯỜI DÙNG
+                    TOTAL USERS
                   </div>
                   <div className="text-2xl font-bold text-blue-950">
                     {projectStatistics?.data?.totalUsers}
@@ -224,7 +224,7 @@ const UserManagementPage = () => {
               <div className="p-[2px] rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
                 <Card bordered={false} className="rounded-xl bg-white">
                   <div className="text-sm text-gray-600 font-semibold mb-1">
-                    NGƯỜI DÙNG ĐANG HOẠT ĐỘNG
+                    ACTIVE USERS
                   </div>
                   <div className="text-2xl font-bold text-blue-950">
                     {projectStatistics?.data?.activeUsers}
@@ -236,7 +236,7 @@ const UserManagementPage = () => {
               <div className="p-[2px] rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2]">
                 <Card bordered={false} className="rounded-xl bg-white">
                   <div className="text-sm text-gray-600 font-semibold mb-1">
-                    QUẢN TRỊ VIÊN TỔ CHỨC
+                    ORGANIZATION ADMINS
                   </div>
                   <div className="text-2xl font-bold text-blue-950">
                     {projectStatistics?.data?.adminCount}
