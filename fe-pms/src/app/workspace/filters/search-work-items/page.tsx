@@ -1,174 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Table, Input, Button, Select, Tag, Spin, Avatar } from "antd";
-import { SearchOutlined, FilterOutlined, UserOutlined, CalendarOutlined } from "@ant-design/icons";
-import { getMyTasks } from "@/lib/services/task/task.service";
-import { getProjectsContributorByUserId } from "@/lib/services/projectContributor/projectContributor.service";
-import { getTasksByProject } from "@/lib/services/task/task.service";
 import { useAuth } from "@/lib/auth/auth-context";
+import { Endpoints } from "@/lib/endpoints";
+import axiosService from "@/lib/services/axios.service";
+import { getProjectsContributorByUserId } from "@/lib/services/projectContributor/projectContributor.service";
+import { getMyTasks, getTasksByProject } from "@/lib/services/task/task.service";
+import { CalendarOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, Input, Select, Spin, Table, Tag } from "antd";
+import { useEffect, useState } from "react";
 
 const { Option } = Select;
 
 
-
-const columns = [
-    {
-        title: "Work",
-        dataIndex: "work",
-        key: "work",
-        render: (text: string) => <a className="text-blue-600">{text}</a>,
-    },
-    {
-        title: "Assignee",
-        dataIndex: "assignee",
-        key: "assignee",
-        render: (_: any, record: any) => {
-            const name = record.assigneeName || "Unassigned";
-            const avatar = record.assigneeAvatar || undefined;
-            return (
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <Avatar size={24} src={avatar} style={{ background: !avatar ? '#ccc' : undefined }}>
-                        <UserOutlined />
-                    </Avatar>
-                    {name}
-                </span>
-            );
-        },
-    },
-    {
-        title: "Reporter",
-        dataIndex: "reporter",
-        key: "reporter",
-        render: (_: any, record: any) => {
-            const name = record.reporterName || "Unassigned";
-            const avatar = record.reporterAvatar || undefined;
-            return (
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <Avatar size={24} src={avatar} style={{ background: !avatar ? '#ccc' : undefined }}>
-                        <UserOutlined />
-                    </Avatar>
-                    {name}
-                </span>
-            );
-        },
-    },
-    {
-        title: "Priority",
-        dataIndex: "priority",
-        key: "priority",
-        render: (priority: string) => {
-            let color = "default";
-
-            switch (priority?.toLowerCase()) {
-                case "high":
-                    color = "red";
-                    break;
-                case "medium":
-                    color = "orange";
-                    break;
-                case "low":
-                    color = "green";
-                    break;
-                case "urgent":
-                    color = "volcano";
-                    break;
-                default:
-                    color = "default";
-                    break;
-            }
-
-            return <Tag color={color}>{priority || "Unspecified"}</Tag>;
-        },
-    },
-
-    {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        render: (status: string) => {
-            if (status === "DONE") {
-                return <Tag color="green">DONE</Tag>;
-            } else if (status === "IN_PROGRESS") {
-                return <Tag color="blue">IN PROGRESS</Tag>;
-            } else if (status === "TO_DO") {
-                return <Tag color="default">TO DO</Tag>;
-            } else {
-                return <Tag color="default">{status || "Unspecified"}</Tag>;
-            }
-        },
-    },
-
-    {
-        title: "Created",
-        dataIndex: "createdAt",
-        key: "createdAt",
-        render: (date: string) => (
-            date ? (
-                <span style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    padding: "2px 10px",
-                    background: "#f9fafb"
-                }}>
-                    <CalendarOutlined style={{ color: "#555" }} />
-                    {date}
-                </span>
-            ) : (
-                <span>None</span>
-            )
-        ),
-    },
-    {
-        title: "Updated",
-        dataIndex: "updatedAt",
-        key: "updatedAt",
-        render: (date: string) => (
-            date ? (
-                <span style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    padding: "2px 10px",
-                    background: "#f9fafb"
-                }}>
-                    <CalendarOutlined style={{ color: "#555" }} />
-                    {date}
-                </span>
-            ) : (
-                <span>None</span>
-            )
-        ),
-    },
-    {
-        title: "Due Date",
-        dataIndex: "dueDate",
-        key: "dueDate",
-        render: (date: string) => (
-            date ? (
-                <span style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    padding: "2px 10px",
-                    background: "#f9fafb"
-                }}>
-                    <CalendarOutlined style={{ color: "#555" }} />
-                    {date}
-                </span>
-            ) : (
-                <span>None</span>
-            )
-        ),
-    },
-];
 
 const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
@@ -189,7 +32,10 @@ const Page = () => {
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedProject, setSelectedProject] = useState<string[]>([]);
     const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
-
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+    const [editingTaskName, setEditingTaskName] = useState<string>("");
+    const [editingStatusTaskId, setEditingStatusTaskId] = useState<string | null>(null);
+    const [editingPriorityTaskId, setEditingPriorityTaskId] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -257,6 +103,278 @@ const Page = () => {
         setFilteredData(filtered);
     }, [searchText, selectedStatus, data]);
 
+    const handleUpdateTaskName = async (taskId: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_NAME(taskId)}`,
+                { name: editingTaskName }
+            );
+
+            // Cập nhật lại danh sách task
+            const updatedData = data.map((task) =>
+                task.key === taskId ? { ...task, work: editingTaskName } : task
+            );
+            setData(updatedData);
+        } catch (error) {
+            console.error("Failed to update task name:", error);
+        } finally {
+            setEditingTaskId(null);
+            setEditingTaskName("");
+        }
+    };
+
+    const handleUpdateTaskStatus = async (taskId: string, newStatus: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_STATUS(taskId)}`,
+                { status: newStatus }
+            );
+
+            const updated = data.map(task =>
+                task.key === taskId ? { ...task, status: newStatus } : task
+            );
+            setData(updated);
+            setEditingStatusTaskId(null); // đóng edit
+        } catch (error) {
+            console.error("Failed to update task status:", error);
+        }
+    };
+
+
+    const handleUpdateTaskPriority = async (taskId: string, newPriority: string) => {
+        try {
+            await axiosService.getAxiosInstance().patch(
+                `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.UPDATE_PRIORITY(taskId)}`,
+                { priority: newPriority }
+            );
+
+            const updated = data.map(task =>
+                task.key === taskId ? { ...task, priority: newPriority } : task
+            );
+            setData(updated);
+            setEditingPriorityTaskId(null);
+        } catch (error) {
+            console.error("Failed to update task priority:", error);
+        }
+    };
+
+    const statusOptions = [
+        { label: "To Do", value: "TO_DO" },
+        { label: "In Progress", value: "IN_PROGRESS" },
+        { label: "Done", value: "DONE" },
+    ];
+
+
+
+    const priorityOptions = [
+        { label: "Low", value: "LOW" },
+        { label: "Medium", value: "MEDIUM" },
+        { label: "High", value: "HIGH" },
+    ];
+
+
+    const columns = [
+        {
+            title: "Work",
+            dataIndex: "work",
+            key: "work",
+            render: (_: any, record: any) => {
+                const isEditing = editingTaskId === record.key;
+                return isEditing ? (
+                    <Input
+                        value={editingTaskName}
+                        onChange={(e) => setEditingTaskName(e.target.value)}
+                        onPressEnter={() => handleUpdateTaskName(record.key)}
+                        onBlur={() => handleUpdateTaskName(record.key)}
+                        autoFocus
+                        size="small"
+                        style={{ width: "100%" }}
+                    />
+                ) : (
+                    <a
+                        className="text-blue-600"
+                        onClick={() => {
+                            setEditingTaskId(record.key);
+                            setEditingTaskName(record.work);
+                        }}
+                    >
+                        {record.work}
+                    </a>
+                );
+            },
+        },
+
+        {
+            title: "Assignee",
+            dataIndex: "assignee",
+            key: "assignee",
+            render: (_: any, record: any) => {
+                const name = record.assigneeName || "Unassigned";
+                const avatar = record.assigneeAvatar || undefined;
+                return (
+                    <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <Avatar size={24} src={avatar} style={{ background: !avatar ? '#ccc' : undefined }}>
+                            <UserOutlined />
+                        </Avatar>
+                        {name}
+                    </span>
+                );
+            },
+        },
+        {
+            title: "Reporter",
+            dataIndex: "reporter",
+            key: "reporter",
+            render: (_: any, record: any) => {
+                const name = record.reporterName || "Unassigned";
+                const avatar = record.reporterAvatar || undefined;
+                return (
+                    <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <Avatar size={24} src={avatar} style={{ background: !avatar ? '#ccc' : undefined }}>
+                            <UserOutlined />
+                        </Avatar>
+                        {name}
+                    </span>
+                );
+            },
+        },
+        {
+            title: "Priority",
+            dataIndex: "priority",
+            key: "priority",
+            render: (priority: string, record: any) => {
+                const isEditing = editingPriorityTaskId === record.key;
+
+                return isEditing ? (
+                    <Select
+                        value={priority}
+                        size="small"
+                        options={priorityOptions}
+                        onChange={(value) => handleUpdateTaskPriority(record.key, value)}
+                        onBlur={() => setEditingPriorityTaskId(null)}
+                        autoFocus
+                        style={{ width: 120 }}
+                    />
+                ) : (
+                    <Tag
+                        color={
+                            priority === "LOW" ? "green"
+                                : priority === "MEDIUM" ? "orange"
+                                    : "red"
+                        }
+                        onClick={() => setEditingPriorityTaskId(record.key)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        {priority}
+                    </Tag>
+                );
+            }
+        },
+
+        {
+            title: "Status",
+            dataIndex: "status",
+            key: "status",
+            render: (status: string, record: any) => {
+                const isEditing = editingStatusTaskId === record.key;
+
+                return isEditing ? (
+                    <Select
+                        value={status}
+                        size="small"
+                        options={statusOptions}
+                        onChange={(value) => handleUpdateTaskStatus(record.key, value)}
+                        onBlur={() => setEditingStatusTaskId(null)} // click ra ngoài thì hủy edit
+                        autoFocus
+                        style={{ width: 120 }}
+                    />
+                ) : (
+                    <Tag
+                        color={
+                            status === "TO_DO" ? "default"
+                                : status === "IN_PROGRESS" ? "blue"
+                                    : "green"
+                        }
+                        onClick={() => setEditingStatusTaskId(record.key)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        {status.replace("_", " ")}
+                    </Tag>
+                );
+            },
+        },
+        {
+            title: "Created",
+            dataIndex: "createdAt",
+            key: "createdAt",
+            render: (date: string) => (
+                date ? (
+                    <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 8,
+                        padding: "2px 10px",
+                        background: "#f9fafb"
+                    }}>
+                        <CalendarOutlined style={{ color: "#555" }} />
+                        {date}
+                    </span>
+                ) : (
+                    <span>None</span>
+                )
+            ),
+        },
+        {
+            title: "Updated",
+            dataIndex: "updatedAt",
+            key: "updatedAt",
+            render: (date: string) => (
+                date ? (
+                    <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 8,
+                        padding: "2px 10px",
+                        background: "#f9fafb"
+                    }}>
+                        <CalendarOutlined style={{ color: "#555" }} />
+                        {date}
+                    </span>
+                ) : (
+                    <span>None</span>
+                )
+            ),
+        },
+        {
+            title: "Due Date",
+            dataIndex: "dueDate",
+            key: "dueDate",
+            render: (date: string) => (
+                date ? (
+                    <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 8,
+                        padding: "2px 10px",
+                        background: "#f9fafb"
+                    }}>
+                        <CalendarOutlined style={{ color: "#555" }} />
+                        {date}
+                    </span>
+                ) : (
+                    <span>None</span>
+                )
+            ),
+        },
+    ];
+
+
 
     return (
         <div className="min-h-screen p-8 bg-white ">
@@ -301,9 +419,7 @@ const Page = () => {
                         );
                     })}
                 </Select>
-                {/* <Select defaultValue="Assignee" className="w-32">
-                    <Option value="Assignee">Assignee</Option>
-                </Select> */}
+
                 <Select
                     mode="multiple"
                     placeholder="Select status"
