@@ -298,8 +298,15 @@ export class ProjectContributorService {
   async removeContributor(id: string): Promise<boolean> {
     if (!mongoose.Types.ObjectId.isValid(id)) return false;
 
-    const deleted = await ProjectContributor.findByIdAndDelete(id);
-    return !!deleted;
+    // Tìm contributor trước khi xóa để lấy thông tin
+    const contributor = await ProjectContributor.findById(id);
+    if (!contributor) return false;
+
+    // Sử dụng hàm removeContributorByUserAndProject để cleanup
+    return await this.removeContributorByUserAndProject(
+      contributor.userId.toString(),
+      contributor.projectId.toString()
+    );
   }
 
   // Xoá theo userId và projectId nếu cần
@@ -307,11 +314,168 @@ export class ProjectContributorService {
     userId: string,
     projectId: string
   ): Promise<boolean> {
-    const result = await ProjectContributor.findOneAndDelete({
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(projectId)
+    ) {
+      return false;
+    }
+
+    // Tìm contributor trước khi xóa để lấy thông tin
+    const contributor = await ProjectContributor.findOne({
       userId,
       projectId,
     });
-    return !!result;
+    if (!contributor) return false;
+
+    // Import các models cần thiết
+    const Task = mongoose.model("Task");
+    const Comment = mongoose.model("Comment");
+    const Worklog = mongoose.model("Worklog");
+    const Notification = mongoose.model("Notification");
+    const Feedback = mongoose.model("Feedback");
+    const ActivityLog = mongoose.model("ActivityLog");
+
+    // Bắt đầu transaction để đảm bảo tính nhất quán
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. Xóa tất cả tasks được assign cho user này trong project
+      await Task.updateMany(
+        {
+          projectId: projectId,
+          assignee: userId,
+        },
+        {
+          assignee: null,
+          updatedBy: userId,
+        },
+        { session }
+      );
+
+      // 2. Xóa tất cả tasks được report bởi user này trong project
+      await Task.updateMany(
+        {
+          projectId: projectId,
+          reporter: userId,
+        },
+        {
+          reporter: null,
+          updatedBy: userId,
+        },
+        { session }
+      );
+
+      // 3. Xóa tất cả comments của user này trong project
+      const tasksInProject = await Task.find({ projectId: projectId }).select(
+        "_id"
+      );
+      const taskIds = tasksInProject.map((task) => task._id);
+
+      if (taskIds.length > 0) {
+        await Comment.deleteMany(
+          {
+            task: { $in: taskIds },
+            author: userId,
+          },
+          { session }
+        );
+
+        // 4. Xóa tất cả worklogs của user này trong project
+        await Worklog.deleteMany(
+          {
+            taskId: { $in: taskIds },
+            contributor: userId,
+          },
+          { session }
+        );
+
+        // 5. Xóa tất cả notifications liên quan đến user này trong project
+        await Notification.deleteMany(
+          {
+            $or: [
+              {
+                recipientId: userId,
+                entityType: "Task",
+                entityId: { $in: taskIds },
+              },
+              {
+                senderId: userId,
+                entityType: "Task",
+                entityId: { $in: taskIds },
+              },
+              {
+                recipientId: userId,
+                entityType: "Comment",
+                entityId: { $in: taskIds },
+              },
+              {
+                senderId: userId,
+                entityType: "Comment",
+                entityId: { $in: taskIds },
+              },
+            ],
+          },
+          { session }
+        );
+
+        // 6. Xóa tất cả activity logs liên quan đến user này trong project
+        await ActivityLog.deleteMany(
+          {
+            userId: userId,
+            entity: "Task",
+            entityId: { $in: taskIds },
+          },
+          { session }
+        );
+      }
+
+      // 7. Xóa tất cả feedback của user này trong project
+      await Feedback.deleteMany(
+        {
+          projectId: projectId,
+          createdBy: userId,
+        },
+        { session }
+      );
+
+      // 8. Xóa tất cả notifications liên quan đến project này
+      await Notification.deleteMany(
+        {
+          $or: [
+            { recipientId: userId, entityType: "Project", entityId: projectId },
+            { senderId: userId, entityType: "Project", entityId: projectId },
+          ],
+        },
+        { session }
+      );
+
+      // 9. Cuối cùng xóa contributor
+      await ProjectContributor.findOneAndDelete(
+        {
+          userId,
+          projectId,
+        },
+        { session }
+      );
+
+      // Commit transaction
+      await session.commitTransaction();
+
+      console.log(
+        `Successfully removed contributor ${userId} from project ${projectId} and cleaned up all related data`
+      );
+
+      return true;
+    } catch (error) {
+      // Rollback nếu có lỗi
+      await session.abortTransaction();
+      console.error("Error removing contributor by user and project:", error);
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   async getProjectsByUserId(userId: string): Promise<any[]> {
@@ -519,6 +683,118 @@ export class ProjectContributorService {
     }
 
     return contributor;
+  }
+
+  // Hàm cleanup tất cả dữ liệu của user khi user bị xóa khỏi hệ thống
+  async cleanupUserData(userId: string): Promise<boolean> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return false;
+    }
+
+    // Import các models cần thiết
+    const Task = mongoose.model("Task");
+    const Comment = mongoose.model("Comment");
+    const Worklog = mongoose.model("Worklog");
+    const Notification = mongoose.model("Notification");
+    const Feedback = mongoose.model("Feedback");
+    const ActivityLog = mongoose.model("ActivityLog");
+    const ProjectInvitation = mongoose.model("ProjectInvitation");
+
+    // Bắt đầu transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. Xóa tất cả tasks được assign hoặc report bởi user này
+      await Task.updateMany(
+        {
+          $or: [{ assignee: userId }, { reporter: userId }],
+        },
+        {
+          assignee: null,
+          reporter: null,
+          updatedBy: userId,
+        },
+        { session }
+      );
+
+      // 2. Xóa tất cả comments của user này
+      await Comment.deleteMany(
+        {
+          author: userId,
+        },
+        { session }
+      );
+
+      // 3. Xóa tất cả worklogs của user này
+      await Worklog.deleteMany(
+        {
+          contributor: userId,
+        },
+        { session }
+      );
+
+      // 4. Xóa tất cả notifications liên quan đến user này
+      await Notification.deleteMany(
+        {
+          $or: [{ recipientId: userId }, { senderId: userId }],
+        },
+        { session }
+      );
+
+      // 5. Xóa tất cả feedback của user này
+      await Feedback.deleteMany(
+        {
+          createdBy: userId,
+        },
+        { session }
+      );
+
+      // 6. Xóa tất cả activity logs của user này
+      await ActivityLog.deleteMany(
+        {
+          userId: userId,
+        },
+        { session }
+      );
+
+      // 7. Xóa tất cả project invitations của user này
+      await ProjectInvitation.deleteMany(
+        {
+          email: { $in: await this.getUserEmails(userId) },
+        },
+        { session }
+      );
+
+      // 8. Xóa tất cả project contributors của user này
+      await ProjectContributor.deleteMany(
+        {
+          userId: userId,
+        },
+        { session }
+      );
+
+      // Commit transaction
+      await session.commitTransaction();
+
+      console.log(`Successfully cleaned up all data for user ${userId}`);
+
+      return true;
+    } catch (error) {
+      // Rollback nếu có lỗi
+      await session.abortTransaction();
+      console.error("Error cleaning up user data:", error);
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  // Helper function để lấy emails của user
+  private async getUserEmails(userId: string): Promise<string[]> {
+    const User = mongoose.model("User");
+    const user = await User.findById(userId).select("email");
+    return user ? [user.email] : [];
   }
 }
 
