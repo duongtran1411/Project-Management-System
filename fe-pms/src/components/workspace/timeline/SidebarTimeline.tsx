@@ -48,15 +48,23 @@ export const SidebarTimeline: React.FC<Props> = ({
   const [selectedEpic, setSelectedEpic] = useState<Epic | null>(null);
 
   const handleSubmit = async (values: any) => {
-    if (selectedEpic) {
-      await updateEpic(selectedEpic._id, values);
-    } else {
-      await createEpic({ ...values, projectId });
+    try {
+      if (selectedEpic) {
+        await updateEpic(selectedEpic._id, values);
+      } else {
+        await createEpic({ ...values, projectId });
+      }
+      // Reset everything after successful operation
+      setSelectedEpic(null);
+      form.resetFields();
+      setOpen(false);
+      
+      // Refresh epics
+      const updatedEpics = await getEpicsByProject(projectId);
+      setEpics(updatedEpics);
+    } catch (error) {
+      console.error('Error saving epic:', error);
     }
-    setOpen(false);
-    form.resetFields();
-    // Refresh epics
-    getEpicsByProject(projectId).then(setEpics);
   };
 
   const getMenu = (record: any) => (
@@ -84,7 +92,7 @@ export const SidebarTimeline: React.FC<Props> = ({
           form.setFieldsValue({
             name: record.name,
             description: record.description,
-            milestonesId: record.milestonesId._id,
+            milestonesId: record.milestonesId?._id,
           });
           setOpen(true);
         } else if (key === "delete-epic") {

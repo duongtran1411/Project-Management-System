@@ -6,13 +6,27 @@ import { UserOutlined, LogoutOutlined, HomeOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
+import axiosService from "@/lib/services/axios.service";
+import useSWR from "swr";
+import { Endpoints } from "@/lib/endpoints";
+
+const fetcher = (url: string) =>
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 const Header: React.FC = () => {
   const router = useRouter();
   const { userInfo } = useAuth();
-  const avatar = userInfo?.avatar?.trim() || undefined;
-  const userName = userInfo?.fullname || "";
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const { data: user } = useSWR(
+    userInfo?.userId ? `${Endpoints.User.GET_BY_ID(userInfo?.userId)}` : null,
+    fetcher
+  );
+
+  console.log("user", user);
 
   // Theo dõi scroll để thêm hiệu ứng
   useEffect(() => {
@@ -76,14 +90,19 @@ const Header: React.FC = () => {
         </div>
 
         <div>
-          {userInfo ? (
+          {user?.data ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
             >
               <Space className="cursor-pointer">
-                <Avatar src={avatar} />
-                <span className="text-gray-700">{userName}</span>
+                {user?.data?.avatar ? (
+                  <Avatar src={user?.data?.avatar} />
+                ) : (
+                  <Avatar>U</Avatar>
+                )}
+
+                <span className="text-gray-700">{user?.data?.fullName}</span>
               </Space>
             </Dropdown>
           ) : (
