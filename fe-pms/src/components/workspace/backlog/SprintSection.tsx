@@ -249,160 +249,160 @@ const SprintSection: React.FC<Props> = ({
 
   return (
     <div>
-      {milestoneData?.map((milestone: Milestone) => {
-        // Ẩn sprint nếu đã completed
-        if (milestone.status === "COMPLETED") return null;
-        const taskInMileStone = listTask?.filter(
-          (task: Task) => task.milestones?._id === milestone._id
-        );
+      {milestoneData
+        ?.filter((milestone: Milestone) => milestone.status !== "COMPLETED")
+        ?.map((milestone: Milestone) => {
+          const taskInMileStone = listTask?.filter(
+            (task: Task) => task.milestones?._id === milestone._id
+          );
 
-        // allTaskIdsInMilestone là mảng chứa tất cả _id của task đang hiển thị
-        const allTaskIdsInMilestone = taskInMileStone
-          .map((task) => task._id)
-          .filter((id): id is string => typeof id === "string");
+          // allTaskIdsInMilestone là mảng chứa tất cả _id của task đang hiển thị
+          const allTaskIdsInMilestone = taskInMileStone
+            .map((task) => task._id)
+            .filter((id): id is string => typeof id === "string");
 
-        const onChange: CheckboxProps["onChange"] = (e) => {
-          if (e.target.checked) {
-            setSelectedTaskIds(allTaskIdsInMilestone);
-          } else {
-            // Nếu đã chọn rồi => bỏ chọn hết
-            setSelectedTaskIds([]);
-          }
-        };
+          const onChange: CheckboxProps["onChange"] = (e) => {
+            if (e.target.checked) {
+              setSelectedTaskIds(allTaskIdsInMilestone);
+            } else {
+              // Nếu đã chọn rồi => bỏ chọn hết
+              setSelectedTaskIds([]);
+            }
+          };
 
-        return (
-          <div
-            key={milestone._id}
-            className="m-4 bg-gray-100 rounded-sm p-[15px]"
-          >
-            <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
-              {/* Left */}
-              <div className="flex items-center gap-2">
-                {isProjectAdmin && <Checkbox onChange={onChange}></Checkbox>}
+          return (
+            <div
+              key={milestone._id}
+              className="m-4 bg-gray-100 rounded-sm p-[15px]"
+            >
+              <div className="flex items-center justify-between p-2 bg-gray-100 rounded-t-md ">
+                {/* Left */}
+                <div className="flex items-center gap-2">
+                  {isProjectAdmin && <Checkbox onChange={onChange}></Checkbox>}
 
-                {expandedMilestones[milestone._id] ? (
-                  <DownOutlined
-                    className="text-sm"
-                    onClick={() => toggleMilestone(milestone._id)}
-                  />
-                ) : (
-                  <RightOutlined
-                    className="text-sm"
-                    onClick={() => toggleMilestone(milestone._id)}
-                  />
-                )}
-                <h3 className="font-semibold">{milestone.name} </h3>
-                <span className="ml-2 text-sm text-gray-500">
-                  {milestone.startDate && formatDate(milestone.startDate)} –{" "}
-                  {milestone.endDate && formatDate(milestone.endDate)} (
-                  {taskInMileStone.length} of {taskData?.length || 0} work items
-                  visible)
-                </span>
-              </div>
-              {/* Right */}
-              <div className="flex items-center gap-2 ">
-                <div className="flex items-center ">
-                  <Tag color="default" className="w-6 p-0 text-center">
-                    {
-                      taskInMileStone.filter(
-                        (task: Task) => task.status === "TO_DO"
-                      ).length
-                    }
-                  </Tag>
-                  <Tag color="blue" className="w-6 p-0 text-center">
-                    {
-                      taskInMileStone.filter(
-                        (task: Task) => task.status === "IN_PROGRESS"
-                      ).length
-                    }
-                  </Tag>
-                  <Tag color="green" className="w-6 p-0 text-center">
-                    {
-                      taskInMileStone.filter(
-                        (task: Task) => task.status === "DONE"
-                      ).length
-                    }
-                  </Tag>
-                </div>
-
-                {/* Complete sprint */}
-                <Button
-                  type="default"
-                  className="font-semibold text-gray-600"
-                  disabled={
-                    taskInMileStone.length === 0 ||
-                    isReadOnlyContributor ||
-                    isReadOnlyStakeholder
-                  }
-                  onClick={() => handleSprintStatusChange(milestone)}
-                >
-                  {milestone.status === "NOT_START"
-                    ? "Start sprint"
-                    : milestone.status === "ACTIVE"
-                    ? "Complete sprint"
-                    : null}
-                </Button>
-
-                {/* More */}
-                <Dropdown
-                  menu={{
-                    items: items.map((item) => ({
-                      ...item,
-                      onClick: () => handleMenuClick(item.key, milestone),
-                    })),
-                  }}
-                  placement="bottomRight"
-                  trigger={["click"]}
-                  disabled={isReadOnlyContributor || isReadOnlyStakeholder}
-                >
-                  <Button
-                    icon={<EllipsisOutlined />}
-                    className="border border-gray-300 shadow-sm"
-                  />
-                </Dropdown>
-              </div>
-            </div>
-
-            {expandedMilestones[milestone._id] && (
-              <>
-                {taskInMileStone.length > 0 ? (
-                  <Table<Task>
-                    rowSelection={rowSelection}
-                    columns={columns}
-                    dataSource={taskInMileStone}
-                    pagination={false}
-                    className="border border-t-0 border-gray-200"
-                    size="small"
-                    showHeader={false}
-                    rowKey="_id"
-                    onRow={(record) => ({
-                      onClick: () => setSelectedTask(record),
-                    })}
-                    rowClassName={(record) =>
-                      selectedTask?._id === record._id ? "bg-blue-100" : ""
-                    }
-                  />
-                ) : (
-                  <div className="border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
-                    Your backlog is empty.
-                  </div>
-                )}
-
-                <Button
-                  type="text"
-                  className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
-                  onClick={() => showModal(milestone)}
-                  disabled={isReadOnlyStakeholder || isReadOnlyContributor}
-                >
-                  <span>
-                    <PlusOutlined /> Create
+                  {expandedMilestones[milestone._id] ? (
+                    <DownOutlined
+                      className="text-sm"
+                      onClick={() => toggleMilestone(milestone._id)}
+                    />
+                  ) : (
+                    <RightOutlined
+                      className="text-sm"
+                      onClick={() => toggleMilestone(milestone._id)}
+                    />
+                  )}
+                  <h3 className="font-semibold">{milestone.name} </h3>
+                  <span className="ml-2 text-sm text-gray-500">
+                    {milestone.startDate && formatDate(milestone.startDate)} –{" "}
+                    {milestone.endDate && formatDate(milestone.endDate)} (
+                    {taskInMileStone.length} of {taskData?.length || 0} work
+                    items visible)
                   </span>
-                </Button>
-              </>
-            )}
-          </div>
-        );
-      })}
+                </div>
+                {/* Right */}
+                <div className="flex items-center gap-2 ">
+                  <div className="flex items-center ">
+                    <Tag color="default" className="w-6 p-0 text-center">
+                      {
+                        taskInMileStone.filter(
+                          (task: Task) => task.status === "TO_DO"
+                        ).length
+                      }
+                    </Tag>
+                    <Tag color="blue" className="w-6 p-0 text-center">
+                      {
+                        taskInMileStone.filter(
+                          (task: Task) => task.status === "IN_PROGRESS"
+                        ).length
+                      }
+                    </Tag>
+                    <Tag color="green" className="w-6 p-0 text-center">
+                      {
+                        taskInMileStone.filter(
+                          (task: Task) => task.status === "DONE"
+                        ).length
+                      }
+                    </Tag>
+                  </div>
+
+                  {/* Complete sprint */}
+                  <Button
+                    type="default"
+                    className="font-semibold text-gray-600"
+                    disabled={
+                      taskInMileStone.length === 0 ||
+                      isReadOnlyContributor ||
+                      isReadOnlyStakeholder
+                    }
+                    onClick={() => handleSprintStatusChange(milestone)}
+                  >
+                    {milestone.status === "NOT_START"
+                      ? "Start sprint"
+                      : milestone.status === "ACTIVE"
+                      ? "Complete sprint"
+                      : null}
+                  </Button>
+
+                  {/* More */}
+                  <Dropdown
+                    menu={{
+                      items: items.map((item) => ({
+                        ...item,
+                        onClick: () => handleMenuClick(item.key, milestone),
+                      })),
+                    }}
+                    placement="bottomRight"
+                    trigger={["click"]}
+                    disabled={isReadOnlyContributor || isReadOnlyStakeholder}
+                  >
+                    <Button
+                      icon={<EllipsisOutlined />}
+                      className="border border-gray-300 shadow-sm"
+                    />
+                  </Dropdown>
+                </div>
+              </div>
+
+              {expandedMilestones[milestone._id] && (
+                <>
+                  {taskInMileStone.length > 0 ? (
+                    <Table<Task>
+                      rowSelection={rowSelection}
+                      columns={columns}
+                      dataSource={taskInMileStone}
+                      pagination={false}
+                      className="border border-t-0 border-gray-200"
+                      size="small"
+                      showHeader={false}
+                      rowKey="_id"
+                      onRow={(record) => ({
+                        onClick: () => setSelectedTask(record),
+                      })}
+                      rowClassName={(record) =>
+                        selectedTask?._id === record._id ? "bg-blue-100" : ""
+                      }
+                    />
+                  ) : (
+                    <div className="border-gray-300 p-2 m-2 text-gray-700 border-dashed text-center border-[2px] rounded-sm">
+                      Your backlog is empty.
+                    </div>
+                  )}
+
+                  <Button
+                    type="text"
+                    className="flex justify-start w-full p-2 my-1 font-semibold text-gray-600"
+                    onClick={() => showModal(milestone)}
+                    disabled={isReadOnlyStakeholder || isReadOnlyContributor}
+                  >
+                    <span>
+                      <PlusOutlined /> Create
+                    </span>
+                  </Button>
+                </>
+              )}
+            </div>
+          );
+        })}
 
       {/* Edit sprint */}
       <EditSprintModal

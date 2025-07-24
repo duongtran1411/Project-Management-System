@@ -51,6 +51,10 @@ export interface TaskApiResponse {
     name: string;
   };
   labels?: string[];
+  milestones?: {
+    _id: string;
+    name: string;
+  };
 }
 
 export interface UITask {

@@ -1,6 +1,6 @@
-import React from "react";
-import { Modal, Input, Divider, Typography, Form, message } from "antd";
 import { DropboxOutlined } from "@ant-design/icons";
+import { Divider, Form, Input, Modal, Typography } from "antd";
+import React from "react";
 
 const { Title } = Typography;
 
@@ -49,16 +49,9 @@ const CreateWorkspaceModal: React.FC<Props> = ({
         className="flex flex-col"
       >
         <Form.Item
-          label='Name'
+          label="Name"
           name="name"
-          rules={[
-            { required: true, message: "Vui lòng nhập tên workspace!" },
-            {
-              pattern: /^(?=.*[a-zA-Z])[a-zA-Z0-9]+$/,
-              message:
-                "Có ít nhất 1 kí tự chữ, có thể có số, không có khoảng trắng.",
-            },
-          ]}
+          rules={[{ required: true, message: "Vui lòng nhập tên workspace!" }]}
         >
           <Input placeholder="Workspace Name" />
         </Form.Item>

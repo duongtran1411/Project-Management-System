@@ -196,10 +196,12 @@ const ProjectTable = () => {
 
   useEffect(() => {
     if (projectList?.data) {
-      const filtered = projectList.data.map((project: DataType) => ({
-        ...project,
-        lead: project.projectLead, // Đảm bảo có trường lead cho Table
-      }));
+      const filtered = projectList.data
+        .filter((project: DataType) => project.deletedAt === null)
+        .map((project: DataType) => ({
+          ...project,
+          lead: project.projectLead, // Đảm bảo có trường lead cho Table
+        }));
       setFilteredProjects(filtered);
       setCurrentPage(1);
     }

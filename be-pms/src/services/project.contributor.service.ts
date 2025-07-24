@@ -485,7 +485,7 @@ export class ProjectContributorService {
     const contributors = await ProjectContributor.find({ userId })
       .populate({
         path: "projectId",
-        select: "name icon projectType projectLead",
+        select: "name icon projectType projectLead deletedAt",
         populate: {
           path: "projectLead",
           select: "fullName email avatar",

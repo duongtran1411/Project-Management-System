@@ -1,5 +1,6 @@
 "use client";
 
+import { useRole } from "@/lib/auth/auth-project-context";
 import {
   createEpic,
   deleteEpic,
@@ -46,6 +47,8 @@ export const SidebarTimeline: React.FC<Props> = ({
   const [form] = Form.useForm();
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
   const [selectedEpic, setSelectedEpic] = useState<Epic | null>(null);
+  const { role } = useRole();
+  const isProjectLead = role.name === "PROJECT_LEAD";
 
   const handleSubmit = async (values: any) => {
     if (selectedEpic) {
@@ -134,6 +137,7 @@ export const SidebarTimeline: React.FC<Props> = ({
                     overlay={getMenu(epic)}
                     trigger={["click"]}
                     placement="bottomRight"
+                    disabled={!isProjectLead}
                   >
                     <MoreOutlined style={{ fontSize: 20, cursor: "pointer" }} />
                   </Dropdown>
@@ -148,6 +152,7 @@ export const SidebarTimeline: React.FC<Props> = ({
               onClick={() => setOpen(true)}
               className="w-full mt-3"
               size="middle"
+              disabled={!isProjectLead}
             ></Button>
           </Tooltip>
         </div>
@@ -214,7 +219,7 @@ export const SidebarTimeline: React.FC<Props> = ({
             label="Sprint"
             rules={[{ required: true, message: "Please select a sprint" }]}
           >
-            <Select allowClear placeholder="Select sprint (optional)">
+            <Select allowClear placeholder="Select sprint">
               {milestones.map((m) => (
                 <Option key={m._id} value={m._id}>
                   {m.name}
