@@ -506,7 +506,10 @@ export class TaskController {
 
       // Xử lý unassign khi assignee là null, undefined, hoặc string rỗng
       const finalAssignee =
-        assignee === null || assignee === undefined || assignee === ""
+        assignee === null ||
+        assignee === undefined ||
+        assignee === "" ||
+        assignee === "null"
           ? null
           : assignee;
 
