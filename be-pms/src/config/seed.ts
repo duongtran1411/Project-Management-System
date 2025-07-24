@@ -40,6 +40,20 @@ export async function seedProjectAdminRole() {
   }
 }
 
+export async function seedProjectStakeHolderRole() {
+  const projectStakeHolderRole = await ProjectRole.findOne({
+    name: "STAKEHOLDER",
+  });
+  if (!projectStakeHolderRole) {
+    await ProjectRole.create({
+      name: "STAKEHOLDER",
+    });
+    console.log("Seeded STAKEHOLDER project role");
+  } else {
+    console.log("STAKEHOLDER project role already exists");
+  }
+}
+
 export async function seedContributorRole() {
   const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
   if (!contributorRole) {
@@ -90,4 +104,5 @@ export async function seedAllRoles() {
   await seedUserRole();
   await seedProjectAdminRole();
   await seedContributorRole();
+  await seedProjectStakeHolderRole();
 }

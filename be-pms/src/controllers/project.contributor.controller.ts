@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import mongoose from "mongoose";
 import projectContributorService from "../services/project.contributor.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
@@ -84,7 +85,8 @@ export class ProjectContributorController {
 
       res.status(200).json({
         success: true,
-        message: "Xóa contributor thành công",
+        message:
+          "Xóa contributor thành công và đã dọn dẹp tất cả dữ liệu liên quan",
         statusCode: 200,
       });
     } catch (error: any) {
@@ -92,6 +94,101 @@ export class ProjectContributorController {
       res.status(400).json({
         success: false,
         message: error.message || "Lỗi xóa contributor",
+        statusCode: 400,
+      });
+    }
+  };
+
+  // Xóa member khỏi project với cleanup đầy đủ
+  removeMemberFromProject = async (
+    req: AuthRequest,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { projectId, userId } = req.params;
+      const currentUser = req.user;
+
+      if (!projectId || !userId) {
+        res.status(400).json({
+          success: false,
+          message: "ProjectId và userId là bắt buộc",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      // Kiểm tra quyền - chỉ project admin hoặc project lead mới có thể xóa member
+      const project = await mongoose.model("Project").findById(projectId);
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: "Project không tồn tại",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      const isProjectLead =
+        project.projectLead?.toString() === currentUser?._id.toString();
+      if (!isProjectLead) {
+        // Kiểm tra xem user có role PROJECT_ADMIN không
+        const contributor = await mongoose
+          .model("ProjectContributor")
+          .findOne({
+            userId: currentUser?._id,
+            projectId: projectId,
+          })
+          .populate("projectRoleId");
+
+        if (
+          !contributor ||
+          (contributor.projectRoleId as any).name !== "PROJECT_ADMIN"
+        ) {
+          res.status(403).json({
+            success: false,
+            message: "Bạn không có quyền xóa member khỏi project này",
+            statusCode: 403,
+          });
+          return;
+        }
+      }
+
+      // Không cho phép xóa chính mình nếu là project lead duy nhất
+      if (isProjectLead && currentUser?._id.toString() === userId) {
+        res.status(400).json({
+          success: false,
+          message: "Không thể xóa project lead khỏi project",
+          statusCode: 400,
+        });
+        return;
+      }
+
+      const deleted =
+        await projectContributorService.removeContributorByUserAndProject(
+          userId,
+          projectId
+        );
+
+      if (!deleted) {
+        res.status(404).json({
+          success: false,
+          message: "Không tìm thấy contributor hoặc lỗi khi xóa",
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.status(200).json({
+        success: true,
+        message:
+          "Đã xóa member khỏi project và dọn dẹp tất cả dữ liệu liên quan thành công",
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      console.error("Remove member from project error:", error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi xóa member khỏi project",
         statusCode: 400,
       });
     }
@@ -380,25 +477,32 @@ export class ProjectContributorController {
     }
   };
 
-  getContributorByUserId = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+  getContributorByUserId = async (
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
     try {
-      const user = req.user
-      const {projectId} = req.params
-      const contributor = await projectContributorService.getContributorByUser(user,projectId)
-      if(!contributor){
+      const user = req.user;
+      const { projectId } = req.params;
+      const contributor = await projectContributorService.getContributorByUser(
+        user,
+        projectId
+      );
+      if (!contributor) {
         res.status(400).json({
           status: 400,
-          message: 'Can not get contributor',
-          success: false
-        })
+          message: "Can not get contributor",
+          success: false,
+        });
       }
 
       res.status(200).json({
-        status:200,
+        status: 200,
         success: true,
-        message: 'Lấy contributor thành công',
-        data: contributor
-      })
+        message: "Lấy contributor thành công",
+        data: contributor,
+      });
     } catch (error: any) {
       res.status(400).json({
         success: false,
@@ -406,7 +510,7 @@ export class ProjectContributorController {
         statusCode: 400,
       });
     }
-  }
+  };
 }
 
 export default new ProjectContributorController();

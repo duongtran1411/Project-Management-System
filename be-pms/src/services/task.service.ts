@@ -321,9 +321,10 @@ export class TaskService {
           );
         }
 
-        // Send email for new assignee
+        // Send email for new assignee (chỉ khi có assignee mới và khác null)
         if (
           updateData.assignee &&
+          updateData.assignee.toString() !== "null" &&
           oldTask.assignee?.toString() !== updateData.assignee?.toString() &&
           updateData.assignee.toString() !== user._id.toString()
         ) {
@@ -370,7 +371,8 @@ export class TaskService {
 
         // Case 2: Unassign task (xóa assignee - assignee = null/undefined/empty string)
         const assigneeValue = updateData.assignee?.toString();
-        const isUnassign = !assigneeValue || assigneeValue === "";
+        const isUnassign =
+          !assigneeValue || assigneeValue === "" || assigneeValue === "null";
 
         if (
           isUnassign &&
@@ -809,6 +811,7 @@ export class TaskService {
         // Case 1: Assign task (có assignee mới và khác với assignee cũ)
         if (
           assignee &&
+          assignee.toString() !== "null" &&
           oldTask.assignee?.toString() !== assignee &&
           assignee !== user._id.toString()
         ) {
@@ -850,9 +853,13 @@ export class TaskService {
           await this.emitNotificationEvent(notification, assignee);
         }
 
-        // Case 2: Unassign task (xóa assignee - assignee = null/undefined)
+        // Case 2: Unassign task (xóa assignee - assignee = null/undefined/empty string)
+        const assigneeValue = assignee?.toString();
+        const isUnassign =
+          !assigneeValue || assigneeValue === "" || assigneeValue === "null";
+
         if (
-          !assignee &&
+          isUnassign &&
           oldTask.assignee &&
           oldTask.assignee.toString() !== user._id.toString()
         ) {

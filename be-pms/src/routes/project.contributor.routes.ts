@@ -210,6 +210,41 @@ router.delete("/:id", projectContributorController.deleteContributor);
 
 /**
  * @openapi
+ * /project-contributor/project/{projectId}/member/{userId}:
+ *   delete:
+ *     summary: Xóa member khỏi project với cleanup đầy đủ
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của user cần xóa
+ *     responses:
+ *       200:
+ *         description: Xóa member thành công và đã dọn dẹp dữ liệu liên quan
+ *       403:
+ *         description: Không có quyền xóa member
+ *       404:
+ *         description: Project hoặc contributor không tồn tại
+ */
+router.delete(
+  "/project/:projectId/member/:userId",
+  authenticate,
+  projectContributorController.removeMemberFromProject
+);
+
+/**
+ * @openapi
  * /project-contributor/project/{projectId}/users:
  *   get:
  *     summary: Lấy danh sách user thuộc project
@@ -398,6 +433,10 @@ router.put(
  *       400:
  *         description: Lỗi không lấy được contributor project
  */
-router.get('/getcontributor/:projectId',authenticate,projectContributorController.getContributorByUserId)
+router.get(
+  "/getcontributor/:projectId",
+  authenticate,
+  projectContributorController.getContributorByUserId
+);
 
 export default router;

@@ -76,6 +76,36 @@ export class ProjectController {
     try {
       const { id } = req.params;
       let iconUrl = req.body.icon;
+
+      // Xử lý defaultAssign để tránh lỗi Cast to ObjectId
+      let updateData = { ...req.body, icon: iconUrl };
+
+      // Xử lý defaultAssign nếu có
+      if (req.body.defaultAssign !== undefined) {
+        if (
+          req.body.defaultAssign === null ||
+          req.body.defaultAssign === "null" ||
+          req.body.defaultAssign === ""
+        ) {
+          updateData.defaultAssign = null;
+        } else if (
+          req.body.defaultAssign &&
+          typeof req.body.defaultAssign === "string"
+        ) {
+          // Kiểm tra xem có phải là ObjectId hợp lệ không
+          if (
+            !require("mongoose").Types.ObjectId.isValid(req.body.defaultAssign)
+          ) {
+            res.status(400).json({
+              success: false,
+              message: "defaultAssign ID không hợp lệ",
+              statusCode: 400,
+            });
+            return;
+          }
+        }
+      }
+
       // Nếu có file icon upload, upload lên Cloudinary
       if (req.file) {
         try {
@@ -84,16 +114,17 @@ export class ProjectController {
               req.file.originalname
             }`,
           });
-          iconUrl = result.url;
+          updateData.icon = result.url;
         } finally {
           if (fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
           }
         }
       }
+
       const project = await projectService.updateProject(
         id,
-        { ...req.body, icon: iconUrl },
+        updateData,
         req.user
       );
       if (!project) {
