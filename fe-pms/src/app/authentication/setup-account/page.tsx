@@ -144,10 +144,6 @@ export default function SetupAccountPage() {
                 { required: true, message: "Vui lòng nhập họ tên" },
                 { min: 2, message: "Họ tên phải có ít nhất 2 ký tự" },
                 { max: 50, message: "Họ tên không được quá 50 ký tự" },
-                {
-                  pattern: /^[a-zA-ZÀ-ỹ\s]+$/,
-                  message: "Họ tên chỉ được chứa chữ cái và khoảng trắng",
-                },
               ]}
             >
               <Input

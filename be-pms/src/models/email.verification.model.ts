@@ -24,6 +24,7 @@ const emailVerificationSchema = new Schema<IEmailVerification>(
       required: false,
       unique: true,
       sparse: true,
+      default: undefined, // Đảm bảo undefined thay vì null
     },
     otp: {
       type: String,
@@ -51,6 +52,7 @@ const emailVerificationSchema = new Schema<IEmailVerification>(
 
 // Index để tối ưu query
 emailVerificationSchema.index({ email: 1, isUsed: 1 });
+emailVerificationSchema.index({ email: 1, expiresAt: 1 }); // Index cho việc cleanup
 // Không cần index token vì đã có unique: true
 emailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 

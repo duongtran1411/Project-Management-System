@@ -361,6 +361,13 @@ export class AuthService {
       throw new Error("Email không hợp lệ");
     }
 
+    // Xóa các record cũ của email này để tránh duplicate key error
+    await EmailVerification.deleteMany({
+      email,
+      isUsed: false,
+      expiresAt: { $lt: new Date() }, // Xóa các record đã hết hạn
+    });
+
     // Tạo OTP code (6 chữ số)
     const otp = generateOTP();
 
@@ -387,11 +394,12 @@ export class AuthService {
     email: string,
     otp: string
   ): Promise<{ token: string; message: string }> {
+    // Tìm record mới nhất và chưa sử dụng
     const verificationRecord = await EmailVerification.findOne({
       email,
       isUsed: false,
       expiresAt: { $gt: new Date() },
-    });
+    }).sort({ createdAt: -1 });
 
     if (!verificationRecord) {
       throw new Error("Email không tồn tại hoặc mã đã hết hạn");
