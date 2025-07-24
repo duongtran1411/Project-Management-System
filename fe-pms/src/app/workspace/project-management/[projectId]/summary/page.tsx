@@ -81,6 +81,7 @@ export default function SummaryPage() {
     const fetch = async (projectId: string) => {
       try {
         const response = await getTaskStatistic(projectId);
+        console.log("Statistics Task", response);
         if (response) {
           // Statistics
           const total = response.totalTasks;
@@ -158,7 +159,8 @@ export default function SummaryPage() {
                   gap: "10px",
                 },
               }}
-              className=" h-full !shadow !rounded-xl">
+              className=" h-full !shadow !rounded-xl"
+            >
               <div className={`${card.bgColor} rounded-[4px]`}>{card.icon}</div>
               <div className="text-2xl font-bold">{card.value}</div>
               <span className="font-semibold text-gray-700">{card.title}</span>
