@@ -715,7 +715,10 @@ router.patch("/:id/dates", authenticate, taskController.updateTaskDates);
  *             properties:
  *               labels:
  *                 type: array
- *                 items: { type: string }
+ *                 items: { type: string, enum: ["task", "bug", "story"] }
+ *                 description: Danh sách labels mới cho task
+ *           example:
+ *             labels: ["task", "bug"]
  *     responses:
  *       200: { description: Cập nhật labels task thành công }
  *       404: { description: Không tìm thấy task }
