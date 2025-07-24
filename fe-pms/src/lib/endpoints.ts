@@ -49,6 +49,7 @@ export class Endpoints {
     UPDATE_MILESTONE: (taskId: string) => `task/${taskId}/milestone`,
     UPDATE_NAME: (taskId: string) => `task/${taskId}/name`,
     UPDATE_DESCRIPTION: (taskId: string) => `task/${taskId}/description`,
+    UPDATE_LABELS: (taskId: string) => `task/${taskId}/labels`,
     COUNT_NUMBER_TASK_NOT_DONE: (milestonesId: string) =>
       `task/count/${milestonesId}`,
     GET_TASK_BOARD_BY_PROJECT_ID: (projectId: string) =>
