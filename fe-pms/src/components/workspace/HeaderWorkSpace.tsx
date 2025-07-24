@@ -40,59 +40,6 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-// Mock data - replace with your actual task data
-const mockTasks = [
-  {
-    id: 1,
-    title: "Implement user authentication",
-    project: "Project A",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 2,
-    title: "Fix navigation bug",
-    project: "Project B",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 3,
-    title: "Update dashboard UI",
-    project: "Project C",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 4,
-    title: "Add search functionality",
-    project: "Project A",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 5,
-    title: "Optimize database queries",
-    project: "Project D",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 6,
-    title: "Write unit tests",
-    project: "Project B",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 7,
-    title: "Deploy to production",
-    project: "Project A",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-];
-
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
@@ -111,6 +58,11 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
     }
   }, []);
 
+  const { data: myTasks } = useSWR(
+    userId ? `${Endpoints.Task.MY_TASKS}` : null,
+    fetcher
+  );
+
   const [searchText, setSearchText] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -121,10 +73,10 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   });
 
   // Filter tasks based on search text
-  const filteredTasks = mockTasks.filter(
-    (task) =>
-      task.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      task.project.toLowerCase().includes(searchText.toLowerCase())
+  const filteredTasks = myTasks?.data?.filter(
+    (task: any) =>
+      task.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      task.projectId.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
@@ -207,13 +159,13 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
               <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-80 overflow-y-auto p-2">
                 {filteredTasks.length > 0 ? (
                   <div className="space-y-2">
-                    {filteredTasks.map((task) => (
+                    {filteredTasks.map((task: any) => (
                       <div
-                        key={task.id}
+                        key={task._id}
                         className="hover:bg-gray-100 cursor-pointer px-4 py-1 flex items-center gap-x-2"
                         onClick={() => {
                           router.push(
-                            `/workspace/project-management/${task.projectId}/detail-task/${task.taskId}`
+                            `/workspace/project-management/${task.projectId._id}/detail-task/${task._id}`
                           );
                           setIsSearchFocused(false);
                         }}
@@ -224,10 +176,10 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
                         />
                         <div className="flex flex-col ml-1">
                           <span className="text-sm font-semibold text-gray-700">
-                            {task.title}
+                            {task.name}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {task.project}
+                            {task.projectId.name}
                           </span>
                         </div>
                       </div>
@@ -262,7 +214,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {userId ? (
+          {user?.data ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}

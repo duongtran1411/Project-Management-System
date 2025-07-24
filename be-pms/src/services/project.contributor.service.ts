@@ -80,7 +80,7 @@ export class ProjectContributorService {
 
     // Gửi email
     const inviter = await User.findById(invitedBy);
-    const confirmUrl = `http://localhost:3000/create-project/invite-page/confirm-invite/${token}`;
+    const confirmUrl = `https://project-management-system-1ok8.vercel.app/create-project/invite-page/confirm-invite/${token}`;
 
     await sendProjectInvitationEmail(
       email,
@@ -504,6 +504,21 @@ export class ProjectContributorService {
     await Project.findByIdAndUpdate(projectId, { projectLead: newLeadId });
 
     return { message: "Project lead updated successfully" };
+  }
+
+  async getContributorByUser(
+    user: IUser,
+    projectId: string
+  ): Promise<IProjectContributor> {
+    const contributor = await ProjectContributor.findOne({
+      userId: user._id,
+      projectId: projectId,
+    });
+    if (!contributor) {
+      throw new Error("can not find project contributor");
+    }
+
+    return contributor;
   }
 }
 

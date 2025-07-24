@@ -499,7 +499,7 @@ export class AuthService {
     });
 
     // Gửi email verification
-    const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
+    const verificationUrl = `https://project-management-system-1ok8.vercel.app/verify-email?token=${verificationToken}`;
 
     console.log(
       `Verification email sent to ${email} with URL: ${verificationUrl}`

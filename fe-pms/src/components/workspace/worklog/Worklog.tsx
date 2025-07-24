@@ -13,6 +13,7 @@ import { ModalCreateWorklog } from "./ModalCreateWorklog";
 import { ModalDeleteWorklog } from "./ModalDeleteWorklog";
 import { formatDateTime } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useRole } from "@/lib/auth/auth-project-context";
 
 const fetcher = (url: string) =>
   axiosService
@@ -22,6 +23,9 @@ const fetcher = (url: string) =>
 
 export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
   const { userInfo } = useAuth();
+  const { role } = useRole();
+  const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
+
   const [showWorkLogModal, setShowWorkLogModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editingWorklog, setEditingWorklog] = useState<Worklog | null>(null);
@@ -94,9 +98,11 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
               setShowWorkLogModal(true);
             }}
           >
-            <span className="font-semibold text-blue-400 font-charlie">
-              Log time
-            </span>
+            {!isReadOnlyStakeholder && (
+              <span className="font-semibold text-blue-400 font-charlie">
+                Log time
+              </span>
+            )}
           </Button>
         </div>
       ) : (
@@ -134,7 +140,7 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
                       {worklog.description || ""}
                     </div>
                     <div className="flex items-center space-x-1 text-sm">
-                      {ownerWorklog && (
+                      {ownerWorklog && !isReadOnlyStakeholder && (
                         <>
                           <Button
                             type="text"

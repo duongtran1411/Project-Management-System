@@ -1,18 +1,19 @@
 "use client";
 
-import { Avatar, DatePicker, Dropdown, Select, Tag, Tooltip } from "antd";
-import { UserOutlined, DownOutlined } from "@ant-design/icons";
-import { Task } from "@/models/task/task.model";
+import { showWarningToast } from "@/components/common/toast/toast";
+import { useRole } from "@/lib/auth/auth-project-context";
 import { Assignee } from "@/models/assignee/assignee.model";
-import { Reporter } from "@/models/reporter/reporter.model";
 import { Epic } from "@/models/epic/epic.model";
 import { ProjectContributorTag } from "@/models/projectcontributor/project.contributor.model";
-import dayjs from "dayjs";
+import { Reporter } from "@/models/reporter/reporter.model";
+import { Task } from "@/models/task/task.model";
+import { DownOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, DatePicker, Dropdown, Select, Tag, Tooltip } from "antd";
 import { format } from "date-fns";
-import { useRole } from "@/lib/auth/auth-project-context";
-import { showWarningToast } from "@/components/common/toast/toast";
+import dayjs from "dayjs";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import ChangeLabelInDetailTask from "../backlog/ChangeLabelInDetailTask";
 
 type Status = "TO_DO" | "IN_PROGRESS" | "DONE";
 
@@ -44,6 +45,7 @@ interface TaskDetailsProps {
   onEpicChange: (epicId: string) => void;
   onStartDateChange: (date: string) => void;
   onDueDateChange: (date: string) => void;
+  mutateTask: () => void;
 }
 
 export const TaskDetails: React.FC<TaskDetailsProps> = ({
@@ -62,6 +64,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
   onEpicChange,
   onStartDateChange,
   onDueDateChange,
+  mutateTask,
 }) => {
   const { role } = useRole();
   const isReadOnlyContributor = role.name === "CONTRIBUTOR";
@@ -87,14 +90,16 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
             onClick: handleMenuClick,
           }}
           trigger={["click"]}
-          disabled={isReadOnlyStakeholder}>
+          disabled={isReadOnlyStakeholder}
+        >
           <Tag
             color={statusColors[status]}
             style={{
               cursor: "pointer",
               fontWeight: 600,
               padding: "6px 12px",
-            }}>
+            }}
+          >
             {status.replaceAll("_", " ")} <DownOutlined />
           </Tag>
         </Dropdown>
@@ -174,10 +179,12 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 },
               }}
               trigger={["click"]}
-              disabled={isReadOnlyStakeholder}>
+              disabled={isReadOnlyStakeholder}
+            >
               <Tooltip
                 title={`Assignee: ${assignee?.fullName || "Unassigned"}`}
-                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
+                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+              >
                 <Avatar
                   className={`cursor-pointer text-white ${
                     assignee?.fullName === "Unassigned" ? "bg-gray-400" : ""
@@ -191,7 +198,8 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                         "Bạn không có quyền cập nhật assignee cho task"
                       );
                     }
-                  }}>
+                  }}
+                >
                   {assignee?.fullName?.[0] || <UserOutlined />}
                 </Avatar>
                 <p className="truncate">{assignee?.fullName || "Unassigned"}</p>
@@ -202,7 +210,12 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
           {/* Labels */}
           <div className="flex flex-col space-y-2">
             <span className="font-semibold text-gray-600">Labels:</span>
-            <span className="truncate">{task.name || "None"}</span>
+            {/* <span className="truncate">{task.name || "None"}</span> */}
+            <ChangeLabelInDetailTask
+              taskId={task._id}
+              labels={task.labels || []}
+              mutateTask={mutateTask}
+            />
           </div>
 
           {/* Parent */}
@@ -260,7 +273,6 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
             <DatePicker
               value={dueDate ? dayjs(dueDate).startOf("day") : null}
               onChange={(date) => {
-                  
                 onDueDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
@@ -272,7 +284,9 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
           <div className="flex flex-col space-y-2">
             <span className="font-semibold text-gray-600">Sprint:</span>
             <span className="text-blue-600 truncate">
-              <Link href={`/workspace/project-management/${projectId}/backlog`}>{task.milestones?.name || "None"}</Link>
+              <Link href={`/workspace/project-management/${projectId}/backlog`}>
+                {task.milestones?.name || "None"}
+              </Link>
             </span>
           </div>
 
@@ -331,15 +345,18 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 },
               }}
               trigger={["click"]}
-              disabled={isReadOnlyContributor && isReadOnlyStakeholder}>
+              disabled={isReadOnlyContributor && isReadOnlyStakeholder}
+            >
               <Tooltip
                 title={`Reporter: ${reporter?.fullName || "Unassigned"}`}
-                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer">
+                className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+              >
                 <Avatar
                   className={`cursor-pointer text-white`}
                   size="default"
                   src={reporter?.avatar}
-                  onClick={(e) => e?.stopPropagation()}>
+                  onClick={(e) => e?.stopPropagation()}
+                >
                   {reporter?.fullName?.[0] || <UserOutlined />}
                 </Avatar>
                 <p className="truncate">

@@ -302,6 +302,26 @@ export const updateTaskEpic = async (taskId: string, epic: string) => {
   }
 };
 
+export const updateTaskLabels = async (taskId: string, labels: string[]) => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .patch(Endpoints.Task.UPDATE_LABELS(taskId), { labels });
+
+    if (response.status === 200) {
+      showSuccessToast(
+        response.data?.message || "Cập nhật labels của nhiệm vụ thành công!"
+      );
+      return response?.data.data;
+    }
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Lỗi khi cập nhật labels!";
+    showErrorToast(message);
+    throw error;
+  }
+};
+
 export const updateTaskDescription = async (
   taskId: string,
   description: string
@@ -435,5 +455,20 @@ export const updateMileStoneForTasks = async (
       error?.response?.data?.message || "Lỗi khi cập nhật tên task!";
     showErrorToast(message);
     throw error;
+  }
+};
+
+export const getMyTasks = async (): Promise<TaskModel[] | null> => {
+  try {
+    const response = await axiosService
+      .getAxiosInstance()
+      .get(Endpoints.Task.GET_MY_TASKS);
+
+    return response.data?.data || [];
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message || "Không thể lấy danh sách task cá nhân!";
+    showErrorToast(message);
+    return null;
   }
 };

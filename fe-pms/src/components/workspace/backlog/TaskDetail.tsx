@@ -1,19 +1,20 @@
 "use client";
 
 import { formatDateTime } from "@/lib/utils";
-import { Button, Input, Tag } from "antd";
+import { Button, Input } from "antd";
 import { useEffect, useState } from "react";
+import History from "../history/History";
+import { ListWorklog } from "../worklog/ListWorklog";
 import { WorklogComponent } from "../worklog/Worklog";
 import ChangeAssigneeInDetailTask from "./ChangeAssigneeInDetailTask";
 import { ChangeDescription } from "./ChangeDescription";
 import { ChangeDueDate } from "./ChangeDueDate";
+import ChangeEpic from "./ChangeEpic";
+import ChangeLabels from "./ChangeLabels";
 import { ChangeName } from "./ChangeName";
 import ChangePriority from "./ChangePriority";
 import ChangeReporter from "./ChangeReporter";
 import { ChangeStartDate } from "./ChangeStartDate";
-import ChangeEpic from "./ChangeEpic";
-import History from "../history/History";
-import { ListWorklog } from "../worklog/ListWorklog";
 
 interface TaskDetailProps {
   task: any | null;
@@ -43,9 +44,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
   const [reporter, setReporter] = useState(task?.reporter || null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState<string>(task?.name || "");
+  const [labels, setLabels] = useState<string[]>(task?.labels || []);
   const [activeTab, setActiveTab] = useState<
     "all" | "comments" | "history" | "worklog"
   >("comments");
+
+  console.log("task", task);
+  console.log("labels", labels);
 
   useEffect(() => {
     if (task) {
@@ -60,6 +65,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
       setPriority(task.priority || "");
       setAssignee(task?.assignee || null);
       setEpic(task?.epic?.name || "");
+      setLabels(task?.labels || []);
     }
   }, [task]);
 
@@ -115,7 +121,13 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
               </div>
               {/* Labels */}
               <span className="font-semibold text-gray-600">Labels</span>
-              {task.labels && task.labels?.length > 0 ? (
+              <ChangeLabels
+                taskId={task._id}
+                labels={labels}
+                mutateTask={mutateTask}
+                setLabels={setLabels}
+              />
+              {/* {task.labels && task.labels?.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
                   {task.labels.map((label: string) => (
                     <Tag color="blue" key={label}>
@@ -127,7 +139,7 @@ const TaskDetail: React.FC<TaskDetailProps> = ({
                 <div className="flex flex-wrap gap-1">
                   <Tag color="blue">None</Tag>
                 </div>
-              )}
+              )} */}
 
               {/* Epic */}
               <span className="font-semibold text-gray-600">Parents</span>

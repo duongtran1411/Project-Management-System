@@ -29,7 +29,7 @@ export class TaskService {
 
   private getTaskUrl(projectId: any, taskId: any): string {
     if (!projectId || !taskId) return "";
-    return `http://localhost:3000/workspace/project-management/${projectId}/detail-task/${taskId}`;
+    return `https://project-management-system-1ok8.vercel.app/workspace/project-management/${projectId}/detail-task/${taskId}`;
   }
 
   private async emitNotificationEvent(notification: any, recipientId: string) {

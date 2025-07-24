@@ -16,7 +16,7 @@ export interface ITask extends Document {
   updatedAt: Date;
   status: string;
   priority: string;
-  labels: ("task" | "bug" | "story");
+  labels: string[];
 }
 
 const taskSchema = new Schema<ITask>(
@@ -26,11 +26,19 @@ const taskSchema = new Schema<ITask>(
       required: [true, "name is required"],
     },
     description: {
-      type: String
+      type: String,
     },
     labels: {
-      type:String,
-      enum: ["task", "bug", "story"]
+      type: [String],
+      validate: {
+        validator: function (labels: string[]) {
+          if (!Array.isArray(labels)) return false;
+          const validLabels = ["task", "bug", "story"];
+          return labels.every((label) => validLabels.includes(label));
+        },
+        message:
+          'Labels must be an array containing only "task", "bug", or "story"',
+      },
     },
     epic: {
       type: Schema.Types.ObjectId,

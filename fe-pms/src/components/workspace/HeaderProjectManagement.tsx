@@ -35,8 +35,8 @@ const HeaderProjectManagement = () => {
   const { role } = useRole();
   const isProjectAdmin = role.name === "PROJECT_ADMIN";
   const isStakeholder = role.name === "STAKEHOLDER";
+  console.log(role.name);
   const pathname = usePathname();
-
   // Tính key active từ pathname
   const getKeyFromPath = () => {
     const subpath = pathname.split(`/${projectId}`)[1];
@@ -52,7 +52,7 @@ const HeaderProjectManagement = () => {
     return "Board";
   };
   const selectedKey = getKeyFromPath();
-  
+
   const [token, setToken] = useState("");
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -100,7 +100,7 @@ const HeaderProjectManagement = () => {
       key: "Board",
       label: "Board",
       icon: <TableOutlined />,
-      url: `/workspace/project-management/${projectId}`,
+      url: `/workspace/project-management/${projectId}/board`,
     },
     {
       key: "Calendar",
@@ -133,8 +133,13 @@ const HeaderProjectManagement = () => {
       icon: <SnippetsOutlined />,
       url: `/workspace/project-management/${projectId}/feedback`,
     },
+    // {
+    //   key: "Board2",
+    //   label: "Board2",
+    //   icon: <TableOutlined />,
+    //   url: `/workspace/project-management/${projectId}/board2`,
+    // },
   ];
-
 
   return (
     <div className="w-full px-4 pt-3 bg-white shadow">
@@ -197,8 +202,8 @@ const HeaderProjectManagement = () => {
               return false;
             }
 
-            if (item.key === "Feedback" && (isProjectAdmin || isStakeholder))
-              return true;
+            if (item.key === "Feedback" )
+              return isProjectAdmin || isStakeholder;
             return true;
           })
           .map((item) => ({
