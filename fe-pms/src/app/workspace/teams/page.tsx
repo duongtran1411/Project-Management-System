@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { SearchOutlined } from "@ant-design/icons";
-import { Avatar, Button, Input, Modal } from "antd";
-import { FaGoogle } from "react-icons/fa";
-import useSWR from "swr";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { UserModel } from "@/models/user/PeopleYouWork.model";
+import { SearchOutlined } from "@ant-design/icons";
+import { Avatar, Input } from "antd";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 
 const fetcher = (url: string) =>
   axiosService.getAxiosInstance().get(url).then((res) => res.data);
 
 const Page = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data, error, isLoading } = useSWR(
@@ -29,18 +28,18 @@ const Page = () => {
     );
   }, [people, searchTerm]);
 
-  const showModal = () => setIsModalVisible(true);
-  const handleCancel = () => setIsModalVisible(false);
+  // const showModal = () => setIsModalVisible(true);
+  // const handleCancel = () => setIsModalVisible(false);
 
   return (
     <div className="h-full p-8 bg-white">
       <header className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Teams</h1>
         <div className="space-x-2">
-          <Button>Create team</Button>
+          {/* <Button>Create team</Button>
           <Button type="primary" onClick={showModal}>
             Add people
-          </Button>
+          </Button> */}
         </div>
       </header>
 
@@ -94,7 +93,7 @@ const Page = () => {
         </div>
       </section>
 
-      <Modal
+      {/* <Modal
         title={<span className="text-xl font-bold">Add people to Jira</span>}
         open={isModalVisible}
         onCancel={handleCancel}
@@ -152,7 +151,7 @@ const Page = () => {
             apply.
           </div>
         </div>
-      </Modal>
+      </Modal> */}
     </div>
   );
 };
