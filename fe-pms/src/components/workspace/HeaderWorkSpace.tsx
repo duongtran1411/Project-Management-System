@@ -33,7 +33,6 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { useOnClickOutside } from "usehooks-ts";
 import NotificationPopup from "./NotificationPopup";
-import { useAuth } from "@/lib/auth/auth-context";
 
 const fetcher = (url: string) =>
   axiosService
@@ -41,63 +40,29 @@ const fetcher = (url: string) =>
     .get(url)
     .then((res) => res.data);
 
-// Mock data - replace with your actual task data
-const mockTasks = [
-  {
-    id: 1,
-    title: "Implement user authentication",
-    project: "Project A",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 2,
-    title: "Fix navigation bug",
-    project: "Project B",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 3,
-    title: "Update dashboard UI",
-    project: "Project C",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 4,
-    title: "Add search functionality",
-    project: "Project A",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 5,
-    title: "Optimize database queries",
-    project: "Project D",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 6,
-    title: "Write unit tests",
-    project: "Project B",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-  {
-    id: 7,
-    title: "Deploy to production",
-    project: "Project A",
-    projectId: "687f02daf88c2a1e70f9b5a5",
-    taskId: "687f4a020324acb6876597fe",
-  },
-];
-
 const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   const router = useRouter();
-  const { userInfo } = useAuth();
-  console.log("avatar", userInfo?.avatar);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { data: user } = useSWR(
+    userId ? `${Endpoints.User.GET_BY_ID(userId)}` : null,
+    fetcher
+  );
+
+  useEffect(() => {
+    const token = localStorage.getItem(Constants.API_TOKEN_KEY);
+    if (token) {
+      const decoded = jwtDecode<TokenPayload>(token);
+      if (decoded) {
+        setUserId(decoded.userId);
+      }
+    }
+  }, []);
+
+  const { data: myTasks } = useSWR(
+    userId ? `${Endpoints.Task.MY_TASKS}` : null,
+    fetcher
+  );
+
   const [searchText, setSearchText] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -108,10 +73,10 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
   });
 
   // Filter tasks based on search text
-  const filteredTasks = mockTasks.filter(
-    (task) =>
-      task.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      task.project.toLowerCase().includes(searchText.toLowerCase())
+  const filteredTasks = myTasks?.data?.filter(
+    (task: any) =>
+      task.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      task.projectId.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleMenuClick: MenuProps["onClick"] = ({ key }) => {
@@ -158,7 +123,8 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         zIndex: 1000,
         backdropFilter: "blur(8px)",
         backgroundColor: "rgba(255, 255, 255, 0.95)",
-      }}>
+      }}
+    >
       {/* Left */}
       <div className="flex items-center gap-x-3">
         <Button
@@ -168,7 +134,8 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         />
         <div
           className="flex items-center gap-x-1 cursor-pointer"
-          onClick={() => router.push("/")}>
+          onClick={() => router.push("/")}
+        >
           <Image src="/jira_icon.png" alt="Jira Logo" width={24} height={24} />
           <Typography.Text strong className="text-xl font-semibold">
             Hub
@@ -192,26 +159,27 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
               <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-80 overflow-y-auto p-2">
                 {filteredTasks.length > 0 ? (
                   <div className="space-y-2">
-                    {filteredTasks.map((task) => (
+                    {filteredTasks.map((task: any) => (
                       <div
-                        key={task.id}
+                        key={task._id}
                         className="hover:bg-gray-100 cursor-pointer px-4 py-1 flex items-center gap-x-2"
                         onClick={() => {
                           router.push(
-                            `/workspace/project-management/${task.projectId}/detail-task/${task.taskId}`
+                            `/workspace/project-management/${task.projectId._id}/detail-task/${task._id}`
                           );
                           setIsSearchFocused(false);
-                        }}>
+                        }}
+                      >
                         <SelectOutlined
                           className="font-semibold"
                           style={{ color: "#764ba2" }}
                         />
                         <div className="flex flex-col ml-1">
                           <span className="text-sm font-semibold text-gray-700">
-                            {task.title}
+                            {task.name}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {task.project}
+                            {task.projectId.name}
                           </span>
                         </div>
                       </div>
@@ -231,7 +199,8 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
           <Button
             type="primary"
             className="bg-[#1868db] text-white"
-            onClick={() => router.push("/create-project")}>
+            onClick={() => router.push("/create-project")}
+          >
             <PlusOutlined />
             Create
           </Button>
@@ -245,18 +214,19 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {userInfo ? (
+          {user?.data ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
-              className="header-workspace-dropdown">
+              className="header-workspace-dropdown"
+            >
               <Space className="cursor-pointer">
-                {userInfo.avatar ? (
-                  <Avatar src={userInfo.avatar} />
+                {user?.data?.avatar ? (
+                  <Avatar src={user?.data?.avatar} />
                 ) : (
                   <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
                 )}
-                <span className="text-gray-700">{userInfo.fullname}</span>
+                <span className="text-gray-700">{user?.data?.fullName}</span>
               </Space>
             </Dropdown>
           ) : (

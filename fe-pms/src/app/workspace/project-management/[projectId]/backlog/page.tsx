@@ -26,6 +26,7 @@ import { Task } from "@/models/task/task.model";
 import { CreateMilestone, Milestone } from "@/models/milestone/milestone.model";
 import { Contributor } from "@/models/contributor/contributor.model";
 import { useRole } from "@/lib/auth/auth-project-context";
+import { useAuth } from "@/lib/auth/auth-context";
 
 export default function Backlog() {
   const params = useParams();
@@ -40,6 +41,7 @@ export default function Backlog() {
   const [selectedEpics, setSelectedEpics] = useState<string[]>([]);
   const [listTask, setListTask] = useState<Task[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const { userInfo } = useAuth();
 
   const fetcher = (url: string) =>
     axiosService
@@ -212,7 +214,7 @@ export default function Backlog() {
                 style: { color: "#f56a00", backgroundColor: "#fde3cf" },
               }}
             >
-              <Avatar style={{ backgroundColor: "#f56a00" }}>C</Avatar>
+              <Avatar src={userInfo?.avatar} />
               {contributorData?.data?.length > 1 && (
                 <Avatar
                   style={{
