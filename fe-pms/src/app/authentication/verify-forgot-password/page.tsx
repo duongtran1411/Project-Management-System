@@ -131,7 +131,7 @@ export default function Page() {
         localStorage.removeItem(Constants.API_VERIFY);
         message.success("Đổi mật khẩu thành công!");
       } else {
-        setErrorMessage(response?.message || "Có lỗi xảy ra khi xác thực OTP!");
+        setErrorMessage("Có lỗi xảy ra khi xác thực OTP!");
       }
     } catch (error: any) {
       console.error("OTP verification error:", error);
