@@ -22,8 +22,8 @@ const useTasksByAssignee = (userId?: string) => {
   const { data, error, isLoading } = useSWR(
     shouldFetch
       ? `${process.env.NEXT_PUBLIC_API_URL}${Endpoints.Task.GET_BY_ASSIGNEE(
-          userId
-        )}`
+        userId
+      )}`
       : null,
     fetcher
   );

@@ -52,7 +52,7 @@ const HeaderProjectManagement = () => {
     return "Board";
   };
   const selectedKey = getKeyFromPath();
-  
+
   const [token, setToken] = useState("");
   useEffect(() => {
     const access_token = localStorage.getItem(Constants.API_TOKEN_KEY);
@@ -100,7 +100,7 @@ const HeaderProjectManagement = () => {
       key: "Board",
       label: "Board",
       icon: <TableOutlined />,
-      url: `/workspace/project-management/${projectId}`,
+      url: `/workspace/project-management/${projectId}/board`,
     },
     {
       key: "Calendar",
@@ -140,7 +140,6 @@ const HeaderProjectManagement = () => {
     //   url: `/workspace/project-management/${projectId}/board2`,
     // },
   ];
-
 
   return (
     <div className="w-full px-4 pt-3 bg-white shadow">

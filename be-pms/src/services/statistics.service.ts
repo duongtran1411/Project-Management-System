@@ -49,18 +49,46 @@ export class StatisticsService {
 
   async getUserProjectTaskStats(projectId: string, userId: string) {
     console.log(projectId, userId);
-    // Get total tasks assigned to or reported by this user in the project
+    // Get total tasks in the project (all tasks, not just user's tasks)
     const totalTasks = await Task.countDocuments({
       projectId: new Types.ObjectId(projectId),
-      $or: [{ assignee: userId }, { reporter: userId }],
     });
 
-    // Get task status statistics for this user
+    // Get task status statistics for all tasks in the project
     const taskStatusStats = await Task.aggregate([
       {
         $match: {
           projectId: new Types.ObjectId(projectId),
-          $or: [{ assignee: userId }, { reporter: userId }],
+        },
+      },
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+      { $project: { status: "$_id", count: 1, _id: 0 } },
+    ]);
+
+    // Calculate percentages
+    const taskStatusWithPercentage = taskStatusStats.map((stat: any) => ({
+      ...stat,
+      percentage:
+        totalTasks > 0 ? ((stat.count / totalTasks) * 100).toFixed(2) : "0.00",
+    }));
+
+    return {
+      totalTasks,
+      taskStatusStats: taskStatusWithPercentage,
+    };
+  }
+
+  async getProjectTaskStats(projectId: string) {
+    // Get total tasks in the project
+    const totalTasks = await Task.countDocuments({
+      projectId: new Types.ObjectId(projectId),
+    });
+
+    // Get task status statistics for all tasks in the project
+    const taskStatusStats = await Task.aggregate([
+      {
+        $match: {
+          projectId: new Types.ObjectId(projectId),
         },
       },
       { $group: { _id: "$status", count: { $sum: 1 } } },
@@ -109,16 +137,16 @@ export class StatisticsService {
     const epicStats = await Epic.aggregate([
       {
         $match: {
-          projectId: new Types.ObjectId(projectId)
-        }
+          projectId: new Types.ObjectId(projectId),
+        },
       },
       {
         $lookup: {
           from: "tasks",
-          localField: "_id",      // Epic._id
-          foreignField: "epic",   // Task.epic
-          as: "tasks"
-        }
+          localField: "_id", // Epic._id
+          foreignField: "epic", // Task.epic
+          as: "tasks",
+        },
       },
       {
         $project: {
@@ -130,29 +158,29 @@ export class StatisticsService {
               $filter: {
                 input: "$tasks",
                 as: "task",
-                cond: { $eq: ["$$task.status", "TO_DO"] }
-              }
-            }
+                cond: { $eq: ["$$task.status", "TO_DO"] },
+              },
+            },
           },
           inProgress: {
             $size: {
               $filter: {
                 input: "$tasks",
                 as: "task",
-                cond: { $eq: ["$$task.status", "IN_PROGRESS"] }
-              }
-            }
+                cond: { $eq: ["$$task.status", "IN_PROGRESS"] },
+              },
+            },
           },
           done: {
             $size: {
               $filter: {
                 input: "$tasks",
                 as: "task",
-                cond: { $eq: ["$$task.status", "DONE"] }
-              }
-            }
-          }
-        }
+                cond: { $eq: ["$$task.status", "DONE"] },
+              },
+            },
+          },
+        },
       },
       {
         $project: {
@@ -167,29 +195,43 @@ export class StatisticsService {
             $cond: [
               { $eq: ["$total", 0] },
               0,
-              { $round: [{ $multiply: [{ $divide: ["$todo", "$total"] }, 100] }, 2] }
-            ]
+              {
+                $round: [
+                  { $multiply: [{ $divide: ["$todo", "$total"] }, 100] },
+                  2,
+                ],
+              },
+            ],
           },
           inProgressPercent: {
             $cond: [
               { $eq: ["$total", 0] },
               0,
-              { $round: [{ $multiply: [{ $divide: ["$inProgress", "$total"] }, 100] }, 2] }
-            ]
+              {
+                $round: [
+                  { $multiply: [{ $divide: ["$inProgress", "$total"] }, 100] },
+                  2,
+                ],
+              },
+            ],
           },
           donePercent: {
             $cond: [
               { $eq: ["$total", 0] },
               0,
-              { $round: [{ $multiply: [{ $divide: ["$done", "$total"] }, 100] }, 2] }
-            ]
-          }
-        }
-      }
+              {
+                $round: [
+                  { $multiply: [{ $divide: ["$done", "$total"] }, 100] },
+                  2,
+                ],
+              },
+            ],
+          },
+        },
+      },
     ]);
     return { epicStats };
   }
-
 
   async getContributorTaskStats(projectId: string) {
     // Get all tasks including unassigned
@@ -249,7 +291,6 @@ export class StatisticsService {
       name: { $regex: searchTerm, $options: "i" },
     }).select("name description status priority assignee");
   }
-
 }
 
 export default new StatisticsService();

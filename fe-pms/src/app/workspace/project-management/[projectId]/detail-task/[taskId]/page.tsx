@@ -32,6 +32,7 @@ const TaskDetail = () => {
     data: taskData,
     error: taskError,
     isLoading: taskIsLoading,
+    mutate: mutateTask,
   } = useSWR(
     taskId ? `${Endpoints.Task.GET_BY_ID(taskId?.toString())}` : "",
     fetcher
@@ -152,6 +153,7 @@ const TaskDetail = () => {
             onEpicChange={onEpicChange}
             onStartDateChange={onStartDateChange}
             onDueDateChange={onDueDateChange}
+            mutateTask={mutateTask}
           />
         </div>
       </div>

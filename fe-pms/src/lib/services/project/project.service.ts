@@ -79,7 +79,7 @@ export const restoreProject = async (projectId: string) => {
   try {
     const response = await axiosService
       .getAxiosInstance()
-      .put(`${Endpoints.Project.RESTORE_PROJECT(projectId)}`);
+      .patch(`${Endpoints.Project.RESTORE_PROJECT(projectId)}`);
 
     if (response.status === 200) {
       showSuccessToast(

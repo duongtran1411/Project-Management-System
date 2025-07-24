@@ -52,11 +52,7 @@ const ActivityRecent = () => {
             data?.data.map((activity: Task) => (
               <div key={activity._id} className="flex items-start gap-3">
                 {activity?.createdBy?.avatar ? (
-                  <Avatar
-                    className="bg-purple-700"
-                    size="small"
-                    src={activity?.createdBy?.avatar}
-                  />
+                  <Avatar size="small" src={activity?.createdBy?.avatar} />
                 ) : (
                   <Avatar className="bg-gray-400" size="small">
                     U

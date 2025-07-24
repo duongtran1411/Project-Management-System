@@ -43,6 +43,29 @@ router.get(
 
 /**
  * @openapi
+ * /statistics/project/{projectId}/all-tasks:
+ *   get:
+ *     summary: Lấy thống kê tất cả task trong dự án
+ *     tags: [Statistics]
+ *     security: [bearerAuth: []]
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema: { type: string }
+ *         description: ID của dự án
+ *     responses:
+ *       200: { description: Lấy thống kê tất cả task thành công }
+ *       401: { description: Không có quyền truy cập }
+ */
+router.get(
+  "/project/:projectId/all-tasks",
+  authenticate,
+  statisticsController.getProjectTaskStats
+);
+
+/**
+ * @openapi
  * /statistics/project/{projectId}/priority:
  *   get:
  *     summary: Lấy thống kê task theo độ ưu tiên
@@ -162,6 +185,5 @@ router.get(
   authenticate,
   statisticsController.searchTasks
 );
-
 
 export default router;
