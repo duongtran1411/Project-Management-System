@@ -39,7 +39,7 @@ export default function Page() {
   const [projects, setProject] = useState<Project | null>(null);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const { role } = useRole();
-  const {userInfo} = useAuth()
+  const { userInfo } = useAuth();
   const isReadOnly = role.name === "PROJECT_ADMIN";
   const fetcher = async (url: string): Promise<FeedBack[]> => {
     try {
@@ -142,7 +142,7 @@ export default function Page() {
   };
   const [form] = Form.useForm();
   const onFinish = (feedbackId: string) => {
-    const values = form.getFieldsValue(); 
+    const values = form.getFieldsValue();
     const feedback = feedbacks.find((fb) => fb._id === feedbackId);
 
     if (
@@ -194,107 +194,109 @@ export default function Page() {
       )}
 
       <div style={{ maxHeight: "500px", overflowY: "auto" }}>
-        <List
-          itemLayout="horizontal"
-          dataSource={feedbacks}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta
-                key={item._id}
-                avatar={
-                  <Avatar src={item.createdBy.avatar}>
-                    {item.createdBy.fullName.charAt(0)}
-                  </Avatar>
-                }
-                title={
-                  <div className="flex flex-col">
-                    <span>{item.email}</span>{" "}
-                    <span style={{ color: "gray" }}>
-                      {item.message}{" "}
-                      {item.createdBy._id === userInfo?.userId && (
-                        <EditOutlined
-                          className="mx-2 hover:bg-gray-300"
-                          onClick={() => {
-                            setEditingId(
-                              editingId === item._id ? null : item._id
-                            );
-                            setIsEdit(editingId !== item._id);
-                          }}
-                        />
-                      )}
-                    </span>
-                    <span
-                      className={`
+        {feedbacks && (
+          <List
+            itemLayout="horizontal"
+            dataSource={feedbacks}
+            renderItem={(item) => (
+              <List.Item>
+                <List.Item.Meta
+                  key={item._id}
+                  avatar={
+                    <Avatar src={item.createdBy.avatar}>
+                      {item.createdBy.fullName.charAt(0)}
+                    </Avatar>
+                  }
+                  title={
+                    <div className="flex flex-col">
+                      <span>{item.email}</span>{" "}
+                      <span style={{ color: "gray" }}>
+                        {item.message}{" "}
+                        {item.createdBy._id === userInfo?.userId && (
+                          <EditOutlined
+                            className="mx-2 hover:bg-gray-300"
+                            onClick={() => {
+                              setEditingId(
+                                editingId === item._id ? null : item._id
+                              );
+                              setIsEdit(editingId !== item._id);
+                            }}
+                          />
+                        )}
+                      </span>
+                      <span
+                        className={`
                       ${item.type === "FEATURE_REQUEST" ? "text-blue-500" : ""}
                       ${item.type === "COMMENT" ? "text-green-500" : ""}
                       ${item.type === "BUG" ? "text-red-500" : ""}
                     `}>
-                      {item.type}
-                    </span>
-                    {isEdit && editingId === item._id && (
-                      <Form
-                        key={item._id}
-                        layout="vertical"
-                        form={form}
-                        onFinish={() => onFinish(item._id)}
-                        style={{ marginTop: 24, textAlign: "left" }}>
-                        <Form.Item
-                          label="Message"
-                          name="message"
-                          initialValue={item.message}
-                          rules={[
-                            { required: true, message: "Email is required" },
-                          ]}>
-                          <Input.TextArea placeholder="PLease enter message ..." />
-                        </Form.Item>
+                        {item.type}
+                      </span>
+                      {isEdit && editingId === item._id && (
+                        <Form
+                          key={item._id}
+                          layout="vertical"
+                          form={form}
+                          onFinish={() => onFinish(item._id)}
+                          style={{ marginTop: 24, textAlign: "left" }}>
+                          <Form.Item
+                            label="Message"
+                            name="message"
+                            initialValue={item.message}
+                            rules={[
+                              { required: true, message: "Email is required" },
+                            ]}>
+                            <Input.TextArea placeholder="PLease enter message ..." />
+                          </Form.Item>
 
-                        <Form.Item
-                          label="Type"
-                          name="type"
-                          initialValue={item.type}
-                          rules={[
-                            { required: true, message: "Type is required" },
-                          ]}>
-                          <Select
-                            placeholder="Select a type"
-                            className="w-full"
-                            defaultValue={item.type}>
-                            <Option value="FEATURE_REQUEST">
-                              <CheckSquareOutlined className="mr-1" />
-                              FEATURE_REQUEST
-                            </Option>
-                            <Option value="BUG">
-                              <BugOutlined className="mr-1" />
-                              Bug
-                            </Option>
-                            <Option value="COMMENT">
-                              <CommentOutlined className="mr-1" />
-                              Comment
-                            </Option>
-                          </Select>
-                        </Form.Item>
-                        <Form.Item style={{ marginTop: 32 }}>
-                          <Button
-                            type="primary"
-                            block
-                            style={{ background: "#030e4f" }}
-                            htmlType="submit">
-                            Send
-                          </Button>
-                        </Form.Item>
-                      </Form>
-                    )}
-                  </div>
-                }
-                description={
-                  <div style={{ marginTop: 4 }}>
-                    {format(new Date(item.createdAt), "yyyy-MM-dd hh:mm")}
-                  </div>
-                }
-              />
-            </List.Item>
-          )}
-        />
+                          <Form.Item
+                            label="Type"
+                            name="type"
+                            initialValue={item.type}
+                            rules={[
+                              { required: true, message: "Type is required" },
+                            ]}>
+                            <Select
+                              placeholder="Select a type"
+                              className="w-full"
+                              defaultValue={item.type}>
+                              <Option value="FEATURE_REQUEST">
+                                <CheckSquareOutlined className="mr-1" />
+                                FEATURE_REQUEST
+                              </Option>
+                              <Option value="BUG">
+                                <BugOutlined className="mr-1" />
+                                Bug
+                              </Option>
+                              <Option value="COMMENT">
+                                <CommentOutlined className="mr-1" />
+                                Comment
+                              </Option>
+                            </Select>
+                          </Form.Item>
+                          <Form.Item style={{ marginTop: 32 }}>
+                            <Button
+                              type="primary"
+                              block
+                              style={{ background: "#030e4f" }}
+                              htmlType="submit">
+                              Send
+                            </Button>
+                          </Form.Item>
+                        </Form>
+                      )}
+                    </div>
+                  }
+                  description={
+                    <div style={{ marginTop: 4 }}>
+                      {format(new Date(item.createdAt), "yyyy-MM-dd hh:mm")}
+                    </div>
+                  }
+                />
+              </List.Item>
+            )}
+          />
+        )}
       </div>
       <CreateFeedBackModal
         isModalOpen={isModalOpen}
