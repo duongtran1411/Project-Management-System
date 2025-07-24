@@ -379,6 +379,34 @@ export class ProjectContributorController {
       });
     }
   };
+
+  getContributorByUserId = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const user = req.user
+      const {projectId} = req.params
+      const contributor = await projectContributorService.getContributorByUser(user,projectId)
+      if(!contributor){
+        res.status(400).json({
+          status: 400,
+          message: 'Can not get contributor',
+          success: false
+        })
+      }
+
+      res.status(200).json({
+        status:200,
+        success: true,
+        message: 'Lấy contributor thành công',
+        data: contributor
+      })
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi lấy thống kê project",
+        statusCode: 400,
+      });
+    }
+  }
 }
 
 export default new ProjectContributorController();

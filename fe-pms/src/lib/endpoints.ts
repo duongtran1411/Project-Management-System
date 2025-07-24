@@ -107,6 +107,7 @@ export class Endpoints {
       `project-contributor/user/${userId}/projects`,
     CHANGE_PROJECT_LEAD: (projectId: string) =>
       `project-contributor/project/${projectId}/update-lead`,
+    GET_BY_PROJECT_ID: (projectId: string) => `/project-contributor/getcontributor/${projectId}`
   };
 
   static readonly ProjectRole = {

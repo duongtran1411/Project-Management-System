@@ -42,7 +42,9 @@ export interface SocketEvents {
 const initSocket = (httpServer: ServerHttp) => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3000",
+      origin:
+        process.env.FRONTEND_URL ||
+        "https://project-management-system-1ok8.vercel.app/",
       credentials: true,
     },
     transports: ["websocket", "polling"],

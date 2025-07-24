@@ -96,7 +96,7 @@ const BoardPage = () => {
 
   const { role } = useRole();
 
-  const isReadOnly = role.name === "CONTRIBUTOR";
+  const isReadOnly = role.name === "CONTRIBUTOR" || role.name === "STAKEHOLDER";
 
   const {
     data: taskData,
@@ -519,9 +519,9 @@ const BoardPage = () => {
                     }`}>
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <h2 className="font-semibold text-gray-700">
+                        <p className="font-semibold text-gray-700 mb-0">
                           {col.title}
-                        </h2>
+                        </p>
                         <span className="text-gray-500">{filtered.length}</span>
                       </div>
                     </div>
@@ -587,7 +587,7 @@ const BoardPage = () => {
                                       {
                                         key: "change_parent",
                                         label: "Change parent",
-                                        disabled: true,
+                                        disabled: isReadOnly,
                                         children: Array.isArray(epics)
                                           ? epics.map((epic) => ({
                                               key: `parent_${epic._id}`,
@@ -603,7 +603,7 @@ const BoardPage = () => {
                                         key: "delete",
                                         label: "Delete",
                                         danger: true,
-                                        disabled: true,
+                                        disabled: isReadOnly,
                                       },
                                     ],
                                     onClick: ({ key, domEvent }) => {
@@ -615,11 +615,9 @@ const BoardPage = () => {
                                           epic
                                         );
                                       } else if (key === "delete") {
-                                        console.log("Delete task:", task._id);
                                         setSelectedTaskDel(task);
                                         setIsOpenModalDel(true);
                                       } else if (key.startsWith("status_")) {
-                                        debugger;
                                         const status = key.replace(
                                           "status_",
                                           ""
