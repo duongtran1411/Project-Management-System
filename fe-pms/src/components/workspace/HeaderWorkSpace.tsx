@@ -272,7 +272,7 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
                 {user?.data?.avatar ? (
                   <Avatar src={user?.data?.avatar} />
                 ) : (
-                  <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
+                  <Avatar className=" cursor-pointer">U</Avatar>
                 )}
                 <span className="text-gray-700">{user?.data?.fullName}</span>
               </Space>
