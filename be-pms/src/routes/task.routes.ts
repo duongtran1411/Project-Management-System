@@ -32,6 +32,8 @@ const router = Router();
  *                 example: "60d21b4667d0d8992e610c85"
  *               assignee:
  *                 type: string
+ *                 nullable: true
+ *                 description: ID của người được giao task. Gửi null để hủy giao task
  *                 example: "60d21b4667d0d8992e610c85"
  *               reporter:
  *                 type: string
