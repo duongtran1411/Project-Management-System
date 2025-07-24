@@ -33,7 +33,6 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { useOnClickOutside } from "usehooks-ts";
 import NotificationPopup from "./NotificationPopup";
-import { useAuth } from "@/lib/auth/auth-context";
 
 const fetcher = (url: string) =>
   axiosService
@@ -215,19 +214,19 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
         <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
-          {userInfo ? (
+          {user?.data ? (
             <Dropdown
               menu={{ items, onClick: handleMenuClick }}
               trigger={["click"]}
               className="header-workspace-dropdown"
             >
               <Space className="cursor-pointer">
-                {userInfo.avatar ? (
-                  <Avatar src={userInfo.avatar} />
+                {user?.data?.avatar ? (
+                  <Avatar src={user?.data?.avatar} />
                 ) : (
                   <Avatar className="bg-gray-600 cursor-pointer">U</Avatar>
                 )}
-                <span className="text-gray-700">{userInfo.fullname}</span>
+                <span className="text-gray-700">{user?.data?.fullName}</span>
               </Space>
             </Dropdown>
           ) : (

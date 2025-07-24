@@ -98,9 +98,11 @@ export const WorklogComponent: React.FC<{ task: Task }> = ({ task }) => {
               setShowWorkLogModal(true);
             }}
           >
-            <span className="font-semibold text-blue-400 font-charlie">
-              Log time
-            </span>
+            {!isReadOnlyStakeholder && (
+              <span className="font-semibold text-blue-400 font-charlie">
+                Log time
+              </span>
+            )}
           </Button>
         </div>
       ) : (
