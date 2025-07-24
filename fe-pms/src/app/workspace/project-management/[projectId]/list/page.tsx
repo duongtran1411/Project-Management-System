@@ -497,7 +497,7 @@ const EpicPage = () => {
                     ? record.assignee?._id
                     : record.assignee;
 
-                const assignee = people.find(p => p.userId._id === assigneeId);
+                const assignee = people.find(p => p.userId && p.userId._id === assigneeId);
 
                 const name = assignee?.userId.fullName || "Unassigned";
                 const avatar = assignee?.userId.avatar;
@@ -685,7 +685,7 @@ const EpicPage = () => {
                     ? record.reporter?._id
                     : record.reporter;
 
-                const reporter = people.find(p => p.userId._id === reporterId);
+                const reporter = people.find(p => p.userId && p.userId._id === reporterId);
 
                 const name = reporter?.userId.fullName || "Unassigned";
                 const avatar = reporter?.userId.avatar;

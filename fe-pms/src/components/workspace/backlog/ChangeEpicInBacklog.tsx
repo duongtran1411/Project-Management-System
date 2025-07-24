@@ -36,20 +36,19 @@ const ChangeEpicInBacklog: React.FC<Props> = ({
     fetcher
   );
 
-  console.log("milestoneId", milestoneId);
-  console.log(
-    "epicData",
-    epicData?.data.filter(
+  const getFilteredEpics = (): any[] => {
+    if (!epicData?.data || !Array.isArray(epicData.data)) {
+      return [];
+    }
+    return epicData.data.filter(
       (option: any) => option.milestonesId?._id === milestoneId
-    )
-  );
+    );
+  };
 
-  const menuItems: MenuProps["items"] = epicData?.data
-    ?.filter((option: any) => option.milestonesId?._id === milestoneId)
-    .map((option: any) => ({
-      key: option._id,
-      label: <Tag color="purple">{option.name}</Tag>,
-    }));
+  const menuItems: MenuProps["items"] = getFilteredEpics().map((option) => ({
+    key: option._id,
+    label: <Tag color="purple">{option.name}</Tag>,
+  }));
 
   const handleMenuClick = async ({ key }: { key: string }) => {
     try {
