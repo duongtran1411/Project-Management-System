@@ -4,12 +4,16 @@ import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { UserModel } from "@/models/user/PeopleYouWork.model";
 import { SearchOutlined } from "@ant-design/icons";
-import { Avatar, Input } from "antd";
+import { Input } from "antd";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
 const fetcher = (url: string) =>
-  axiosService.getAxiosInstance().get(url).then((res) => res.data);
+  axiosService
+    .getAxiosInstance()
+    .get(url)
+    .then((res) => res.data);
 
 const Page = () => {
   // const [isModalVisible, setIsModalVisible] = useState(false);
@@ -20,13 +24,12 @@ const Page = () => {
     fetcher
   );
 
-  const people: UserModel[] = data?.data || [];
-
   const filteredPeople = useMemo(() => {
+    const people: UserModel[] = data?.data || [];
     return people.filter((p) =>
       p.fullName.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [people, searchTerm]);
+  }, [data, searchTerm]);
 
   // const showModal = () => setIsModalVisible(true);
   // const handleCancel = () => setIsModalVisible(false);
@@ -72,15 +75,22 @@ const Page = () => {
               return (
                 <div
                   key={idx}
-                  className="text-center p-4 border rounded-lg shadow-sm hover:shadow-md cursor-pointer bg-white min-w-[180px] h-[210px] flex flex-col items-center"
+                  className="text-center p-4 border rounded-lg shadow-sm hover:shadow-md cursor-pointer bg-white min-w-[150px] h-[180px] flex flex-col items-center"
                 >
-                  <Avatar
-                    size={128}
-                    className="flex items-center justify-center mb-2 bg-blue-600"
-                    style={{ fontSize: 48, fontWeight: 600 }}
-                  >
-                    {initials}
-                  </Avatar>
+                  <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl font-semibold mb-3 overflow-hidden">
+                    {person.avatar ? (
+                      <Image
+                        src={person.avatar}
+                        alt={person.fullName}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                        unoptimized={!person.avatar.startsWith("/")}
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </div>
                   <p className="font-semibold">{person.fullName}</p>
                 </div>
               );

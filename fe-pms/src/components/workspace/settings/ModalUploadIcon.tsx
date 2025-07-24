@@ -1,19 +1,10 @@
 "use client";
 
-import { Avatar, Button, FormInstance, Modal, Spin, Upload } from "antd";
-import { useState } from "react";
 import { updateProject } from "@/lib/services/project/project.service";
 import { UploadOutlined } from "@ant-design/icons";
+import { Button, FormInstance, Modal, Spin, Upload } from "antd";
+import { useState } from "react";
 
-const presetIcons = [
-  "/project-1.png",
-  "/project-2.png",
-  "/project-3.png",
-  "/project-4.png",
-  "/project-5.png",
-  "/project-6.png",
-  "/project-7.png",
-];
 interface Props {
   isIconModalOpen: boolean;
   setIsIconModalOpen: (open: boolean) => void;
@@ -31,7 +22,6 @@ export const ModalUploadIcon: React.FC<Props> = ({
   form,
   mutate,
 }) => {
-  const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +40,6 @@ export const ModalUploadIcon: React.FC<Props> = ({
       }
 
       setIsIconModalOpen(false);
-      setSelectedIcon(null);
       setSelectedFile(null);
     } catch (error) {
       console.error(error);
@@ -62,7 +51,6 @@ export const ModalUploadIcon: React.FC<Props> = ({
   const handleModalCancel = () => {
     setCurrentIcon(projectData?.data?.icon || "/project.png");
     setIsIconModalOpen(false);
-    setSelectedIcon(null);
     setSelectedFile(null);
   };
 
@@ -83,7 +71,6 @@ export const ModalUploadIcon: React.FC<Props> = ({
             showUploadList={false}
             beforeUpload={(file) => {
               setSelectedFile(file);
-              setSelectedIcon(null);
               return false;
             }}
           >
@@ -103,24 +90,7 @@ export const ModalUploadIcon: React.FC<Props> = ({
             justifyContent: "center",
             flexWrap: "wrap",
           }}
-        >
-          {presetIcons.map((icon) => (
-            <Avatar
-              key={icon}
-              src={icon}
-              size={48}
-              style={{
-                border: selectedIcon === icon ? "2px solid #1890ff" : undefined,
-                cursor: "pointer",
-                boxShadow:
-                  selectedIcon === icon ? "0 0 0 2px #1890ff" : undefined,
-              }}
-              onClick={() => {
-                setSelectedIcon(icon);
-              }}
-            />
-          ))}
-        </div>
+        ></div>
       </Modal>
     </>
   );
