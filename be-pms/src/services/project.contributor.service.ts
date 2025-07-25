@@ -490,10 +490,6 @@ export class ProjectContributorService {
       // Commit transaction
       await session.commitTransaction();
 
-      console.log(
-        `Successfully removed contributor ${userId} from project ${projectId} and cleaned up all related data`
-      );
-
       return true;
     } catch (error) {
       // Rollback nếu có lỗi
@@ -560,8 +556,28 @@ export class ProjectContributorService {
         index ===
         self.findIndex((p) => p._id.toString() === project._id.toString())
     );
-
     return uniqueProjects;
+  }
+
+  async getCurrentContributorProjectsByUserId(userId: string): Promise<any[]> {
+    if (!mongoose.Types.ObjectId.isValid(userId)) return [];
+
+    // Chỉ lấy projects mà user hiện tại là contributor
+    const contributors = await ProjectContributor.find({ userId })
+      .populate({
+        path: "projectId",
+        select: "name icon projectType projectLead deletedAt",
+        populate: {
+          path: "projectLead",
+          select: "fullName email avatar",
+        },
+      })
+      .select("projectId")
+      .lean();
+
+    return contributors
+      .map((c) => c.projectId)
+      .filter((project) => project != null);
   }
 
   // async getRoleContributorByProjectId(
@@ -803,8 +819,6 @@ export class ProjectContributorService {
 
       // Commit transaction
       await session.commitTransaction();
-
-      console.log(`Successfully cleaned up all data for user ${userId}`);
 
       return true;
     } catch (error) {
