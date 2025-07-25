@@ -250,15 +250,36 @@ export class ProjectContributorService {
     };
   }
 
+  async getAllUsersByProjectId(projectId: string): Promise<any[]> {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
+
+    // Lấy tất cả users trong project với tất cả roles
+    const contributors = await ProjectContributor.find({
+      projectId,
+    })
+      .select("-projectId")
+      .populate([
+        { path: "userId", select: "fullName email avatar status" },
+        { path: "projectRoleId", select: "name" },
+      ])
+      .lean();
+
+    return contributors;
+  }
+
   async getContributorsByProjectId(projectId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
-    const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
-    if (!contributorRole) return [];
+    const roles = await ProjectRole.find({
+      name: { $in: ["CONTRIBUTOR", "PROJECT_ADMIN"] },
+    });
+    if (!roles || roles.length === 0) return [];
+
+    const roleIds = roles.map((role) => role._id);
 
     const contributors = await ProjectContributor.find({
       projectId,
-      projectRoleId: contributorRole._id,
+      projectRoleId: { $in: roleIds },
     })
       .select("-projectId")
       .populate([
