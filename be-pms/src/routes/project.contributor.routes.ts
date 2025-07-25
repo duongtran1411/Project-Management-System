@@ -298,6 +298,33 @@ router.get(
 
 /**
  * @openapi
+ * /project-contributor/user/{userId}/contributor-projects:
+ *   get:
+ *     summary: Lấy danh sách projects mà user hiện tại là contributor
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của user
+ *     responses:
+ *       200:
+ *         description: Danh sách projects mà user là contributor
+ *       400:
+ *         description: Lỗi không lấy được danh sách projects
+ */
+router.get(
+  "/user/:userId/contributor-projects",
+  authenticate,
+  projectContributorController.getCurrentContributorProjectsByUserId
+);
+
+/**
+ * @openapi
  * /project-contributor/project/role/{projectId}:
  *   get:
  *     summary: Lấy role project theo projectId
