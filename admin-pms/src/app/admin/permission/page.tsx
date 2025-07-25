@@ -15,8 +15,7 @@ import {
 import { addPermissionForRole, addRole } from "@/lib/services/role/role";
 import {
   Permission,
-  PermissionDetail,
-  PermissionSelect,
+  PermissionDetail
 } from "@/models/permission/Permission";
 import { Role } from "@/models/role/Role";
 import {
@@ -36,7 +35,6 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import { mutate } from "swr";
 const layout = {
   labelCol: { span: 5 },
   wrapperCol: { span: 18 },

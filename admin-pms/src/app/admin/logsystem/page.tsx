@@ -18,8 +18,7 @@ import {
   DatePicker,
   Button,
   Select,
-  Input,
-  Pagination,
+  Input
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { jwtDecode } from "jwt-decode";
@@ -29,7 +28,7 @@ import type { TablePaginationConfig } from "antd/es/table";
 import { Pagination as Paging } from "@/models/pagination/Pagination";
 import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
 import { Filter } from "@/models/filter/Filter";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import { format, parseISO } from "date-fns";
 import RemoveLogButton from "@/components/common/modal/deleteLog";
 import { removeLog } from "@/lib/services/logsystem/logsystem";

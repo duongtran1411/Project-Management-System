@@ -99,18 +99,6 @@ export default function Page() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Form.Item>
-        <Form.Item>
-          <Flex justify="space-between" align="center">
-            <Form.Item name="remember" valuePropName="checked" noStyle>
-              <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-            <Link
-              href={'/authentication/forgot-password'}
-              className="text-blue-500 hover:decoration-solid hover:underline text-sm">
-              Forgot password?
-            </Link>
-          </Flex>
-        </Form.Item>
 
         <Form.Item>
           <Button block type="primary" htmlType="submit" className="mb-2">

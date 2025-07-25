@@ -4,9 +4,8 @@ import { Endpoints } from "@/lib/endpoints";
 import { getAll, updateStatus } from "@/lib/services/user/user";
 import { User } from "@/models/user/User";
 import { useEffect, useMemo, useState } from "react";
-import { FiSearch } from "react-icons/fi";
 import useSWR from "swr";
-import { Button, Input, Spin, Table, Tag, Tooltip } from "antd";
+import { Button, Input,Table, Tag } from "antd";
 import {
   showErrorToast,
   showSuccessToast,

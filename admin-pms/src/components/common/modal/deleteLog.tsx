@@ -1,5 +1,4 @@
-import { Button, DatePicker, InputNumber, Modal } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DatePicker, InputNumber, Modal } from "antd";
 import { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 interface RemoveLogButtonProps {

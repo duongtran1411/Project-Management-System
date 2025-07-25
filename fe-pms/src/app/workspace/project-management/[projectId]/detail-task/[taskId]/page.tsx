@@ -26,7 +26,7 @@ const TaskDetail = () => {
   const params = useParams();
   const taskId = params.taskId;
   const projectId = params.projectId;
-
+  
   // Fetch task data
   const {
     data: taskData,
