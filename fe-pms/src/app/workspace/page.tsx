@@ -10,7 +10,11 @@ import {
   getWorkspaceByUser,
   initWorkspace,
 } from "@/lib/services/workspace/workspace.service";
-import { InboxOutlined, LoadingOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  InboxOutlined,
+  LoadingOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Spin, Typography } from "antd";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -25,9 +29,9 @@ const Page = () => {
       try {
         setIsLoading(true);
         const response = await getWorkspaceByUser();
-        if(!response){
-          showWarningToast('Hãy tạo workspace ở đây')
-          return; 
+        if (!response) {
+          showWarningToast("Hãy tạo workspace ở đây");
+          return;
         }
         if (response.success) {
           setIsWorkspace(true);
@@ -38,7 +42,7 @@ const Page = () => {
           error?.data?.response?.messsage ||
           error?.message ||
           "đã có lỗi xảy ra";
-        if (errorMessage) {
+        if (errorMessage !== 'Bạn chưa tạo workspace') {
           showErrorToast(errorMessage);
         }
       } finally {
@@ -57,7 +61,7 @@ const Page = () => {
       if (response.success) {
         setIsModalOpen(false);
         showSuccessToast(response.message);
-        router.push('/workspace/viewall')
+        router.push("/workspace/viewall");
       }
     } catch (error: any) {
       const errorMessage =
@@ -81,7 +85,8 @@ const Page = () => {
             <InboxOutlined style={{ fontSize: 80 }} />
             <div>
               <Typography className="font-bold text-xl">
-                <PlusOutlined className="mr-1" />Create Your Workspace
+                <PlusOutlined className="mr-1" />
+                Create Your Workspace
               </Typography>
             </div>
           </div>
