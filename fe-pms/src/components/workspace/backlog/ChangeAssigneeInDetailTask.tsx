@@ -40,6 +40,9 @@ const ChangeAssigneeInDetailTask: React.FC<Props> = ({
 
   useEffect(() => {
     if (contributorsData?.data) {
+      if (!contributorsData?.data || !Array.isArray(contributorsData.data)) {
+        return;
+      }
       const listMember = contributorsData?.data.filter((member: any) => {
         return member.projectRoleId?.name !== "STAKEHOLDER";
       });
