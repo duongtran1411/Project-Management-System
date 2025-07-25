@@ -1,7 +1,7 @@
 "use client";
 
 import { logout } from "@/lib/utils";
-import { ClusterOutlined, LogoutOutlined, MailOutlined } from "@ant-design/icons";
+import { ClusterOutlined, LogoutOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, MenuProps, Space } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { FaRegListAlt, FaUserAlt } from "react-icons/fa";
