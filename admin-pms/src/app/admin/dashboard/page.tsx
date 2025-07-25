@@ -61,7 +61,6 @@ export default function Dashboard() {
           </svg>
         </span>
       ),
-      change: "+0.43%",
       changeType: "up",
       color: "text-green-500",
     },
@@ -73,7 +72,6 @@ export default function Dashboard() {
           <ProjectOutlined />
         </span>
       ),
-      change: "+4.35%",
       changeType: "up",
       color: "text-green-500",
     },
@@ -85,7 +83,6 @@ export default function Dashboard() {
           <FileTextOutlined />
         </span>
       ),
-      change: "+2.59%",
       changeType: "up",
       color: "text-green-500",
     },
@@ -97,7 +94,6 @@ export default function Dashboard() {
           <UserOutlined />
         </span>
       ),
-      change: "-0.95%",
       changeType: "down",
       color: "text-red-500",
     },
@@ -156,12 +152,6 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex items-center gap-1 text-sm font-semibold">
-              <span
-                className={
-                  stat.changeType === "up" ? "text-green-500" : "text-red-500"
-                }>
-                {stat.change}
-              </span>
               <span
                 className={
                   "inline-flex items-center justify-center w-5 h-5 rounded-full " +

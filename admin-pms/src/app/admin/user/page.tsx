@@ -231,7 +231,6 @@ const UserAdmin = () => {
           style={{ padding: 30 }}
           columns={columns}
           dataSource={filteredUsers}
-          scroll={{ x: "1500px" }}
           onChange={handlePageSize}
         />
       </div>

@@ -93,15 +93,6 @@ export default function AdminLayout({
                   <span className="flex-1 text-left">User</span>
                 </button>
               </li>
-              {/* Calendar */}
-              <li>
-                <button
-                  className={getButtonClass("/admin/emailtemplate")}
-                  onClick={() => router.push("/admin/emailtemplate")}>
-                  <MailOutlined />
-                  <span className="flex-1 text-left">Email Template</span>
-                </button>
-              </li>
               {/* Tasks (dropdown) */}
               <li>
                 <button
