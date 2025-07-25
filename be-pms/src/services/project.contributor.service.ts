@@ -253,7 +253,9 @@ export class ProjectContributorService {
   async getContributorsByProjectId(projectId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
-    const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
+    const contributorRole = await ProjectRole.findOne({
+      name: { $in: ["CONTRIBUTOR", "PROJECT_ADMIN"] },
+    });
     if (!contributorRole) return [];
 
     const contributors = await ProjectContributor.find({
