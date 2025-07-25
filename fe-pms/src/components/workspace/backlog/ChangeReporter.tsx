@@ -45,7 +45,7 @@ const ChangeReporter: React.FC<Props> = ({
         </div>
       ),
     },
-    ...(contributorData?.data.map((option: any) => ({
+    ...(contributorData?.data?.map((option: any) => ({
       key: option?.userId?._id,
       label: (
         <div className="flex items-center gap-3 p-2">
