@@ -1,7 +1,7 @@
 "use client";
+import PageWrapper from "@/components/common/spinner/PageWrapper";
 import Footer from "@/components/homepage/Footer";
 import Header from "@/components/homepage/Header";
-import PageWrapper from "@/components/common/spinner/PageWrapper";
 import {
   ArrowRightOutlined,
   CheckCircleOutlined,
@@ -10,7 +10,7 @@ import {
   StarOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-import { Button, Card, Col, Row, Space, Statistic, Typography } from "antd";
+import { Button, Card, Col, Row, Statistic, Typography } from "antd";
 import { useState } from "react";
 
 import { showSuccessToast } from "@/components/common/toast/toast";
@@ -228,36 +228,6 @@ export default function Page() {
             </Row>
           </div>
         </section>
-
-        {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-          <div className="max-w-4xl px-4 mx-auto text-center sm:px-6 lg:px-8">
-            <Title level={2} className="mb-6 text-4xl font-bold text-white">
-              Ready to transform your workflow?
-            </Title>
-            <Paragraph className="mb-8 text-xl text-blue-100">
-              Join thousands of teams who are already working smarter with
-              Project Hub
-            </Paragraph>
-            <Space size="large">
-              <Button
-                type="primary"
-                size="large"
-                className="h-12 px-8 text-lg font-semibold text-blue-600 bg-white border-0 hover:bg-gray-100"
-                onClick={() => router.push("/authentication/login")}
-              >
-                Start Free Trial
-              </Button>
-              <Button
-                size="large"
-                className="h-12 px-8 text-lg font-semibold text-white border-2 border-white hover:bg-white hover:text-blue-600"
-              >
-                Watch Demo
-              </Button>
-            </Space>
-          </div>
-        </section>
-
         <Footer />
       </div>
     </PageWrapper>
