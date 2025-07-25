@@ -2,19 +2,18 @@
 
 import { confirmInvite } from "@/lib/services/projectContributor/projectContributor.service";
 import { HomeOutlined } from "@ant-design/icons";
-import type { NotificationArgsProps } from "antd";
-import { Button, Result, Spin, notification } from "antd";
+import { Button, Result, Spin } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type NotificationPlacement = NotificationArgsProps["placement"];
+//type NotificationPlacement = NotificationArgsProps["placement"];
 
 export default function ConfirmInviteSuccessPage() {
   const router = useRouter();
   const params = useParams();
   const tokenConfirm = params.token as string;
 
-  const [api, contextHolder] = notification.useNotification();
+  //const [api, contextHolder] = notification.useNotification();
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -26,20 +25,20 @@ export default function ConfirmInviteSuccessPage() {
 
         if (response) {
           setTimeout(() => {
-            notificationSuccess("topLeft");
+            //notificationSuccess("topLeft");
             router.push("/");
           }, 1000);
           return;
         } else {
           setTimeout(() => {
-            notificationError("topLeft");
+            // notificationError("topLeft");
           }, 1000);
           setError(true);
         }
       } catch (e) {
         console.log(e);
         setError(true);
-        notificationError("topLeft");
+        //notificationError("topLeft");
       } finally {
         setLoading(false);
       }
@@ -50,25 +49,25 @@ export default function ConfirmInviteSuccessPage() {
     }
   }, [tokenConfirm]);
 
-  const notificationSuccess = (placement: NotificationPlacement) => {
-    api.success({
-      message: "Confirm Invitation",
-      description: "Invitation confirmed successfully",
-      placement,
-    });
-  };
+  // const notificationSuccess = (placement: NotificationPlacement) => {
+  //   api.success({
+  //     message: "Confirm Invitation",
+  //     description: "Invitation confirmed successfully",
+  //     placement,
+  //   });
+  // };
 
-  const notificationError = (placement: NotificationPlacement) => {
-    api.error({
-      message: "Confirm Invitation",
-      description: "Fail to confirm invitation",
-      placement,
-    });
-  };
+  // const notificationError = (placement: NotificationPlacement) => {
+  //   api.error({
+  //     message: "Confirm Invitation",
+  //     description: "Fail to confirm invitation",
+  //     placement,
+  //   });
+  // };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6">
-      {contextHolder}
+      {/* {contextHolder} */}
       {loading ? (
         <Spin size="large" />
       ) : error ? (
