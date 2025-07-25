@@ -439,4 +439,31 @@ router.get(
   projectContributorController.getContributorByUserId
 );
 
+/**
+ * @openapi
+ * /project-contributor/project/{projectId}/users:
+ *   get:
+ *     summary: Lấy danh sách user thuộc project
+ *     tags: [Project Contributor]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của project
+ *     responses:
+ *       200:
+ *         description: Danh sách user thuộc project
+ *       400:
+ *         description: Lỗi không lấy được danh sách user
+ */
+router.get(
+  "/project/:projectId/users",
+  authenticate,
+  projectContributorController.getAllUsersByProjectId
+);
+
 export default router;

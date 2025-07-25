@@ -250,6 +250,22 @@ export class ProjectContributorService {
     };
   }
 
+  async getAllUsersByProjectId(projectId: string): Promise<any[]> {
+    if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
+
+    const users = await ProjectContributor.find({
+      projectId,
+    })
+      .select("-projectId")
+      .populate([
+        { path: "userId", select: "fullName email avatar status" },
+        { path: "projectRoleId", select: "name" },
+      ])
+      .lean();
+
+    return users;
+  }
+
   async getContributorsByProjectId(projectId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
