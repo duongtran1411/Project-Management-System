@@ -253,7 +253,13 @@ export class ProjectContributorService {
   async getContributorsByProjectId(projectId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
-    const contributors = await ProjectContributor.find({ projectId })
+    const contributorRole = await ProjectRole.findOne({ name: "CONTRIBUTOR" });
+    if (!contributorRole) return [];
+
+    const contributors = await ProjectContributor.find({
+      projectId,
+      projectRoleId: contributorRole._id,
+    })
       .select("-projectId")
       .populate([
         { path: "userId", select: "fullName email avatar status" },
