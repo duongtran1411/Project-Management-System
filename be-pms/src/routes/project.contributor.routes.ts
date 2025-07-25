@@ -247,7 +247,7 @@ router.delete(
  * @openapi
  * /project-contributor/project/{projectId}/users:
  *   get:
- *     summary: Lấy danh sách user thuộc project
+ *     summary: Lấy danh sách tất cả users thuộc project (bao gồm tất cả roles)
  *     tags: [Project Contributor]
  *     security:
  *       - bearerAuth: []
@@ -260,13 +260,14 @@ router.delete(
  *         description: ID của project
  *     responses:
  *       200:
- *         description: Danh sách user trong project
+ *         description: Danh sách tất cả users trong project
  *       400:
- *         description: Lỗi không lấy được danh sách user
+ *         description: Lỗi không lấy được danh sách users
  */
 router.get(
   "/project/:projectId/users",
-  projectContributorController.getContributorsByProject
+  authenticate,
+  projectContributorController.getAllUsersByProjectId
 );
 
 /**
@@ -437,33 +438,6 @@ router.get(
   "/getcontributor/:projectId",
   authenticate,
   projectContributorController.getContributorByUserId
-);
-
-/**
- * @openapi
- * /project-contributor/project/{projectId}/users:
- *   get:
- *     summary: Lấy danh sách user thuộc project
- *     tags: [Project Contributor]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: projectId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID của project
- *     responses:
- *       200:
- *         description: Danh sách user thuộc project
- *       400:
- *         description: Lỗi không lấy được danh sách user
- */
-router.get(
-  "/project/:projectId/users",
-  authenticate,
-  projectContributorController.getAllUsersByProjectId
 );
 
 export default router;

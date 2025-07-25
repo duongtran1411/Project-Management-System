@@ -253,7 +253,8 @@ export class ProjectContributorService {
   async getAllUsersByProjectId(projectId: string): Promise<any[]> {
     if (!mongoose.Types.ObjectId.isValid(projectId)) return [];
 
-    const users = await ProjectContributor.find({
+    // Lấy tất cả users trong project với tất cả roles
+    const contributors = await ProjectContributor.find({
       projectId,
     })
       .select("-projectId")
@@ -263,7 +264,7 @@ export class ProjectContributorService {
       ])
       .lean();
 
-    return users;
+    return contributors;
   }
 
   async getContributorsByProjectId(projectId: string): Promise<any[]> {
