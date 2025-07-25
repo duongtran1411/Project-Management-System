@@ -45,7 +45,9 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
       .then((res) => res.data);
 
   const { data: projectList, isLoading } = useSWR(
-    userId ? Endpoints.ProjectContributor.GET_PROJECTS_BY_USER(userId) : null,
+    userId
+      ? Endpoints.ProjectContributor.GET_CONTRIBUTOR_BY_PROJECT_ID(userId)
+      : null,
     fetcher
   );
 
@@ -95,7 +97,11 @@ const MenuWorkSpace = ({ colapsed }: { colapsed: boolean }) => {
         icon: <FilterOutlined />,
         children: [
           {
-            label: <Link href="/workspace/filters/search-work-items">Search work items</Link>,
+            label: (
+              <Link href="/workspace/filters/search-work-items">
+                Search work items
+              </Link>
+            ),
             key: "search-work-items",
             icon: <SearchOutlined />,
           },

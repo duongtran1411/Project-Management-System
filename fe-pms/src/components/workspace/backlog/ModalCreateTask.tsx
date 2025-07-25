@@ -105,11 +105,7 @@ export const ModalCreateTask: React.FC<Props> = ({
           <Input />
         </Form.Item>
 
-        <Form.Item<FieldType>
-          label="Task description"
-          name="taskDescription"
-          rules={[{ required: true, message: "Enter task description" }]}
-        >
+        <Form.Item<FieldType> label="Task description" name="taskDescription">
           <TextArea rows={4} />
         </Form.Item>
       </Form>

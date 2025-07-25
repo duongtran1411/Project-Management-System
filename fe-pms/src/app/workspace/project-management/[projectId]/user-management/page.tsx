@@ -53,7 +53,7 @@ const UserManagementPage = () => {
 
   // Fetch contributors
   const { data: contributors, mutate } = useSWR(
-    `${Endpoints.ProjectContributor.GET_CONTRIBUTOR_BY_PROJECT(projectId)}`,
+    `${Endpoints.ProjectContributor.GET_USER_LIST(projectId)}`,
     fetcher
   );
 

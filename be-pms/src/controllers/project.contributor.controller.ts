@@ -511,6 +511,56 @@ export class ProjectContributorController {
       });
     }
   };
+
+  getAllUsersByProjectId = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { projectId } = req.params;
+      const users = await projectContributorService.getAllUsersByProjectId(
+        projectId
+      );
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách user thành công",
+        data: users,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi lấy danh sách user",
+        statusCode: 400,
+      });
+    }
+  };
+
+  getCurrentContributorProjectsByUserId = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { userId } = req.params;
+      const projects =
+        await projectContributorService.getCurrentContributorProjectsByUserId(
+          userId
+        );
+      res.status(200).json({
+        success: true,
+        message:
+          "Lấy danh sách projects mà user hiện tại là contributor thành công",
+        data: projects,
+        statusCode: 200,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Lỗi lấy danh sách projects",
+        statusCode: 400,
+      });
+    }
+  };
 }
 
 export default new ProjectContributorController();
