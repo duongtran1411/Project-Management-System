@@ -190,23 +190,7 @@ const UserAdmin = () => {
       width: 180,
       render: (date: string) =>
         date ? format(parseISO(date), "dd/MM/yyyy HH:mm") : "-",
-    },
-    {
-      title: "Action",
-      key: "action",
-      fixed: "right",
-      width: 150,
-      render: () => (
-        <div className="flex gap-2">
-          <Button size="small" type="link">
-            Edit
-          </Button>
-          <Button size="small" danger type="link">
-            Delete
-          </Button>
-        </div>
-      ),
-    },
+    }
   ];
 
   if (isLoading) {
