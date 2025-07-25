@@ -562,6 +562,7 @@ const BoardPage = () => {
                                       {
                                         key: "change_status",
                                         label: "Change status",
+                                        disabled:isStakeHolder,
                                         children: [
                                           {
                                             key: "status_TO_DO",

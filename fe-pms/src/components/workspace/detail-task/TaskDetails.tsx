@@ -179,11 +179,12 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 },
               }}
               trigger={["click"]}
-              disabled={isReadOnlyStakeholder}
+              disabled={isReadOnlyStakeholder || isReadOnlyContributor}
             >
               <Tooltip
                 title={`Assignee: ${assignee?.fullName || "Unassigned"}`}
                 className="flex flex-row gap-x-2 hover:bg-gray-300 hover:rounded-2xl items-center hover:cursor-pointer"
+                
               >
                 <Avatar
                   className={`cursor-pointer text-white ${
@@ -208,7 +209,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
           </div>
 
           {/* Labels */}
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-2" aria-disabled={isDisabled}>
             <span className="font-semibold text-gray-600">Labels:</span>
             {/* <span className="truncate">{task.name || "None"}</span> */}
             <ChangeLabelInDetailTask
@@ -250,7 +251,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                   </div>
                 ),
               }))}
-              disabled={isReadOnlyStakeholder && isReadOnlyContributor}
+              disabled={isDisabled}
             />
           </div>
 
@@ -263,7 +264,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 onStartDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
-              disabled={isReadOnlyContributor && isReadOnlyStakeholder}
+              disabled={isDisabled}
             />
           </div>
 
@@ -276,7 +277,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 onDueDateChange(date?.format("YYYY-MM-DD") ?? "");
               }}
               style={{ width: "100%" }}
-              disabled={isReadOnlyContributor && isReadOnlyStakeholder}
+              disabled={isDisabled}
             />
           </div>
 
@@ -345,7 +346,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
                 },
               }}
               trigger={["click"]}
-              disabled={isReadOnlyContributor && isReadOnlyStakeholder}
+              disabled={isDisabled}
             >
               <Tooltip
                 title={`Reporter: ${reporter?.fullName || "Unassigned"}`}
