@@ -69,7 +69,7 @@ export const TaskDetails: React.FC<TaskDetailsProps> = ({
   const { role } = useRole();
   const isReadOnlyContributor = role.name === "CONTRIBUTOR";
   const isReadOnlyStakeholder = role.name === "STAKEHOLDER";
-  const isDisabled = isReadOnlyContributor && isReadOnlyStakeholder;
+  const isDisabled = isReadOnlyContributor || isReadOnlyStakeholder;
   const { projectId } = useParams<{ projectId: string }>();
   const handleMenuClick = async ({ key }: { key: string }) => {
     const nextStatus = key as Status;

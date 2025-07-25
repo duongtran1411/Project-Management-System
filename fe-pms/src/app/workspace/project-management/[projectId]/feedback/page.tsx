@@ -141,6 +141,17 @@ export default function Page() {
     }
   };
   const [form] = Form.useForm();
+  useEffect(() => {
+    if (isEdit && editingId) {
+      const editingFeedback = feedbacks.find((fb) => fb._id === editingId);
+      if (editingFeedback) {
+        form.setFieldsValue({
+          message: editingFeedback.message,
+          type: editingFeedback.type,
+        });
+      }
+    }
+  }, [isEdit, editingId, feedbacks, form]);
   const onFinish = (feedbackId: string) => {
     const values = form.getFieldsValue();
     const feedback = feedbacks.find((fb) => fb._id === feedbackId);
@@ -160,6 +171,7 @@ export default function Page() {
   };
 
   const update = async (feedbackId: string, message: string, type: string) => {
+    debugger;
     try {
       const response = await updateFeedback(feedbackId, message, type);
       if (response.success) {
@@ -242,7 +254,6 @@ export default function Page() {
                           <Form.Item
                             label="Message"
                             name="message"
-                            initialValue={item.message}
                             rules={[
                               { required: true, message: "Email is required" },
                             ]}>
@@ -252,14 +263,12 @@ export default function Page() {
                           <Form.Item
                             label="Type"
                             name="type"
-                            initialValue={item.type}
                             rules={[
                               { required: true, message: "Type is required" },
                             ]}>
                             <Select
                               placeholder="Select a type"
-                              className="w-full"
-                              defaultValue={item.type}>
+                              className="w-full">
                               <Option value="FEATURE_REQUEST">
                                 <CheckSquareOutlined className="mr-1" />
                                 FEATURE_REQUEST
