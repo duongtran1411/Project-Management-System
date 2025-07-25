@@ -41,7 +41,6 @@ const UserAdmin = () => {
     page: 1,
     totalPages: 4,
   });
-  const [filter, setFilter] = useState<Filter>();
   const [users, setUsers] = useState<User[]>([]);
   const getAllUser = async (url: string): Promise<User[]> => {
     const response = await getAll(url);
@@ -55,7 +54,7 @@ const UserAdmin = () => {
     });
     
     return params.toString();
-  }, [pagination, filter]);
+  }, [pagination]);
 
   const filteredUsers = useMemo(() => {
   if (!searchTerm) return users;
@@ -198,7 +197,7 @@ const UserAdmin = () => {
       key: "action",
       fixed: "right",
       width: 150,
-      render: (_, record) => (
+      render: () => (
         <div className="flex gap-2">
           <Button size="small" type="link">
             Edit
