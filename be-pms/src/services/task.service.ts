@@ -1073,10 +1073,10 @@ export class TaskService {
     milestoneIdMove: string,
     user: IUser
   ): Promise<ITask[]> {
-    await Milestone.findByIdAndUpdate(milestoneId, { status: "DONE" });
+    await Milestone.findByIdAndUpdate(milestoneId, { status: "COMPLETED" });
 
     const updatedTask = await Task.updateMany(
-      { milestones: milestoneId, status: { $ne: "DONE" } },
+      { milestones: milestoneId, status: { $ne: "COMPLETED" } },
       { $set: { milestones: milestoneIdMove, updatedBy: user._id } }
     );
 

@@ -5,10 +5,8 @@ import {
   LogoutOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
-  QuestionCircleOutlined,
   SearchOutlined,
   SelectOutlined,
-  SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import {
@@ -210,8 +208,6 @@ const HeaderWorkSpace = ({ onCollapse }: { onCollapse: () => void }) => {
       {/* Right */}
       <div className="flex items-center gap-x-4">
         <NotificationPopup />
-        <QuestionCircleOutlined className="text-lg text-gray-600" />
-        <SettingOutlined className="text-lg text-gray-600" />
 
         <div>
           {user?.data ? (

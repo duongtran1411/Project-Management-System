@@ -169,9 +169,8 @@ const MileStoneskModal: React.FC<MileStoneModalProp> = ({
             className="font-semibold bg-green-500 text-zinc-200"
             onClick={() => {
               onSave(selectMileStoneId, selectMileStoneIdMove);
-              // console.log("from id", selectMileStoneId);
-              // console.log("to id", selectMileStoneIdMove);
-            }}>
+              
+            }} disabled={mileStoneNotStart ? true : false}>
             Hoàn thành Milestone
           </Button>
           <Button block onClick={onCancel}>

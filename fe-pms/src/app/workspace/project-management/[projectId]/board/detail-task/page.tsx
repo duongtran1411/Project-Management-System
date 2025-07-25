@@ -10,8 +10,7 @@ import { useSocket } from "@/hooks/useSocket";
 import { useSocketEvent } from "@/hooks/useSocketEvent";
 import { useTaskData } from "@/hooks/useTaskData";
 import { Endpoints } from "@/lib/endpoints";
-import { useSWRConfig } from "swr";
-import { CloseOutlined } from "@ant-design/icons";
+import { mutate } from "swr";
 
 interface DetailTaskModalProps {
   open: boolean;
@@ -25,7 +24,6 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
   task,
 }) => {
   const { emit, connected } = useSocket();
-  const { mutate } = useSWRConfig();
 
   const {
     status,
@@ -45,7 +43,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
     onEpicChange,
     onStartDateChange,
     onDueDateChange,
-    onCommentAdded,
+    onCommentAdded
   } = useTaskData(task);
 
   useEffect(() => {
@@ -112,6 +110,7 @@ const DetailTaskModal: React.FC<DetailTaskModalProps> = ({
             onEpicChange={onEpicChange}
             onStartDateChange={onStartDateChange}
             onDueDateChange={onDueDateChange}
+            mutateTask={() => mutate(Endpoints.Task.GET_BY_ID(task._id ? task._id : ''))}
           />
         </div>
       </div>

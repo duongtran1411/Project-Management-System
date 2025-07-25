@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { Task } from "@/models/task/task.model";
 import { Comment } from "@/models/comment/comment";
 import { Assignee } from "@/models/assignee/assignee.model";
@@ -129,7 +129,7 @@ export const useTaskData = (task: Task | undefined) => {
 
   const onAssigneeChange = async (assigneeId: string) => {
     try {
-      if(assigneeId === 'unassigned') assigneeId = ''
+      if (assigneeId === 'unassigned') assigneeId = ''
       const response = await updateTaskAssignee(task?._id || "", assigneeId);
       if (response.success) {
         setAssignee(response.data.assignee);
@@ -209,6 +209,8 @@ export const useTaskData = (task: Task | undefined) => {
     }
   }, [task]);
 
+
+
   return {
     status,
     assignee,
@@ -228,5 +230,10 @@ export const useTaskData = (task: Task | undefined) => {
     onStartDateChange,
     onDueDateChange,
     onCommentAdded,
-  };
-};
+    mutateTask: () => {
+      if (task?._id) {
+        mutate(`${Endpoints.Task.GET_BY_ID(task._id)}`);
+      }
+    }
+  }
+}

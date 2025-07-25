@@ -231,9 +231,6 @@ export default function Page() {
               </Form.Item>
               <Form.Item>
                 <Flex justify="space-between" align="center">
-                  <Form.Item name="remember" valuePropName="checked" noStyle>
-                    <Checkbox>Remember me</Checkbox>
-                  </Form.Item>
                   <Link
                     href={"/authentication/forgot-password"}
                     className="text-sm text-blue-500 hover:decoration-solid hover:underline"

@@ -57,7 +57,7 @@ export default function Page() {
               label="Email"
               rules={[
                 { required: true, message: "Vui lòng nhập email của bạn!" },
-                { type: "email", message: "Email không hợp lệ!" }
+                { type: "email", message: "Email không hợp lệ!" },
               ]}>
               <Input
                 size="large"
@@ -67,17 +67,18 @@ export default function Page() {
                 className="rounded-md"
               />
             </Form.Item>
-
-            <Form.Item className="mb-0">
-              <Button
-                type="primary"
-                htmlType="submit"
-                size="large"
-                loading={loading}
-                className="w-full h-12 text-base font-medium rounded-md">
-                Xác nhận email
-              </Button>
-            </Form.Item>
+            {!isSuccess && (
+              <Form.Item className="mb-0">
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  size="large"
+                  loading={loading}
+                  className="w-full h-12 text-base font-medium rounded-md">
+                  Xác nhận email
+                </Button>
+              </Form.Item>
+            )}
 
             {isSuccess && (
               <div className="text-center">
@@ -107,6 +108,13 @@ export default function Page() {
               </div>
             )}
           </Form>
+          <div className="text-center mt-4">
+            <Button
+              type="link"
+              className="text-blue-600 hover:text-blue-800 p-0">
+              <Link href="/authentication/login">Back to Login</Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
