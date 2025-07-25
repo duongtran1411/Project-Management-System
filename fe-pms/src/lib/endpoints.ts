@@ -111,6 +111,8 @@ export class Endpoints {
       `/project-contributor/getcontributor/${projectId}`,
     GET_USER_LIST: (projectId: string) =>
       `project-contributor/project/${projectId}/users`,
+    GET_CONTRIBUTOR_BY_PROJECT_ID: (userId: string) =>
+      `project-contributor/user/${userId}/contributor-projects`,
   };
 
   static readonly ProjectRole = {
