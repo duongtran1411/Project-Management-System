@@ -18,7 +18,7 @@ import {
   DatePicker,
   Button,
   Select,
-  Input
+  Input,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { jwtDecode } from "jwt-decode";
@@ -185,8 +185,8 @@ export default function Page() {
       try {
         const decoded = jwtDecode<TokenPayload>(token);
         setUserId(decoded.userId);
-      } catch (e) {
-        showErrorToast("Invalid token");
+      } catch (error: any) {
+        showErrorToast(error.response.message.data);
       }
     }
   }, []);
@@ -388,7 +388,7 @@ export default function Page() {
           setIsRemoveLogModalOpen(false);
         }}
         onConfirm={(numberDay, beforeDay) => {
-          handleRemoveLog(numberDay, beforeDay)
+          handleRemoveLog(numberDay, beforeDay);
         }}
       />
     </div>

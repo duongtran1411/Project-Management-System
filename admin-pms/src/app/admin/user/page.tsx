@@ -16,7 +16,6 @@ import Spinner from "@/components/common/spinner/spin";
 import { createStyles } from "@/components/common/antd/createStyle";
 import { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { Pagination as Paging } from "@/models/pagination/Pagination";
-import { Filter } from "@/models/filter/Filter";
 const useStyle = createStyles(({ css, token }) => {
   const { antCls } = token;
   return {
