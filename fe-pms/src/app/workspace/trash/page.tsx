@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@/lib/auth/auth-context";
 import { Endpoints } from "@/lib/endpoints";
 import axiosService from "@/lib/services/axios.service";
 import { restoreProject } from "@/lib/services/project/project.service";
@@ -16,6 +17,7 @@ import {
   Button,
   Card,
   List,
+  message,
   Modal,
   Tag,
   Tooltip,
@@ -41,7 +43,7 @@ const TrashPage = () => {
   const router = useRouter();
   const [restoringId, setRestoringId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const { userInfo } = useAuth();
   const { data: projectDeleted, mutate } = useSWR(
     `${Endpoints.Project.TRASH_PROJECT}`,
     fetcher
@@ -161,13 +163,30 @@ const TrashPage = () => {
                     </div>
                   </div>,
                   <div key="actions" className="flex justify-end mt-4">
-                    <Tooltip title="Restore project">
+                    <Tooltip
+                      title={
+                        project.createdBy._id !== userInfo?.userId
+                          ? "Only project admin can restore this project"
+                          : "Restore project"
+                      }
+                    >
                       <Button
                         type="primary"
                         icon={<UndoOutlined />}
                         loading={loading && restoringId === project._id}
-                        onClick={() => showConfirm(project)}
-                        disabled={daysRemaining <= 0}
+                        onClick={() => {
+                          if (project.createdBy._id !== userInfo?.userId) {
+                            message.warning(
+                              "You don't have permission to restore this project"
+                            );
+                            return;
+                          }
+                          showConfirm(project);
+                        }}
+                        disabled={
+                          daysRemaining <= 0 ||
+                          project.createdBy._id !== userInfo?.userId
+                        }
                         className="flex items-center gap-2"
                       >
                         Restore

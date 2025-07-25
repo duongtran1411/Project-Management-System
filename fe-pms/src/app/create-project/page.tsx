@@ -22,7 +22,7 @@ export default function ProjectForm() {
   const router = useRouter();
   const [form] = Form.useForm();
   const [userId, setUserId] = useState<string | null>(null);
-  const [messageApi, contextHolder] = message.useMessage();
+  //const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -48,16 +48,16 @@ export default function ProjectForm() {
       };
 
       const newProject = await createProject(projectData);
-      if (newProject == null) {
-        message.error("Fail to create project!");
-        form.resetFields();
-        return;
-      }
+      // if (newProject == null) {
+      //   message.error("Fail to create project!");
+      //   form.resetFields();
+      //   return;
+      // }
 
-      messageApi.open({
-        type: "success",
-        content: "Project created successfully!",
-      });
+      // messageApi.open({
+      //   type: "success",
+      //   content: "Project created successfully!",
+      // });
 
       router.push(`/create-project/invite-page/${newProject._id}`);
     } catch (error) {
@@ -77,7 +77,7 @@ export default function ProjectForm() {
 
   return (
     <>
-      {contextHolder}
+      {/* {contextHolder} */}
       {loading && (
         <Spin
           size="large"

@@ -2,6 +2,7 @@
 "use client";
 
 import {
+  DeleteFilled,
   DeleteOutlined,
   MoreOutlined,
   PlusOutlined,
@@ -9,7 +10,6 @@ import {
   SettingOutlined,
   StarOutlined,
   UserAddOutlined,
-  DeleteFilled,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -256,6 +256,7 @@ const ProjectTable = () => {
           >
             Project Deleted
           </Button>
+
           <Button
             type="primary"
             onClick={handleCreateProject}
