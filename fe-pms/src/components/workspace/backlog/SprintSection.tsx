@@ -258,8 +258,8 @@ const SprintSection: React.FC<Props> = ({
 
           // allTaskIdsInMilestone là mảng chứa tất cả _id của task đang hiển thị
           const allTaskIdsInMilestone = taskInMileStone
-            .map((task) => task._id)
-            .filter((id): id is string => typeof id === "string");
+            ?.map((task) => task._id)
+            ?.filter((id): id is string => typeof id === "string");
 
           const onChange: CheckboxProps["onChange"] = (e) => {
             if (e.target.checked) {
@@ -304,21 +304,21 @@ const SprintSection: React.FC<Props> = ({
                   <div className="flex items-center ">
                     <Tag color="default" className="w-6 p-0 text-center">
                       {
-                        taskInMileStone.filter(
+                        taskInMileStone?.filter(
                           (task: Task) => task.status === "TO_DO"
                         ).length
                       }
                     </Tag>
                     <Tag color="blue" className="w-6 p-0 text-center">
                       {
-                        taskInMileStone.filter(
+                        taskInMileStone?.filter(
                           (task: Task) => task.status === "IN_PROGRESS"
                         ).length
                       }
                     </Tag>
                     <Tag color="green" className="w-6 p-0 text-center">
                       {
-                        taskInMileStone.filter(
+                        taskInMileStone?.filter(
                           (task: Task) => task.status === "DONE"
                         ).length
                       }

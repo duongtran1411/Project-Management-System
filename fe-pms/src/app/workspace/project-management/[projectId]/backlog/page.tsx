@@ -80,7 +80,7 @@ export default function Backlog() {
   const filteredTasks = useMemo(() => {
     if (!taskData?.data) return [];
 
-    return taskData.data.filter((task: Task) => {
+    return taskData?.data?.filter((task: Task) => {
       // Search by task name
       const nameMatch =
         !searchText ||

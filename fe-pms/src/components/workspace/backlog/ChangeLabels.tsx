@@ -36,7 +36,7 @@ const ChangeLabels: React.FC<Props> = ({
 
   const toggleLabel = async (label: LabelType) => {
     const updatedLabels = labels.includes(label)
-      ? labels.filter((l) => l !== label)
+      ? labels?.filter((l) => l !== label)
       : [...labels, label];
 
     await updateLabels(updatedLabels);
