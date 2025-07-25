@@ -48,7 +48,7 @@ export const SidebarTimeline: React.FC<Props> = ({
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
   const [selectedEpic, setSelectedEpic] = useState<Epic | null>(null);
   const { role } = useRole();
-  const isProjectLead = role.name === "PROJECT_LEAD";
+  const isProjectLead = role.name === "PROJECT_ADMIN";
 
   const handleSubmit = async (values: any) => {
     if (selectedEpic) {
