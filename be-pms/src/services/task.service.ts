@@ -1080,7 +1080,7 @@ export class TaskService {
       { $set: { milestones: milestoneIdMove, updatedBy: user._id } }
     );
 
-    await Milestone.findByIdAndUpdate(milestoneIdMove, { status: "ACTIVE" });
+    await Milestone.findByIdAndUpdate(milestoneIdMove, { status: "ACTIVE" }, {updatedBy: user._id});
 
     if (!updatedTask) {
       throw new Error("Can not update task");
