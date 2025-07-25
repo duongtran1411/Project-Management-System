@@ -5,7 +5,7 @@ import { getAll, updateStatus } from "@/lib/services/user/user";
 import { User } from "@/models/user/User";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
-import { Button, Input,Table, Tag } from "antd";
+import { Input, Table, Tag } from "antd";
 import {
   showErrorToast,
   showSuccessToast,
@@ -51,16 +51,16 @@ const UserAdmin = () => {
       limit: pagination.limit.toString(),
       page: pagination.page.toString(),
     });
-    
+
     return params.toString();
   }, [pagination]);
 
   const filteredUsers = useMemo(() => {
-  if (!searchTerm) return users;
-  return users.filter((u) =>
-    u.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-}, [users, searchTerm]);
+    if (!searchTerm) return users;
+    return users.filter((u) =>
+      u.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
 
   const { data, error, isLoading, mutate } = useSWR(
     `${Endpoints.User.GET_ALL}?${queryString}`,
@@ -164,12 +164,15 @@ const UserAdmin = () => {
       key: "status",
       width: 120,
       align: "center",
-      render: (status: string,record:User) => {
+      render: (status: string, record: User) => {
         const s = status?.toUpperCase() || "UNKNOWN";
         const color =
           s === "ACTIVE" ? "green" : s === "INACTIVE" ? "red" : "default";
         return (
-          <Tag className="hover:cursor-pointer" color={color} onClick={() => confirmModal(record._id, s)}>
+          <Tag
+            className="hover:cursor-pointer"
+            color={color}
+            onClick={() => confirmModal(record._id, s)}>
             {s}
           </Tag>
         );
@@ -190,7 +193,7 @@ const UserAdmin = () => {
       width: 180,
       render: (date: string) =>
         date ? format(parseISO(date), "dd/MM/yyyy HH:mm") : "-",
-    }
+    },
   ];
 
   if (isLoading) {
@@ -208,7 +211,7 @@ const UserAdmin = () => {
           allowClear
           value={searchTerm}
           onChange={(e) => {
-            setSearchTerm(e.target.value)
+            setSearchTerm(e.target.value);
           }}
           className="mt-2 w-[250px] mx-5"
         />
