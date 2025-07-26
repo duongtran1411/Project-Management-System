@@ -90,7 +90,7 @@ export class AuthService {
       .select("+password")
       .populate("role");
     if (!user) {
-      throw new Error("Email không tồn tại");
+      throw new Error("Email không tồn tại, hãy đăng kí tài khoản");
     }
     if (!user.isActive) {
       throw new Error("Tài khoản đã bị vô hiệu hoá");

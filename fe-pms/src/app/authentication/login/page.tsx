@@ -113,6 +113,10 @@ export default function Page() {
             ? response.data.message
             : response?.message || "Đăng nhập thất bại";
         showErrorToast(message);
+         router.replace(
+            "/authentication/register"
+          );
+          return;
       }
     } catch (error: any) {
       // Xóa token cũ khi có lỗi
